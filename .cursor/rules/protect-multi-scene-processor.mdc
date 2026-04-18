@@ -1,0 +1,45 @@
+---
+description: 鎖定 multi_scene_processor.py 核心引擎，任何修改必須取得 CEO 授權
+globs: scripts/gear1_prod/multi_scene_processor.py
+alwaysApply: false
+---
+
+# 🔒 PROTECTED FILE — CEO Authorization Required
+
+`scripts/gear1_prod/multi_scene_processor.py` 是 **R&S Echoes 幻影輪播矩陣引擎 v15.6**，已通過外部顧問 + CTO 聯合認證，達到廣播級無縫標準。
+
+## ⚠️ 修改前必讀
+
+**此檔案受 CEO 保護鎖定。在進行任何修改之前，必須完成以下程序：**
+
+1. **向 CEO 提出修改申請**，說明：
+   - 修改原因（Bug / 新功能 / 效能優化）
+   - 預計修改的具體位置（函數名稱 + 行號）
+   - 修改對產線的潛在影響評估
+   - 預計的測試方案
+
+2. **取得 CEO 書面授權後**，才可動筆
+
+3. **修改後必須執行 GOP-QA 驗證**：
+   ```powershell
+   python scripts/gear1_prod/multi_scene_processor.py --sandbox --channel lofi --target-duration 120 --scene-dwell-time 60
+   ```
+   日誌必須出現 `✅ [GOP-QA] ... GOP 牢籠完好` 才算通過
+
+## 📋 已鎖定的核心設計（禁止修改）
+
+| 參數 | 值 | 鎖定原因 |
+|------|-----|---------|
+| `vf_pre` | `setpts=PTS-STARTPTS,fps=24` | PTS 歸零必須在 fade 之前執行 |
+| `-flags +cgop` | 封閉 GOP | 防止 B 幀跨界 concat 邊界 |
+| `-keyint_min 48` + `-g 48` | 嚴格 IDR 鎖定 | 每 2 秒一個 I 幀，不多不少 |
+| `-sc_threshold 0` | 關閉動態 I 幀 | 禁止 libx264 自行插入額外 I 幀 |
+| `-video_track_timescale 24000` | 統一時間基底 | 防止 400+ 片段後時間軸崩塌 |
+| `get_video_duration()` 用源幀率除 | `frames / source_fps` | 30fps 素材必須除以 30，不能硬編碼 24 |
+| 雙重保險 re-probe | `base_mid.ts 幀數 / 24` | loop_list duration 與物理檔案幀級吻合 |
+
+## 🏆 版本歷史（此檔案）
+
+- **v15.4**：Encode-Once-Repeat + Pre-baked Fade 基礎架構
+- **v15.5**：Closed GOP + setpts 歸零 + 嚴格 IDR + GOP-QA 自動驗證 + `-ar 48000`
+- **v15.6**：`get_video_duration()` 改用源幀率 + 雙重保險 re-probe（根除 2 秒凍結）

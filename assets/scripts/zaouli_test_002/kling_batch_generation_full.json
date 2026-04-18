@@ -1,0 +1,94 @@
+{
+  "project_id": "zaouli_epic_72shot",
+  "description": "完整 72 鏡頭 Zaouli 超現實舞蹈 MV - 5 分鐘演唱會級製片",
+  "total_shots": 72,
+  "duration_sec": 360,
+  "music_file": "assets/audio/zaouli_test_002/music_epic_extended.mp3",
+  "music_duration_sec": 348,
+  "volumes": [
+    {
+      "volume_id": 1,
+      "file": "assets/scripts/zaouli_test_002/vol_1.json",
+      "shots": 12,
+      "duration_sec": 60,
+      "description": "開場四部曲：設景、開拍、高潮、重擊 + CTO 補充四部曲"
+    },
+    {
+      "volume_id": 2,
+      "file": "assets/scripts/zaouli_test_002/vol_2.json",
+      "shots": 12,
+      "duration_sec": 60,
+      "description": "無人機俯視、幻影舞者、聲波視覺化、宇宙能量"
+    },
+    {
+      "volume_id": 3,
+      "file": "assets/scripts/zaouli_test_002/vol_3.json",
+      "shots": 12,
+      "duration_sec": 60,
+      "description": "微觀宇宙、古代儀式、能量場、時間跳躍、光線描繪"
+    },
+    {
+      "volume_id": 4,
+      "file": "assets/scripts/zaouli_test_002/vol_4.json",
+      "shots": 12,
+      "duration_sec": 60,
+      "description": "倒映水面、聲波頻譜、終極高潮爆炸能量"
+    },
+    {
+      "volume_id": 5,
+      "file": "assets/scripts/zaouli_test_002/vol_5.json",
+      "shots": 12,
+      "duration_sec": 60,
+      "description": "序列轉折、絲絹飄舞、雙重曝光、懸浮舞蹈、靈魂出竅"
+    },
+    {
+      "volume_id": 6,
+      "file": "assets/scripts/zaouli_test_002/vol_6.json",
+      "shots": 12,
+      "duration_sec": 60,
+      "description": "重新啟動、宇宙視角、多重視角、液態光澤、絕對高潮、永恆終幕"
+    }
+  ],
+  "aesthetic_specifications": {
+    "style": "surreal_dance_mv",
+    "primary_theme": "Zaouli African tribal dance",
+    "visual_language": "Stop-motion puppet, claymation aesthetic with surreal time-warp effects",
+    "color_grade": "Golden hour + Neon cyan + Deep shadows",
+    "cinematic_style": "Hyper-realistic volumetric lighting, multiple exposure, motion blur, particle effects",
+    "resolution": "8K cinematic",
+    "frame_rate": 60,
+    "aspect_ratio": "16:9"
+  },
+  "generation_strategy": {
+    "platform": "Kling Text-to-Video",
+    "batch_submission": "6 volumes in parallel or sequential",
+    "processing_notes": [
+      "Each shot: 5 seconds duration",
+      "Total generation time estimate: ~2-3 hours (depending on Kling queue)",
+      "Post-processing: FFmpeg concat with audio synchronization",
+      "Fallback: If any shot fails, re-submit individual prompt"
+    ]
+  },
+  "quality_checkpoints": [
+    "Beat synchronization: Verify first and last shot align with music beats",
+    "60fps consistency: All shots must be 60fps for seamless concat",
+    "Aesthetic coherence: Prompts maintain surreal Zaouli theme throughout",
+    "Transition smoothness: Audio mix should have no clips or gaps"
+  ],
+  "file_manifest": {
+    "input_volumes": [
+      "assets/scripts/zaouli_test_002/vol_1.json",
+      "assets/scripts/zaouli_test_002/vol_2.json",
+      "assets/scripts/zaouli_test_002/vol_3.json",
+      "assets/scripts/zaouli_test_002/vol_4.json",
+      "assets/scripts/zaouli_test_002/vol_5.json",
+      "assets/scripts/zaouli_test_002/vol_6.json"
+    ],
+    "audio_input": "assets/audio/zaouli_test_002/music_epic_extended.mp3",
+    "output_directory": "assets/final_exports/zaouli_epic_72shot",
+    "expected_output": "epic_movie_72shot_60fps_final.mp4"
+  },
+  "version": "v8.4-epic-cto-directive",
+  "timestamp": "2026-03-30 12:35:00",
+  "status": "ready_for_kling_submission"
+}

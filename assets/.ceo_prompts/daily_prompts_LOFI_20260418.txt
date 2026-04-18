@@ -1,0 +1,279 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LOFI]
+生成時間: 2026-04-18 18:01:06
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\lofi\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: Whispers of Twilight
+[[[SUNO_TAGS_START]]]
+Lofi Chillhop, Slow Violin Harmonics, Warm Analog Synth Pads, Spacious Ethereal, 60 BPM Drumless, Calming Introspective, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Deep violin harmonics enter slowly with massive reverb, analog synth pads swell beneath, ethereal and spacious)
+
+...
+...
+
+[Verse 1] (Violin carries the primary warm and lofty melody, soft lo-fi textures emerge underneath, lo-fi drumless flow begins, introspective and profound)
+
+...
+...
+
+[Chorus] (Full violin phrases bloom wide in the stereo field, warm analog pads provide harmonic foundation, Rhodes adds gentle color, spacious cave-like reverb, deepening the calming atmosphere)
+
+...
+...
+
+[Instrumental Solo] (Violin takes center stage with expressive slow bowing, reverb trails linger like twilight mist, synth pads hold the background, meditative and profound)
+
+...
+...
+
+[Verse 2] (Violin returns with renewed melodic intensity, lo-fi textures gently layered, drumless flowing rhythm, peaceful yet deeply introspective)
+
+...
+...
+
+[Bridge] (Violin harmonics thin to a whisper, analog pads dissolve into pure atmosphere, binaural panning widens the soundstage, serene and ethereal)
+
+...
+...
+
+[Outro] (fade to silence, atmospheric pads only)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: Velvet Horizon
+[[[SUNO_TAGS_START]]]
+Lofi Chillhop, Warm Analog Synth Pads, Mellow Tenor Saxophone (smooth, jazz-filtered), Spacious, Ethereal, 60 BPM, Slow Tempo, Drumless, Calming, Introspective, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ambient Synth pads enter slowly, hovering in the spacious stereo field, soft analog warmth fills the mix, ethereal harmonics bloom gradually)
+
+...
+...
+
+[Verse 1] (Mellow Tenor Saxophone enters with a smooth, slow jazz-filtered melody, floating above the ambient synth foundation, soft lo-fi drum groove joins subtly, creating introspective depth)
+
+...
+...
+
+[Chorus] (Ambient Synth swells expand, creating a huge reverb wash, saxophone rises with emotional resonance, the lo-fi beat gains gentle forward momentum, building serene transcendence)
+
+...
+...
+
+[Instrumental Solo] (Solo Ambient Synth takes the lead with lush, velvety texture, Tenor Saxophone returns for a soulful response, drums soften to a heartbeat pulse, the horizon feels infinite)
+
+...
+...
+
+[Verse 2] (New melodic phrase emerges from the Ambient Synth, saxophone weaves underneath with warm introspection, lo-fi texture deepens with binaural panning, time feels suspended in stillness)
+
+...
+...
+
+[Bridge] (The lo-fi beat drops away completely to a drumless passage, pure ambient synth clouds drift across the soundscape, Tenor Saxophone plays a breathy, distant melody, vast and serene)
+
+...
+...
+
+[Chorus] (Full arrangement returns with gentle crescendos, Ambient Synth and saxophone blend in perfect harmony, the lo-fi groove resumes with renewed warmth, ultimate serenity achieved)
+
+...
+...
+
+[Outro] (fade to silence, atmospheric pads only)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: Whispers of the Void
+[[[SUNO_TAGS_START]]]
+Lofi Chillhop, Slow Cello Swells, Subtle Rhodes Electric Piano, Spacious, Ethereal, Drumless, Slow Tempo, Profound, Introspective, Melancholic but warm, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (solo cello enters slowly, deep resonant tones, reverberant space, ethereal atmosphere, building infinite depth)
+
+...
+...
+
+[Verse 1] (cello continues with profound melodic phrases, Rhodes electric piano emerges softly underneath, warm melancholic pads, introspective mood deepens, spacious reverb washing over)
+
+...
+...
+
+[Chorus] (full cello melody blooms, rich emotional swells, Rhodes adds harmonic warmth, profound bass frequencies fill the void, lofi chillhop groove without drums, ethereal texture peaks)
+
+...
+...
+
+[Instrumental Solo] (cello leads with deep expressive solo, raw苍凉 tone cutting through, Rhodes accompanies with subtle chord stabs, profound silence between phrases, introspective space expands)
+
+...
+...
+
+[Verse 2] (cello and Rhodes interplay deepens, melancholic warmth grows, slower tempo allows each note to breathe, profound atmospherics settle, spacious binaural movement)
+
+...
+...
+
+[Bridge] (cello reaches deepest emotional register, slow dramatic swells, Rhodes fades slightly to let void speak, profound tension builds, ethereal resonance maximized)
+
+...
+...
+
+[Outro] (fade to silence, atmospheric pads only, cello whispers its last breath, profound peace, melancholic warmth lingers softly)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: Echoes in D Minor
+[[[SUNO_TAGS_START]]]
+Lofi Chillhop, String Quartet, Mellow Tenor Saxophone, Spacious, Drumless, Melancholic, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (delicate string quartet enters with a soft, unison D minor theme — two violins, viola, and cello — sustained chords with a subtle swell, over warm analog synth pads, gentle stereo widening on the upper strings)
+
+...
+...
+
+[Verse 1] (violins take the lead melody in a slow, expressive legato phrase while the cello provides a warm bass line foundation; Rhodes electric piano enters softly underneath, adding harmonic color; drumless, breathing room, 60 BPM)
+
+...
+...
+
+[Chorus] (full string quartet swells in a rich, melancholic harmonic block — viola adds counter-melody, cello deepens the low end; all instruments breathe together, ethereal and spacious reverb fills the stereo field, building quiet emotional intensity)
+
+...
+...
+
+[Instrumental Solo] (first violin takes an elegant, unhurried solo over a minimal lofi backdrop — Rhodes comping very quietly, sustained cello tones holding the harmonic center; the solo drifts through variations of the D minor theme with subtle dynamic swells)
+
+...
+...
+
+[Bridge] (string quartet thins out — cello and viola only, playing a sparse, introspective duet in close harmony; no upper strings, maximum restraint, the silence between notes becomes part of the texture)
+
+...
+...
+
+[Verse 2] (all four strings return with a slightly reharmonized version of the verse melody, adding tender ornamentations in the second violin; warm analog synth pads swell underneath, deepening the melancholic warmth)
+
+...
+...
+
+[Chorus] (string quartet repeats the full chorus passage with increased reverb and a more pronounced dynamic swell toward the close; tenor saxophone enters faintly in the high register, doubling the violin line, blending with the strings)
+
+...
+...
+
+[Outro] (fade to silence, atmospheric pads only)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: Ethereal Dawn
+[[[SUNO_TAGS_START]]]
+Lofi Chillhop, Warm Grand Piano, Slow Clarinet Swells, Ethereal Reverb, 60 BPM, Introspective Peaceful, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Soft grand piano harmonics fade in gently with warm analog pad drones, cathedral-like reverb washing over every note, setting a sacred contemplative mood)
+
+...
+...
+
+[Verse 1] (Grand piano takes the lead with deep, resonant chords in a slow meditative pattern; warm clarinets enter softly beneath, adding breathy warmth; lofi soft kicks barely audible in the distance)
+
+...
+...
+
+[Chorus] (Full warmth expands — piano chords bloom with lush reverb, clarinets soar gently above, Rhodes electric piano enters with soulful undertones; the sacred atmosphere reaches its peak, deeply emotional yet peaceful)
+
+...
+...
+
+[Instrumental Solo] (Solemn piano solo strips back to raw intimacy — every note held with sacred reverence, slow clarinets respond in gentle call-and-return, subtle binaural panning creates spatial depth)
+
+...
+...
+
+[Verse 2] (Piano returns with renewed tenderness, warmer and deeper than before; ambient cello swells rise from the low register; soft lofi drums resume with a gentle heartbeat pulse)
+
+...
+...
+
+[Bridge] (All instruments recede — only warm grand piano and ethereal pads remain, creating a moment of sacred stillness and spiritual surrender)
+
+...
+...
+
+[Outro] (fade to silence, atmospheric pads only)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+

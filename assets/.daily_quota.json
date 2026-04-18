@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-04-02T16:52:02",
+  "quotas": {
+    "2026-04-02": {
+      "date": "2026-04-02",
+      "generated_count": 21,
+      "approved_count": 3,
+      "rejected_count": 0,
+      "pending_count": 10,
+      "approved_tracks": [
+        "DreamPopPeaceful_040226_004",
+        "DreamPopPeaceful_040226_004",
+        "CTO_v15_TimeExpansion_d454c18b_retest"
+      ]
+    }
+  }
+}

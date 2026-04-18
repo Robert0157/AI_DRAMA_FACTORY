@@ -1,0 +1,11 @@
+﻿# v15.7 Pre-Implementation Backup Manifest
+# Created: 2026-04-17 13:55:25
+# Rollback: Copy files from this folder back to original paths
+
+
+File                                                            Backup                                                 
+----                                                            ------                                                 
+f:\AI_DRAMA_FACTORY\scripts\gear1_prod\multi_scene_processor.py f:\AI_DRAMA_FACTORY\spec\backups\v15.7_pre_20260417\...
+
+
+

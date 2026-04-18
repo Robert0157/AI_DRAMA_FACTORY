@@ -1,0 +1,122 @@
+[
+  {
+    "tag": "INPUT",
+    "role": null,
+    "ce": null,
+    "ph": "Search",
+    "cls": "css-pozj2c e1qtlwh2",
+    "rect": {
+      "w": 159,
+      "h": 21,
+      "t": 26
+    }
+  },
+  {
+    "tag": "TEXTAREA",
+    "role": null,
+    "ce": null,
+    "ph": "Write some lyrics or a prompt — or leave blank for instrumental",
+    "cls": "w-full resize-none border-none bg-transparent text-base outline-none md:text-sm ",
+    "rect": {
+      "w": 386,
+      "h": 100,
+      "t": 244
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "ce": null,
+    "ph": "Enhance lyrics (e.g. \"make it sound happier\")",
+    "cls": "",
+    "rect": {
+      "w": 342,
+      "h": 21,
+      "t": 337
+    }
+  },
+  {
+    "tag": "TEXTAREA",
+    "role": null,
+    "ce": null,
+    "ph": "conscious rap, dembow dominicano, edm pop, violão, classical orchestra",
+    "cls": "w-full resize-none border-none bg-transparent text-base outline-none md:text-sm ",
+    "rect": {
+      "w": 386,
+      "h": 100,
+      "t": 454
+    }
+  },
+  {
+    "tag": "TEXTAREA",
+    "role": null,
+    "ce": null,
+    "ph": "Uplifting bluegrass song about the roof of my building",
+    "cls": "w-full resize-none border-none bg-transparent text-base outline-none md:text-sm",
+    "rect": {
+      "w": 386,
+      "h": 100,
+      "t": 342
+    }
+  },
+  {
+    "tag": "TEXTAREA",
+    "role": null,
+    "ce": null,
+    "ph": "Describe the sound you want",
+    "cls": "w-full resize-none border-none bg-transparent text-base outline-none md:text-sm",
+    "rect": {
+      "w": 386,
+      "h": 100,
+      "t": 236
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "ce": null,
+    "ph": "Auto",
+    "cls": "css-1upcw8e emgul2i1",
+    "rect": {
+      "w": 60,
+      "h": 26,
+      "t": 523
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "ce": null,
+    "ph": "Search",
+    "cls": "css-pozj2c e1qtlwh2",
+    "rect": {
+      "w": 287,
+      "h": 21,
+      "t": 78
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "ce": null,
+    "ph": null,
+    "cls": "css-tfvjxs enxex2c1",
+    "rect": {
+      "w": 54,
+      "h": 35,
+      "t": 70
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "ce": null,
+    "ph": null,
+    "cls": "peer focus-visible:outline-none absolute inset-y-0 left-1/2 w-(--button-width) -",
+    "rect": {
+      "w": 12,
+      "h": 16,
+      "t": 872
+    }
+  }
+]

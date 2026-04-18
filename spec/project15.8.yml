@@ -1,0 +1,590 @@
+# ========================================== #
+# GLOBAL PROJECT CONFIGURATION (全域專案與資安設定)
+# v15.8 — Dual Codec Profile · DB Centralization · Audio 192k
+# 最後更新：2026-04-17
+#   v15.5：Closed GOP · setpts 優先濾鏡順序 · 嚴格 IDR · 時間基底統一 · GOP-QA · -ar 48000
+#   v15.6：get_video_duration 源幀率修正（根治 30fps 素材 2 秒凍結）· 雙重保險 re-probe · CEO 鎖定
+#   v15.7：Ping-Pong 智能迴圈（ping_/ford_ 前綴）· LLM JSON 截斷修復 · lofi 偽短缺修復 · 視覺 DB 路徑遷移
+#   v15.8：雙軌編碼 Profile（Win H.264 CRF29/Mac HEVC q:v 55）· DB 集中化（assets/data/）· 音頻 192k
+# ========================================== #
+project_name: "R&S Echoes AI Factory (v15.8 雙軌編碼 Profile · DB 集中化)"
+
+# 【跨平台路徑支援】透過環境變數或底層 env_manager 動態切換
+workspace_roots:
+  windows: "F:/AI_DRAMA_FACTORY"    # 現役開發機
+  mac: "/Volumes/AI_Workspace/AI_DRAMA_FACTORY"  # Mac mini M4 生產伺服器
+
+# 多模態智能記憶與命名空間隔離
+memory_namespace: "RS_ECHOES_RECORDS_V15"
+enable_smart_extraction: true
+
+# 動態 MCP 伺服器與交付渠道
+mcp_servers: ["GitHub", "FileSystem", "n8n_Webhook", "Email_SMTP", "LiteLLM_Gateway"]
+delivery_channels: ["youtube_longform", "youtube_247_radio", "aws_s3_cold_storage"]
+
+# ========================================== #
+# 三引擎 LLM 架構 (Tri-Engine LLM Strategy)
+# ========================================== #
+models:
+  # 引擎 1 (預設) — MiniMax M2.7 230B MoE via NVIDIA NIM
+  primary_engine:
+    provider: "minimax"
+    model: "minimaxai/minimax-m2.7"
+    api_base: "https://integrate.api.nvidia.com/v1"
+    api_key_env: "NVIDIA_API_KEY"
+    timeout_sec: 180
+    avg_latency_sec: 100
+    max_tokens: 4096                  # v15.7：從 2048 提升至 4096，防止 20 首雙語曲名截斷
+    use_cases: ["metadata_generation", "distrokid_cheatsheet", "complex_reasoning"]
+
+  # 引擎 2 — 智譜 GLM-4（快速批量，推薦用於提示詞供彈）
+  batch_engine:
+    provider: "zhipu"
+    model: "glm-4"
+    api_key_env: "ZHIPUAI_API_KEY"
+    avg_latency_sec: 7
+    use_cases: ["ceo_prompts_batch", "quick_json", "fallback"]
+
+  # 引擎 3 — Google Gemini 2.5 Flash（視覺解構備用）
+  visual_engine:
+    provider: "gemini"
+    model: "gemini-2.5-flash"
+    api_base: "https://generativelanguage.googleapis.com/v1beta/models"
+    api_key_env: "GEMINI_API_KEY"
+    avg_latency_sec: 20
+    use_cases: ["visual_analysis", "multimodal", "gemini_fallback"]
+
+  # 全域路由設定
+  default_provider: "minimax"
+  auto_failover: true
+  enable_fast_mode: true
+
+  # v15.7 LLM JSON 清洗三重防護
+  json_cleaning_strategy:
+    step1: "剝除 ```json ... ``` Markdown 包裝"
+    step2: "定位首個 '{' 截取（應對 LLM 前置說明文字）"
+    step3: "自動補全未閉合 '{' '}' '[' ']'（應對 max_tokens 截斷）"
+
+# 動態上下文與資源限制
+context_management:
+  compact_threshold: 80000
+  clearing_strategy: ["soft_trim", "hard_clear"]
+
+resource_constraints:
+  budget_limit_usd: 50
+  budget_warning_thresholds: [10, 30]
+
+# ========================================== #
+# Protocol L & V: 資產庫與視覺金庫 (Vault & Metabolism)
+# ========================================== #
+vault_management:
+  # 音樂金庫 (Protocol L)
+  audio_db_type: "sqlite"
+  audio_db_path: "assets/data/rs_music_vault.db"   # v15.8：集中至 assets/data/，由 config.music_db_path 統一引用
+  audio_thread_safety: "threading.local()"          # 每條執行緒獨立連線，防 ProgrammingError
+
+  # 音樂金庫選曲 v15.7 遞補邏輯
+  audio_selection_fallback:
+    step_4a: "New(dc=0) 不足 → 從 Gen1 遞補"
+    step_4b: "Gen2 不足 → 先從 New 補，再從 Gen1 補"
+    step_5: "total >= 1 即繼續（_build_playlist 重複播放填滿時長）；只有 total==0 才拋出異常"
+    track_count_max_for_llm: 20    # music_metadata_engine.py 限制，防超 LLM token 上限
+
+  # 視覺金庫 (Protocol V)
+  visual_db_type: "sqlite"
+  visual_db_path: "assets/data/veo_visual_vault.db"   # v15.8：集中至 assets/data/，由 config.visual_db_path 統一引用
+  visual_sampling_strategy: "pyramid_3tier"  # 50%新 / 25%二手 / 25%三手 + 三層兜底
+
+  # v15.7 影片前綴命名規範
+  video_naming_convention:
+    pingpong_prefix: "ping_"    # ping_[name].mp4 → 正向+反向交替迴圈
+    forward_prefix:  "ford_"   # ford_[name].mp4 → 正向重複迴圈
+    rule: "CEO 人工審閱後命名；改名後必須同步更新 veo_visual_vault.db"
+    db_sync_required: true
+    classifier: "scripts/gear2_rnd/video_loop_classifier.py"
+
+  tagging_dimensions:
+    - "mood_vibe"
+    - "genre_bpm"
+    - "scene_visual"
+
+  max_derivation_limit: 5
+  max_vault_capacity: 100
+  vault_warning_threshold: 0.9
+  vault_purge_target: 0.5
+
+  # TTAPI 備援觸發閾值
+  min_vault_songs_for_assembly: 6
+  ttapi_suno_target_count: 5
+  minimum_inventory_warning: 10
+
+  visual_fallback_levels:
+    - "pyramid_sampling"
+    - "relaxed_derivation_limit"
+    - "ignore_all_limits"
+
+# ========================================== #
+# 生產線核心參數 (Pipeline Constraints)
+# ========================================== #
+production_constraints:
+  target_duration_sec: 3600
+  scene_dwell_time: 600
+  sfx_mix_ratio: 0.04
+
+  audio_lufs:
+    lofi: -16.0
+    light_music: -18.0
+
+  # ========================================== #
+  # 影片編碼規格（v15.8 雙軌 Profile 廣播級五層防禦，鎖定）
+  # ⚠️ 以下參數受 CEO 鎖定，修改須取得 CEO 書面授權
+  # ========================================== #
+  video_compression:
+    stage1: "dual_profile_fps24_closed_gop_ping_pong_v15.8"  # v15.8：動態 Profile 取代硬編碼
+    stage2: "concat_demuxer_copy_zero_recode"                  # 零重編碼物理拼接
+    # v15.8 雙軌 Profile（由 env_manager.video_enc_profile 動態載入）
+    profile_windows:
+      name: "h264_win"
+      codec: "libx264"
+      preset: "slow"                 # v15.8：medium → slow（更佳壓縮率）
+      tune: "film"
+      crf: 29                        # v15.8：28 → 29（體積 -24%，肉眼無差）
+      audio_bitrate: "192k"          # v15.8：320k → 192k（AAC 聽覺透明）
+      result: "2.1GB → 1.57GB/hr"
+    profile_mac_m4:
+      name: "hevc_mac"
+      codec: "hevc_videotoolbox"     # v15.8：Apple Silicon 硬體加速 HEVC
+      quality: 55                    # -q:v 55：品質模式，非 ABR
+      tag: "hvc1"                    # Apple/YouTube 相容性標籤
+      audio_bitrate: "192k"
+      estimated_result: "~1.0GB/hr（預估）"
+    profile_override_env: "VIDEO_CODEC_PROFILE"  # h264_win / hevc_mac 手動覆蓋
+
+    # GOP 防禦陣列（兩個 profile 均保留完整，鎖定）
+    encoding_params:
+      pix_fmt: "yuv420p"
+      gop_size: 48                   # -g 48：每 2 秒（24fps×2）一個 IDR
+      keyint_min: 48                 # -keyint_min 48：最小 GOP = 最大 GOP，無例外
+      sc_threshold: 0                # 關閉動態場景偵測
+      closed_gop: true               # -flags +cgop：強制封閉 GOP，B 幀不跨界
+      video_track_timescale: 24000   # 統一時間基底，防浮點誤差累積
+      audio_sample_rate: 48000       # Stage 2 AAC 輸出強制 48000Hz，防音訊漂移
+
+    # v15.5 濾鏡執行順序（鎖定）
+    filter_order:
+      rule: "setpts=PTS-STARTPTS → fps=24 → fade（如有）→ norm"
+      reason: "PTS 必須先歸零至 0-based，fade 的 st= 才能在乾淨 24fps 時間軸精準落點"
+
+    # v15.7 Ping-Pong 反向片段（鎖定）
+    reverse_filter_order:
+      rule: "reverse → setpts=PTS-STARTPTS → fps=24 → norm"
+      reason: "reverse 必須在 setpts 之前執行，否則反向後 PTS 仍為原始雜亂值"
+      trigger: "ping_ 前綴素材自動觸發；ford_ 前綴跳過"
+      fallback: "reverse 編碼失敗時自動降級為 forward 策略"
+
+    # v15.6 源幀率修正（鎖定）
+    duration_computation:
+      method: "frames / source_fps"   # 從 ffprobe r_frame_rate 讀取，非硬編碼 24.0
+      double_insurance: true          # 編碼後 re-probe base_mid.ts 實際幀數 / 24 作為 loop_list duration
+      reason: "30fps 素材 240 幀 ÷ 24 = 10s（錯誤），÷ 30 = 8s（正確）；雙重保險確保幀級吻合"
+
+    # v15.5 GOP-QA 自動驗證
+    gop_qa:
+      enabled: true
+      target_interval_sec: 2.0        # g=48 / fps=24 = 2.0s
+      tolerance_frames: 1.5           # 允許 ±1.5 幀誤差（±0.063s）
+      action_on_fail: "log_warning"   # 不中斷產線，記錄 WARNING 供 CEO 排查
+
+  clip_cycling_enabled: true
+
+# ========================================== #
+# Streamlit UI 功能對應 (UI Tab Map)
+# ========================================== #
+ui_tabs:
+  tab1: "資產入庫與金庫儀表板"
+  tab2: "企劃大腦供彈"
+  tab3: "批量母帶處理"
+  tab4: "影音發行流水線"
+  tab5: "CEO 全自動產線"
+  tab6: "系統維護 & 金庫代謝"
+
+ui_sidebar_controls:
+  - name: "歌曲最大重複次數"
+    config_key: "max_audio_deriv"
+    default: 5
+    range: [1, 10]
+  - name: "影片最大重複次數"
+    config_key: "max_video_deriv"
+    default: 3
+    range: [1, 10]
+
+# ========================================== #
+# 人類授權閘道 (CEO Remote Control)
+# ========================================== #
+human_approval_required:
+  - "UI_Tab2_Prompts_Genesis"
+  - "UI_Tab4_Step1_Master_Tape"
+  - "UI_Tab4_Step2_Phantom_Matrix"
+  - "UI_Tab5_Full_Pipeline"
+  - "TG_Vault_Purge_Authorization"
+  - "UI_Asset_Recycling_Selection"
+  - "CODE_multi_scene_processor_modification"  # v15.6+：修改核心引擎須 CEO 書面授權
+  - "VIDEO_rename_and_db_sync"                 # v15.7 新增：影片改名必須同步更新 veo_visual_vault.db
+
+# ========================================== #
+# 🔒 CEO 鎖定核心引擎（v15.6+）
+# ========================================== #
+protected_files:
+  multi_scene_processor:
+    path: "scripts/gear1_prod/multi_scene_processor.py"
+    version: "v15.8"
+    locked_by: "CEO"
+    cursor_rule: ".cursor/rules/protect-multi-scene-processor.mdc"
+    modification_procedure: |
+      1. 向 CEO 提出修改申請（說明原因、位置、影響評估、測試方案）
+      2. 取得 CEO 書面授權
+      3. 修改前備份至 spec/backups/v[version]_pre_[YYYYMMDD]/
+      4. 修改後執行 GOP-QA 驗證：
+         python scripts/gear1_prod/multi_scene_processor.py --sandbox --channel lofi --target-duration 120 --scene-dwell-time 60
+      5. 確認日誌出現「✅ [GOP-QA] ... GOP 牢籠完好」方為驗收通過
+    locked_params:
+      - "vf_pre: setpts=PTS-STARTPTS,fps=24（濾鏡順序鎖定）"
+      - "-flags +cgop（封閉 GOP）"
+      - "-g 48 -keyint_min 48（嚴格 IDR）"
+      - "-sc_threshold 0（關閉動態 I 幀）"
+      - "-video_track_timescale 24000（統一時間基底）"
+      - "get_video_duration(): frames / source_fps（源幀率修正）"
+      - "雙重保險 re-probe base_mid.ts（幀級吻合）"
+      - "v15.7：ping_ → reverse + 正反交替 loop_list；ford_ → 純正向（Ping-Pong 策略）"
+      - "v15.8：common_enc 從 config.video_enc_profile['common_enc'] 動態讀取（不可硬編碼）"
+      - "v15.8：Stage 2 audio 從 config.video_enc_profile['audio_enc'] 讀取（192k，不可用 320k）"
+
+# ========================================== #
+# Telegram Bot (Webhook 雙模式)
+# ========================================== #
+telegram_bot:
+  version: "v2.0"
+  entrypoint: "scripts/start_telegram_bot.py"
+  core_module: "scripts/gear1_prod/telegram_manager_bot.py"
+
+  modes:
+    polling:
+      description: "長輪詢（開發機 / 無公網 IP）"
+      command: "python scripts/start_telegram_bot.py --polling"
+    webhook_ngrok:
+      description: "ngrok 隧道自動建立（本地 Webhook 測試）"
+      command: "python scripts/start_telegram_bot.py --ngrok"
+      requires: "pip install pyngrok"
+    webhook_prod:
+      description: "固定公網 URL（Mac mini 生產環境）"
+      command: "python scripts/start_telegram_bot.py --webhook"
+      requires: "TELEGRAM_WEBHOOK_URL 需填入 .env"
+
+  commands:
+    - "/start"
+    - "/status"       # HTML parse mode，按頻道分欄（Lofi / Light Music）
+    - "/build"
+    - "/vault_cleanup"
+
+  security:
+    user_id_whitelist: "TELEGRAM_ALLOWED_USER_ID"
+    pipeline_mutex: "asyncio.Lock()"
+    webhook_secret: "TELEGRAM_WEBHOOK_SECRET"
+    ngrok_authtoken: "NGROK_AUTHTOKEN"
+
+# ========================================== #
+# 產線腳本對應 (Script Registry) v15.7 對齊
+# ========================================== #
+script_registry:
+  # 核心產線
+  full_pipeline:          "scripts/gear1_prod/pipeline_runner.py"
+  audio_assembler:        "scripts/gear1_prod/lofi_assembler.py"
+  video_assembler:        "scripts/gear1_prod/multi_scene_processor.py"   # 🔒 v15.8 CEO 鎖定
+  metadata_engine:        "scripts/gear1_prod/music_metadata_engine.py"
+  prompts_generator:      "scripts/gear1_prod/generate_ceo_prompts.py"
+  mastering_engine:       "scripts/gear1_prod/audio_mastering_engine.py"
+
+  # UI 層
+  ui_app:                 "scripts/ui/app.py"
+  ui_backend:             "scripts/ui/backend.py"
+
+  # 金庫管理
+  audio_vault:            "scripts/gear2_rnd/vault_database.py"
+  visual_vault:           "scripts/gear2_rnd/visual_vault_db.py"
+  loop_classifier:        "scripts/gear2_rnd/video_loop_classifier.py"    # v15.7 新增：ping_/ford_ 前綴分類器
+
+  # 通用工具
+  llm_client:             "scripts/common/llm_client.py"
+  env_manager:            "scripts/common/env_manager.py"
+  telegram_bot:           "scripts/gear1_prod/telegram_manager_bot.py"
+  telegram_bot_launcher:  "scripts/start_telegram_bot.py"
+  suno_api_engine:        "scripts/gear1_prod/suno_api_engine.py"
+
+  # 退役腳本（保留供 diff 參考）
+  deprecated:
+    - "scripts/gear1_prod/rs_manager.py"
+    - "scripts/gear1_prod/video_processor.py"
+
+# 任務編排與 IDE 續傳
+orchestration:
+  max_subagent_depth: 1
+  acp_resume_session: true
+
+required_skills: ["SkillGuard", "SecureClaw", "ffmpeg_toolkit", "ffprobe_toolkit", "python_api_router"]
+
+# ========================================== #
+# 產線心跳與背景排程
+# ========================================== #
+heartbeat_tasks:
+  - "CW_Generate_CEO_Prompts_Weekly_Sun_0100"
+  - "PM_Daily_Financial_Report_0800"
+  - "PM_DistroKid_Upload_Reminder_Wed_1400"
+  - "PM_Inventory_Check_Daily_1000"
+  - "SYS_Vault_Ingestion_Daily_2200"
+  - "SYS_Clear_Dropzone_Daily_2300"
+  - "SYS_Garbage_Collection_Daily_0300"
+  - "SYS_Vault_Retirement_Weekly_Sun_0400"
+
+production_quotas:
+  weekly_prompt_batch_size: 5
+  weekly_approved_songs: 5
+  minimax_est_sec_per_prompt: 100
+  ttapi_suno_timeout_sec: 600
+  ttapi_suno_poll_interval_sec: 30
+
+sandbox_permissions:
+  allowed_tools: ["bash", "read", "write", "git", "memory.search", "python"]
+  restrictToWorkspace: true
+  mode: "non-main"
+  env_file: ".env"
+  export_env_to_python: false
+
+role_exceptions:
+  PM: { allowed_tools: ["n8n_Webhook", "bash", "read", "write", "python"] }
+  CW: { allowed_tools: ["http_request", "python_api_router", "bash", "read", "write"] }
+  VD: { allowed_tools: ["http_request", "n8n_Webhook", "python_api_router", "bash", "read", "write"] }
+  AD: { allowed_tools: ["http_request", "n8n_Webhook", "python_api_router", "bash", "read", "write"] }
+  QA: { allowed_tools: ["bash", "read", "write", "python"] }
+
+# ========================================== #
+# 跨工作流異常協議
+# ========================================== #
+exception_protocols:
+  api_timeout:             "Protocol_ZR (Log Error & Fallback to Zhipu GLM-4)"
+  quota_exceeded:          "Protocol_R (Alert CEO via Telegram for Funds)"
+  content_blocked:         "Protocol_C (Log Sunk Cost & Drop Topic)"
+  minimax_slow:            "Protocol_S (Switch provider to zhipu for batch tasks)"
+  vault_shortage_audio:    "Protocol_L (Auto TTAPI Backup via suno_api_engine.py → threshold: Tab4<6, Tab5<5)"
+  vault_shortage_visual:   "Protocol_V3 (3-tier fallback: pyramid → relaxed_limit → ignore_all)"
+  ttapi_backup_failed:     "Protocol_FAIL (Return error to UI with manual action guidance, NEVER silent fail)"
+  ngrok_auth_error:        "ERR_NGROK_4018 → Check NGROK_AUTHTOKEN in .env"
+  telegram_parse_error:    "MarkdownV2 special chars → Switch to parse_mode=HTML"
+  sqlite_threading_error:  "ProgrammingError → Use vault.conn property only; never vault._get_connection()"
+  # v15.5 修復
+  gop_boundary_stutter:    "B-frame cross-boundary → Root cause: Open GOP. MUST use -flags +cgop -keyint_min 48 -sc_threshold 0. FIXED in v15.5."
+  fade_timing_misalign:    "Fade triggers at wrong timestamp → Root cause: fade before setpts. MUST apply setpts+fps=24 BEFORE fade filter. FIXED in v15.5."
+  audio_drift_long_video:  "A/V desync in 10hr+ videos → Check audio sample rate. Drift is always audio-side. FIXED in v15.5 via -ar 48000."
+  # v15.6 修復
+  video_freeze_concat:     "2s freeze every 8s → Root cause: get_video_duration() dividing by wrong fps. MUST use frames/source_fps from r_frame_rate. FIXED in v15.6."
+  core_engine_modification: "multi_scene_processor.py edit without CEO auth → REJECT immediately. Ref: .cursor/rules/protect-multi-scene-processor.mdc"
+  # v15.7 新增
+  llm_json_truncation:     "MiniMax JSON Expecting value error → Root cause: max_tokens=2048 too low for 190 tracks. Fix: max_tokens=4096 + track_count≤20 + 3-layer JSON cleaning. FIXED in v15.7."
+  vault_false_shortage:    "lofi_assembler Phase 4 skipped (庫存為 0) despite 190 WAVs → Root cause: New(dc=0) deficit not filled. Fix: Step 4a fills New deficit from Gen1; total≥1 continues. FIXED in v15.7."
+  visual_db_stale_path:    "veo_visual_vault.db file_path pointing to pre-rename filenames → Fix: UPDATE video_assets SET video_id=?, file_path=? after every rename. FIXED in v15.7."
+  loop_flash_oscillating:  "Visual flash at 8s loop boundary for oscillating scenes (waves/clouds) → Fix: ping_ prefix triggers Ping-Pong (reverse+forward alternating), math-guaranteed zero-flash. FIXED in v15.7."
+  # v15.8 新增
+  video_oversized:         "1hr MP4 2.1GB too large → Fix: dual profile h264_win(CRF29/slow) → 1.57GB(-24%); hevc_mac(q:v55/hvc1) → ~1GB est. FIXED in v15.8."
+  db_scattered_root:       "rs_music_vault.db / veo_visual_vault.db in workspace root → Fix: moved to assets/data/; env_manager provides music_db_path/visual_db_path. FIXED in v15.8."
+  hardcoded_db_path:       "workspace_root / 'rs_music_vault.db' pattern → MUST use config.music_db_path or config.visual_db_path. FIXED in v15.8."
+
+# ✅ 跨平台沙盒防護
+security_sandbox:
+  allow_read: ["/Volumes/AI_Workspace/AI_DRAMA_FACTORY", "F:/AI_DRAMA_FACTORY", "."]
+  allow_write: ["/Volumes/AI_Workspace/AI_DRAMA_FACTORY", "F:/AI_DRAMA_FACTORY", "."]
+  deny_all_others: true
+
+communication_matrix:
+  internal_comms: "繁體中文 / 英文技術術語 (Concise & Technical)"
+  external_comms: "Target local language, strictly follow R&S Echoes Lo-fi vibe"
+
+# ========================================== #
+# WORKFLOW CONFIGURATION
+# ========================================== #
+workflow_name: "R&S Echoes Assembly Line (v15.8 Dual Codec Profile · DB Centralized · CEO Lock)"
+workflow_discipline: |
+  Tri-Engine LLM (MiniMax/Zhipu/Gemini) with max_tokens=4096 + 3-layer JSON cleaning,
+  Visual Pyramid 3-Tier Fallback, Clip Cycling,
+  Encode-Once-Repeat, Pre-baked Fade, Pre-baked Reverse (v15.7),
+  Ping-Pong Loop Strategy: ping_/ford_ prefix → get_loop_strategy() → base_mid_rev.ts (v15.7),
+  Closed GOP (v15.5), Source-FPS Duration Fix (v15.6), Double Insurance re-probe (v15.6),
+  Dual Codec Profile (v15.8): h264_win(CRF29/slow/192k) / hevc_mac(q:v55/hvc1/192k),
+  DB Centralized (v15.8): assets/data/ via config.music_db_path + config.visual_db_path,
+  Audio Premixing (-ar 48000, 192k), Webhook Bot, Single UI Truth,
+  CEO-Locked Core Engine (multi_scene_processor.py v15.8),
+  lofi_assembler New→Gen1 fallback (v15.7), veo_visual_vault.db path migration (v15.7).
+
+workflow_protocols: |
+  - Protocol A (Audio): CEO drops into ceo_approved_beats/{channel}/. AD runs audio_mastering_engine.py targeting channel-specific LUFS (-16 lofi / -18 light_music). Results synced to rs_music_vault.db via _sync_mastered_to_vault().
+  - Protocol L (TTAPI Auto-Backup): Triggered automatically when vault is below threshold. Tab5 (pipeline_runner): triggers if ceo_approved_beats/ < 5 tracks. Tab4 (backend.run_phase4_sequence): triggers if vault_ready_for_mix/ usable tracks < 6. Backup order: ① Protocol L derivation (tempo/pitch variation from tracks with derivation_count < 3) → ② TTAPI Suno via suno_api_engine.py. Timeout: 600s/track. Skip flag: --skip-backup.
+  - Protocol S (Assembly): lofi_assembler.py sews 1-hour seamless WAV with 4% SFX, enforces --max-derivation-limit. v15.7: New(dc=0) deficit auto-filled from Gen1 pool; VaultShortageException only raised when total==0.
+  - Protocol V (Visual): VD manages visual_vault_db.py. Executes 50/25/25 Pyramid Sampling with 3-tier fallback + Clip Cycling. v15.7: All vault videos MUST have ping_/ford_ prefix. After any rename, UPDATE veo_visual_vault.db immediately.
+  - Protocol Q (Video Assembly v15.7): QA enforces multi_scene_processor.py v15.7 (CEO LOCKED).
+      Pre-Stage: get_loop_strategy(vid_path) reads ping_/ford_ prefix → "pingpong" | "forward".
+      Stage 1 (Encode-Once-Repeat + Pre-baked Fade + Pre-baked Reverse):
+        - get_video_duration(): frames / source_fps (NOT hardcoded 24.0). Reads r_frame_rate from ffprobe.
+        - vf_pre = "setpts=PTS-STARTPTS,fps=24" ALWAYS applied BEFORE fade filter.
+        - common_enc: -g 48 -keyint_min 48 -sc_threshold 0 -flags +cgop -video_track_timescale 24000.
+        - ping_ prefix: extra pass with vf_rev="reverse,setpts=PTS-STARTPTS,fps=24,{norm}" → base_mid_rev.ts.
+        - After encoding base_mid.ts: GOP-QA auto-validates I-frame interval (target 2.0s ±0.063s).
+        - Double Insurance: re-probe base_mid.ts actual frame count / 24 → use as loop_list duration.
+        - loop_list.txt: ping_ → alternating base_mid/base_mid_rev; ford_ → sequential base_mid×N.
+      Stage 2.5: Acrossfade Audio Premix (PCM WAV intermediate, final AAC -ar 48000).
+      Stage 2: Zero-recode Matrix Concat (-c:v copy, natural EOF strategy).
+  - Protocol M (Metadata): CW generates Tracklist + DistroKid CheatSheet + YouTube CheatSheet via music_metadata_engine.py (provider=minimax, track_count≤20, max_tokens=4096). Tab4 Final Exports panel auto-detects missing docs.
+  - Protocol D (Delivery): PM operates Streamlit UI EXCLUSIVELY (Tab1-6). rs_manager.py is DEPRECATED.
+  - Protocol T (Telegram): CEO uses Telegram Bot (Webhook v2) for remote vault status, pipeline trigger, and vault cleanup. /status uses HTML parse mode with per-channel breakdown.
+  - Protocol DB (Database Access): ALL sqlite access MUST use .conn property (threading.local). _get_connection() is ABOLISHED.
+  - Protocol LOCK (CEO Protected Engine): multi_scene_processor.py v15.7 is CEO-locked. ANY modification requires written CEO authorization. See .cursor/rules/protect-multi-scene-processor.mdc.
+  - Protocol VN (Video Naming): v15.7 SOP: new video → CEO assigns ping_/ford_ prefix → save to vault/{channel}/ → UPDATE veo_visual_vault.db. Reclassify: rename file + UPDATE DB. NEVER leave files without prefix.
+
+pipeline_runner_phases:
+  phase_1_mastering:
+    script: "scripts/gear1_prod/audio_mastering_engine.py"
+    input: "assets/audio/ceo_approved_beats/{channel}/"
+    output: "assets/audio/vault_ready_for_mix/{channel}/"
+    skip_flag: "--skip-mastering"
+  phase_2_vault_sync:
+    function: "_sync_mastered_to_vault()"
+    action: "Sync new tracks into rs_music_vault.db with derivation_count=0"
+  phase_35_ttapi_backup:
+    function: "_run_suno_backup(target_count=5)"
+    trigger: "ceo_approved_beats/ track count < 5"
+    skip_flag: "--skip-backup"
+    sub_steps:
+      - "Protocol L derivation (tempo/pitch variation from existing vault tracks)"
+      - "Read daily_prompts_{CH}_*.txt or generate via generate_ceo_prompts.py"
+      - "suno_api_engine.py → TTAPI POST → poll → download MP3"
+      - "audio_mastering_engine.py → rs_music_vault.db sync"
+  phase_3_metadata:
+    script: "scripts/gear1_prod/music_metadata_engine.py"
+    args: "--provider minimax"
+    track_count_limit: 20       # v15.7：max(5, min(vault_count, 20))
+    output: "Tracklist, DistroKid_CheatSheet, metadata_distrokid_{ch}.json"
+    skip_flag: "--skip-metadata"
+  phase_4_assembly:
+    script: "scripts/gear1_prod/lofi_assembler.py"
+    output: "R&S_Echoes_{ch}_1HrMix_[TS].wav"
+    skip_flag: "--skip-assembler"
+    v157_note: "New(dc=0) deficit auto-filled from Gen1; VaultShortageException only if total==0"
+  phase_45_youtube:
+    function: "_finalize_youtube_cheatsheet()"
+    output: "YouTube_CheatSheet_{ch}_[TS].txt"
+  phase_5_video:
+    script: "scripts/gear1_prod/multi_scene_processor.py"   # 🔒 v15.8 CEO 鎖定
+    version: "v15.8"
+    modes: ["--auto-visual", "--bg-video PATH", "--bg-videos PATH..."]
+    output: "R&S_Echoes_{ch}_1HrMix_[TS].mp4"
+    quality_gate: "GOP-QA: ✅ [GOP-QA] Scene N/N clean — GOP 牢籠完好"
+    v157_loop_strategy: "ping_ prefix → Ping-Pong (base_mid_rev.ts alternating); ford_ → Forward"
+    v158_codec_profile: "Windows: h264_win(CRF29/slow/192k) → ~1.57GB/hr; Mac M4: hevc_mac(q:v55/hvc1/192k) → ~1GB/hr est."
+
+active_agents: ["PM", "CW", "VD", "AD", "QA", "RE"]
+
+# ========================================== #
+# AGENTS REGISTRY (角色邏輯與限制) v15.7 對齊
+# ========================================== #
+agents:
+  PM:
+    AGENT_ID: "PM"
+    AGENT_ROLE_TITLE: "R&S Echoes Label Manager & Auditor"
+    AGENT_TECH_STACK: "Streamlit UI, SQLite, Background Threading, Zombie-Process atexit, Real-time Log Streaming"
+    AGENT_TARGET_ENVIRONMENT: "Central UI Pipeline"
+    AGENT_PRIMARY_WORKSPACES: "scripts/ui/"
+    AGENT_CORE_RESPONSIBILITIES: |
+      Operate Streamlit App exclusively (Tab1-6).
+      Manage background threading (daemon=True) for UI non-blocking tasks.
+      Monitor Dual-Vault metabolism and Final Exports panel.
+      Ensure PYTHONUNBUFFERED=1 injection for real-time log streaming.
+    AGENT_CRITICAL_CONSTRAINTS: "rs_manager.py is DEPRECATED. All CEO interactions MUST be routed through the Streamlit Web UI."
+
+  CW:
+    AGENT_ID: "CW"
+    AGENT_ROLE_TITLE: "Tri-Engine Metadata & Copywriter"
+    AGENT_TECH_STACK: "JSON Structuring, MiniMax M2.7 / Zhipu GLM-4 / Gemini 2.5 Flash"
+    AGENT_TARGET_ENVIRONMENT: "Scripting Engine"
+    AGENT_PRIMARY_WORKSPACES: "assets/final_exports/{channel}/"
+    AGENT_CORE_RESPONSIBILITIES: |
+      Generate Tracklist, DistroKid CheatSheet, YouTube CheatSheet via music_metadata_engine.py.
+      Default provider: minimax (max_tokens=4096). For batch CEO prompts (5 groups), recommend zhipu (7s vs 100s per call).
+      v15.7: track_count is capped at 20 to prevent LLM token overflow.
+    AGENT_CRITICAL_CONSTRAINTS: "Must output strict JSON. MiniMax est. 100s/call → batch tasks should use zhipu for speed. track_count MUST be min(actual, 20)."
+
+  AD:
+    AGENT_ID: "AD"
+    AGENT_ROLE_TITLE: "Audio & Mastering Engineer + TTAPI Auto-Supply"
+    AGENT_TECH_STACK: "FFmpeg, Python, lofi_assembler.py, audio_mastering_engine.py, suno_api_engine.py"
+    AGENT_TARGET_ENVIRONMENT: "Local Audio Processing"
+    AGENT_PRIMARY_WORKSPACES: "assets/audio/"
+    AGENT_CORE_RESPONSIBILITIES: |
+      Execute Naked Mastering (-16.0 LUFS for lofi, -18.0 LUFS for light_music).
+      lofi_assembler.py: sew 1-hour seamless WAV, apply SFX at 4% volume, enforce --max-derivation-limit.
+      v15.7: New(dc=0) shortage auto-filled from Gen1. Assembler only fails if total==0.
+      TTAPI Auto-Backup (Protocol L): attempt Protocol L derivation first, then TTAPI.
+    AGENT_CRITICAL_CONSTRAINTS: |
+      Local Suno Docker is forbidden. Audio premix length must safely exceed 3600s.
+      TTAPI backup requires TTAPI_KEY in .env. Timeout per track = 600s.
+
+  QA:
+    AGENT_ID: "QA"
+    AGENT_ROLE_TITLE: "Phantom Rotation & Broadcast-Grade Video Expert (v15.8)"
+    AGENT_TECH_STACK: "Python, FFmpeg Filtergraphs, Encode-Once-Repeat, Ping-Pong Loop, Closed GOP, Source-FPS Fix, GOP-QA, Dual Codec Profile"
+    AGENT_TARGET_ENVIRONMENT: "Local FFmpeg Rendering"
+    AGENT_PRIMARY_WORKSPACES: "assets/final_exports/{channel}/"
+    AGENT_CORE_RESPONSIBILITIES: |
+      Execute multi_scene_processor.py v15.7 (CEO LOCKED — written authorization required to modify).
+      Pre-Stage: get_loop_strategy() reads ping_/ford_ prefix → decides loop strategy.
+      Stage 1: Encode-Once-Repeat with Pre-baked Fade. Four-layer defense:
+        Layer 0 (v15.7): ping_ → base_mid_rev.ts (reverse filter) → loop_list alternating fwd/rev.
+        Layer 1: get_video_duration() uses frames/source_fps (NOT hardcoded 24.0).
+        Layer 2: Closed GOP (-flags +cgop -g 48 -keyint_min 48 -sc_threshold 0) + setpts before fade.
+        Layer 3: Double Insurance re-probe base_mid.ts actual frames/24 for loop_list duration.
+      GOP-QA auto-validates every base_mid.ts. Pass = "GOP 牢籠完好". Fail = WARNING (non-blocking).
+      Stage 2.5: Acrossfade Audio Premix with -ar 48000.
+      Stage 2: Zero-recode concat (-c:v copy). Natural EOF strategy (no forced -t).
+      Clip Cycling: if vault insufficient (> 0), cycle to fill required scene count.
+    AGENT_CRITICAL_CONSTRAINTS: |
+      multi_scene_processor.py is CEO-LOCKED. DO NOT modify without written CEO authorization.
+      v15.8: common_enc MUST come from config.video_enc_profile["common_enc"]. NO hardcoding.
+      v15.8: Stage 2 audio MUST come from config.video_enc_profile["audio_enc"] (192k, NOT 320k).
+      GOP: -flags +cgop -g 48 -keyint_min 48 -sc_threshold 0 -video_track_timescale 24000. ALL MANDATORY in both profiles.
+      Duration: ALWAYS use frames/source_fps. NEVER divide by hardcoded 24.0 for source video.
+      Filter order: setpts=PTS-STARTPTS,fps=24 MUST come BEFORE fade filter. Non-negotiable.
+      Reverse filter order: reverse MUST come BEFORE setpts (for ping_ reverse pass). Non-negotiable.
+      Ping-Pong failure: if base_mid_rev.ts encoding fails, auto-downgrade to forward strategy (log warning).
+
+  VD:
+    AGENT_ID: "VD"
+    AGENT_ROLE_TITLE: "Visual Vault Director"
+    AGENT_TECH_STACK: "Python, SQLite, visual_vault_db.py, video_loop_classifier.py, threading.local()"
+    AGENT_TARGET_ENVIRONMENT: "Visual Vault"
+    AGENT_PRIMARY_WORKSPACES: "assets/video_clips/vault/{channel}/"
+    AGENT_CORE_RESPONSIBILITIES: |
+      Manage visual_vault_db.py with 3-tier fallback pyramid sampling.
+      Supply randomized, non-repeating video clips to QA based on channel requirements.
+      v15.7: Enforce ping_/ford_ prefix naming for all vault videos.
+      After ANY video rename, immediately UPDATE veo_visual_vault.db (video_id + file_path).
+      vault_database.py uses threading.local() for thread-safe SQLite access.
+    AGENT_CRITICAL_CONSTRAINTS: |
+      STATIC CAMERA RULE: No camera movement. Physical channel isolation mandatory.
+      VIDEO NAMING RULE: ALL vault videos MUST have ping_ or ford_ prefix. No exceptions.
+      DB SYNC RULE: Every rename → UPDATE video_assets SET video_id=?, file_path=? WHERE video_id=?
+      DB PATH RULE (v15.8): ALWAYS use config.visual_db_path. NEVER workspace_root / "veo_visual_vault.db".
+
+  RE:
+    AGENT_ID: "RE"
+    AGENT_ROLE_TITLE: "R&D Style Miner"
+    AGENT_TECH_STACK: "yt-dlp, Gemini 2.5 Flash, SQLite"
+    AGENT_TARGET_ENVIRONMENT: "YouTube / Style Vault"
+    AGENT_PRIMARY_WORKSPACES: "assets/data/"
+    AGENT_CORE_RESPONSIBILITIES: "Extract music/visual genes to enrich style_vault.db."
+    AGENT_CRITICAL_CONSTRAINTS: "DORMANT STATUS: Forbidden from running on daily heartbeat."

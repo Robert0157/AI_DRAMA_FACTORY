@@ -1,0 +1,295 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Phase 4/B 極速無損縫合 + 變速補幀引擎 (v8.4)
+
+功能：
+1. 讀取 assets/video_clips/<job_id>/shots 下所有 mp4
+2. 讀取 beats.json（若存在）進行動態時間重映射
+3. 無損合併視訊並掛入音訊
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from scripts.common.env_manager import config
+
+
+def _log_fatal(error_code: str, details: str) -> None:
+    """致命錯誤規範化寫入 project_learning.md，並停機。"""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_line = str(details).strip().splitlines()[-1][:240]
+    entry = (
+        f"\n### [{timestamp}] auto_editor.py: {error_code}\n"
+        f"- Cause: {last_line}\n"
+        "- Action: Pipeline halted.\n"
+    )
+    try:
+        with open(Path(config.workspace_root) / "project_learning.md", "a", encoding="utf-8") as fh:
+            fh.write(entry)
+    except Exception:
+        pass
+    print(f"[AUTO_EDITOR][FATAL] {error_code}: {last_line}")
+    sys.exit(1)
+
+
+def _sorted_shot_files(shots_dir: Path) -> list[Path]:
+    """按檔名排序的 mp4 列表。"""
+    files = [p for p in shots_dir.glob("*.mp4") if p.is_file()]
+    return sorted(files, key=lambda p: p.name.lower())
+
+
+def _load_beats_json(job_id: str) -> dict | None:
+    """讀取 beats.json。若不存在，回傳 None（向後相容）。"""
+    beats_path = Path(config.workspace_root) / "assets" / "scripts" / job_id / "beats.json"
+    if not beats_path.exists():
+        print(f"[AUTO_EDITOR] beats.json not found (Phase B feature skipped)")
+        return None
+    try:
+        with open(beats_path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as exc:
+        print(f"[AUTO_EDITOR] failed to load beats.json: {exc}")
+        return None
+
+
+def generate_setpts_expression(shot_duration_sec: float, target_beat_times: list[float]) -> str:
+    """
+    v8.4 Phase B：超簡化線性變速公式 (避免複雜括號)
+    
+    策略：使用最簡單的表達式避免 FFmpeg 解析衝突
+    只做基本的時間軸縮放，不做複雜的條件分支
+    """
+    if not target_beat_times:
+        return "PTS"  # 無節拍，恆等對應
+    
+    # 最簡單的方案：略微加速後半段（補回 minterpolate 消耗的時間）
+    # 公式：PTS * 1.02（全局加速 2%）
+    # 這樣配合 minterpolate 會產生更平緩的時間軸
+    return "PTS*1.02"
+
+
+def apply_speed_ramping(input_video: Path, output_video: Path, beats_data: dict, shot_index: int) -> bool:
+    """
+    v8.4 Phase B 測試函式：對單一影片應用動態時間重映射
+    
+    邏輯：
+    1. 計算該 shot 應對齊的節拍時間
+    2. 生成 setpts 表達式
+    3. 組裝 FFmpeg 指令（setpts + minterpolate 補幀）
+    4. 執行並驗證輸出
+    """
+    if not input_video.exists():
+        print(f"[SPEED_RAMP] input video missing: {input_video}")
+        return False
+    
+    # 確保輸出目錄存在
+    output_video.parent.mkdir(parents=True, exist_ok=True)
+    
+    # 計算該 shot 在整體時間軸上的偏移（假設每 shot 5 秒）
+    shot_start_sec = shot_index * 5.0
+    shot_end_sec = (shot_index + 1) * 5.0
+    shot_duration = 5.0
+    
+    # 從 beats 中找出落在此 shot 時間範圍內的節拍
+    beat_times = beats_data.get("beat_times", [])
+    onset_times = beats_data.get("onset_times", [])
+    
+    relevant_beats = [b for b in beat_times if shot_start_sec <= b <= shot_end_sec]
+    if not relevant_beats and onset_times:
+        relevant_beats = [o for o in onset_times if shot_start_sec <= o <= shot_end_sec]
+    
+    # 轉換為影片內部相對時間
+    target_beat_times_relative = [max(0.1, b - shot_start_sec) for b in relevant_beats]
+    
+    # 生成 setpts 表達式
+    setpts_expr = generate_setpts_expression(shot_duration, target_beat_times_relative)
+    
+    print(f"[SPEED_RAMP] shot_{shot_index+1:02d}: {len(relevant_beats)} beat(s), setpts_truncated={setpts_expr[:50]}...")
+    
+    # 組裝 FFmpeg 指令（使用完整路徑）
+    filter_chain = f"setpts={setpts_expr},minterpolate=fps=60:mi_mode=mci"
+    
+    ffmpeg_cmd = [
+        "C:\\FFmpeg\\bin\\ffmpeg.exe",
+        "-i", str(input_video),
+        "-vf", filter_chain,
+        "-c:v", "libx264",
+        "-c:a", "aac",
+        "-y",
+        str(output_video),
+    ]
+    
+    try:
+        result = subprocess.run(
+            ffmpeg_cmd,
+            check=False,
+            shell=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=300,
+        )
+        
+        if result.returncode != 0:
+            stderr_lines = (result.stderr or "").strip().split("\n")
+            error_msg = stderr_lines[-1] if stderr_lines else "unknown error"
+            print(f"[SPEED_RAMP] FFmpeg error (code={result.returncode}): {error_msg[-80:]}")
+            return False
+        
+        if output_video.exists() and output_video.stat().st_size > 1000:
+            print(f"[SPEED_RAMP] success: {output_video.name} ({output_video.stat().st_size} bytes)")
+            return True
+        else:
+            print(f"[SPEED_RAMP] output file not created or too small")
+            return False
+            
+    except subprocess.TimeoutExpired:
+        print(f"[SPEED_RAMP] timeout after 300s")
+        return False
+    except Exception as exc:
+        print(f"[SPEED_RAMP] exception: {exc}")
+        return False
+
+
+def _write_concat_list(shots_dir: Path, shot_files: list[Path]) -> Path:
+    """建立 concat 清單檔（使用完整路徑）。"""
+    concat_list = shots_dir / "concat_list.txt"
+    with open(concat_list, "w", encoding="utf-8", newline="\n") as fh:
+        for shot in shot_files:
+            # 使用完整路徑（因為不再使用 cwd）
+            full_path = str(shot.resolve()).replace("\\", "/")
+            fh.write(f"file '{full_path}'\n")
+    return concat_list
+
+
+def fast_concat(job_id: str, enable_speed_ramping: bool = False) -> Path:
+    """
+    v8.4 Phase B 升級版：支援動態時間重映射 + 補幀
+    """
+    workspace = Path(config.workspace_root)
+    shots_dir = workspace / "assets" / "video_clips" / job_id / "shots"
+    music_path = workspace / "assets" / "audio" / job_id / "music_epic.mp3"
+    export_dir = workspace / "assets" / "final_exports" / job_id
+    ramped_shots_dir = export_dir / "ramped_shots" if enable_speed_ramping else None
+    output_path = export_dir / ("epic_movie_ramped.mp4" if enable_speed_ramping else "epic_movie.mp4")
+
+    if not shots_dir.exists():
+        _log_fatal("SHOTS_DIR_MISSING", f"shots dir not found: {shots_dir}")
+    if not music_path.exists():
+        _log_fatal("MUSIC_MISSING", f"music file not found: {music_path}")
+
+    shot_files = _sorted_shot_files(shots_dir)
+    if not shot_files:
+        _log_fatal("NO_SHOTS_FOUND", f"no .mp4 files under: {shots_dir}")
+
+    export_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 讀取 beats 資訊
+    beats_data = _load_beats_json(job_id)
+    if beats_data:
+        print(f"[AUTO_EDITOR] BPM: {beats_data.get('bpm'):.1f}, beats: {len(beats_data.get('beat_times', []))}")
+    
+    # Phase B：若啟用變速，先對各 shot 應用時間重映射
+    if enable_speed_ramping and beats_data:
+        print(f"[AUTO_EDITOR] Phase B: 啟用動態時間重映射...")
+        ramped_shots_dir.mkdir(parents=True, exist_ok=True)
+        ramped_shot_files = []
+        phase_b_success = False
+        
+        for idx, shot_file in enumerate(shot_files):
+            ramped_output = ramped_shots_dir / shot_file.name
+            success = apply_speed_ramping(shot_file, ramped_output, beats_data, idx)
+            if success and ramped_output.exists():
+                ramped_shot_files.append(ramped_output)
+                phase_b_success = True
+            else:
+                # 降級：使用原始 shot
+                print(f"[AUTO_EDITOR] fallback to original shot_{idx+1:02d}")
+                ramped_shot_files.append(shot_file)
+        
+        # 如果有任何 ramped shots 成功生成，使用 ramped_shots_dir；否則恢復原始 shots_dir
+        if phase_b_success:
+            shot_files = ramped_shot_files
+            shots_dir = ramped_shots_dir
+        else:
+            print(f"[AUTO_EDITOR] all Phase B transforms failed, reverting to Phase A")
+            shot_files = _sorted_shot_files(shots_dir)
+    
+    concat_list = _write_concat_list(shots_dir, shot_files)
+
+    # FFmpeg concat + audio 無損縫合
+    ffmpeg_cmd = [
+        "C:\\FFmpeg\\bin\\ffmpeg.exe",
+        "-y",
+        "-f", "concat",
+        "-safe", "0",
+        "-i", str(concat_list),
+        "-i", str(music_path),
+        "-c:v", "copy",
+        "-c:a", "aac",
+        "-shortest",
+        str(output_path),
+    ]
+
+    # 若未啟用 Phase B，加入補幀濾鏈（Phase A）
+    if not enable_speed_ramping:
+        try:
+            video_filter = "minterpolate=fps=60:mi_mode=mci"
+            ffmpeg_cmd = (
+                ffmpeg_cmd[:2]
+                + ["-vf", video_filter]
+                + ffmpeg_cmd[2:]
+            )
+            print(f"[AUTO_EDITOR] Phase A: 60fps 補幀濾鏈已集成")
+        except Exception:
+            print(f"[AUTO_EDITOR] Phase A: 降級至基礎縫合（無補幀）")
+
+    try:
+        subprocess.run(
+            ffmpeg_cmd,
+            check=False,
+            shell=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=600,
+        )
+    except subprocess.CalledProcessError as exc:
+        stderr_tail = (exc.stderr or "").strip().splitlines()
+        _log_fatal("FFMPEG_CONCAT_FAILED", stderr_tail[-1] if stderr_tail else str(exc))
+
+    if not output_path.exists() or output_path.stat().st_size == 0:
+        _log_fatal("OUTPUT_EMPTY", f"output not generated: {output_path}")
+
+    print(f"[AUTO_EDITOR] output: {output_path}")
+    return output_path
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Phase 4/B 極速無損縫合 + 變速補幀引擎")
+    parser.add_argument("--job-id", required=True, help="工作批次 ID")
+    parser.add_argument("--enable-phase-b", action="store_true", help="啟用 Phase B 動態時間重映射")
+    args = parser.parse_args()
+
+    try:
+        out = fast_concat(args.job_id, enable_speed_ramping=args.enable_phase_b)
+        print(out)
+    except SystemExit:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        _log_fatal("UNHANDLED_EXCEPTION", str(exc))
+
+
+if __name__ == "__main__":
+    main()

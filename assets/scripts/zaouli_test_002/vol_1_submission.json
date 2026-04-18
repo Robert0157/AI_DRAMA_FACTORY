@@ -1,0 +1,62 @@
+[
+  {
+    "shot_id": "shot_01",
+    "prompt": "A cinematic wide shot of a vast surreal African desert dune at golden hour. A single majestic Zaouli dancer stands completely still, wearing a vibrant, intricately patterned traditional mask and colorful fringe garments. Dramatic volumetric lighting, photorealistic, 8k resolution, hyper-detailed. Slow dolly in camera movement.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_02",
+    "prompt": "Extreme close-up shot on a dancer's feet adorned with intricate silver ankle bells. The feet are rapidly and fiercely stomping on fine desert sand, kicking up dynamic clouds of dust. High shutter speed, hyper-detailed textures, cinematic lighting. Slight camera shake, fast and energetic dynamic motion.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_03",
+    "prompt": "A low angle medium shot tracking a surreal African dancer. The dancer's upper body and mask are completely stoic and motionless, while their lower body and legs move at an incredibly fast, blurring speed in a traditional Zaouli dance. Vividly colored costume fringes sway rapidly. Realistic physics, high contrast, surrealistic mood, 4K, dynamic sweeping camera.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_04",
+    "prompt": "Dynamic fast zoom-in shot of a tribal dancer stomping hard on the ground. Glowing magical dust and subtle light ripples emit from the ground where the foot impacts. Hyper-realistic, dramatic shadows, neon accents on traditional tribal patterns, cinematic action composition.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_05",
+    "prompt": "Close-up macro shot of intricately carved tribal wooden mask with neon accent glowing details. The mask glows with ethereal red and cyan bioluminescence. Extreme texture detail, shadows and highlights accentuate geometric patterns. Photorealistic hyper-detail, mystical atmosphere.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_06",
+    "prompt": "Wide cinematic shot of Zaouli dancer surrounded by swirling golden sand formations and wind effects. Dancer maintains motionless upper body while legs execute rapid traditional footwork. Dust devils spiral around figure. Surreal desert landscape, dramatic volumetric lighting, 4K.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_07",
+    "prompt": "Ground-level extreme close-up of dancer's silver ankle bells and bare feet impacting hard desert sand. Each stomp creates explosive dust clouds and seismic ripples in real-time. High-speed macro photography, photorealistic texture, rhythmic percussive impact.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_08",
+    "prompt": "Aerial drone overhead shot of Zaouli dancer from 30 meters altitude spinning on one leg. Geometric light trails trace the movements. Surrounding landscape shows mystical glowing symbols manifesting on the sand. Surreal ethereal atmosphere, volumetric fog, 8K cinematic.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_09",
+    "prompt": "Wide landscape shot at dusk. Zaouli dancer as silhouette against massive glowing geometric nebula structure forming in sky above. Cosmic energy arcs around dancer. Traditional tribal movements synchronized with cosmic phenomena. Epic surreal dreamscape, hyper-realistic 8K.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_10",
+    "prompt": "Ultra close-up macro shot on the texture of dancer's woven fringe costume. Each thread individually rendered in photorealistic detail, layered with iridescent sheen. Rainbowspec glints of light catch metallic beads. Shallow depth of field artistic focus.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_11",
+    "prompt": "Dynamic tracking shot following dancer's rapid footwork at ground level. Camera races past stamping feet creating motion blur effect. Dust explodes upward in foreground. Dancer remains central and sharp. High-energy cinematic action composition, 4K motion capture.",
+    "duration": 5
+  },
+  {
+    "shot_id": "shot_12",
+    "prompt": "Wide serene finale shot of dancer standing perfectly still in center of infinite desert under star-filled night sky. Complete stillness follows intensity. Gentle breeze disperses final dust wisps. Peaceful contemplative mood. Fade to ethereal glow. 8K cinematic closure.",
+    "duration": 5
+  }
+]

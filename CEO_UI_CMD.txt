@@ -1,0 +1,36 @@
+python scripts/gear1_prod/rs_manager.py
+
+# 1. 刪除殘留資料庫
+Remove-Item -Path "F:\AI_DRAMA_Factory\rs_music_vault.db" -ErrorAction SilentlyContinue
+
+# 2. 粉碎快取 (確保 Python 載入新的 v12.14 藍圖)
+Get-ChildItem -Path "F:\AI_DRAMA_FACTORY" -Filter "__pycache__" -Recurse | Remove-Item -Recurse -Force
+
+# 請在終端機執行這行（將 --channel 改為 --output-dir）
+python scripts/gear1_prod/suno_api_engine.py --prompt "test" --tags "piano" --output-dir assets/audio/ceo_approved_beats/light_music/
+
+# 清空 CEO 審批區（污染源）
+Remove-Item F:\AI_DRAMA_Factory\assets\audio\ceo_approved_beats\light_music\* -Recurse -Force
+# 清空 母帶區
+Remove-Item F:\AI_DRAMA_Factory\assets\audio\mastered_tracks\light_music\* -Recurse -Force
+# 清空 金庫區
+Remove-Item F:\AI_DRAMA_Factory\assets\audio\vault_ready_for_mix\light_music\* -Recurse -Force
+# 重置資料庫
+python scripts/gear2_rnd/force_reset_db.py
+
+python scripts/gear1_prod/video_processor.py --channel light_music --bg-video F:/AI_DRAMA_Factory/assets/video/veo_premium_vault/fog_wind.mp4 --audio F:/AI_DRAMA_Factory/assets/final_exports/R&S_Echoes_light_music_1HrMix_20260407_2259.wav
+
+streamlit run scripts/ui/app.py
+
+cd f:\AI_DRAMA_FACTORY
+& venv\Scripts\python.exe scripts/gear1_prod/rs_manager.py
+# 選擇 [2] 多場景幻影輪播
+# 確認 lofi 頻道
+# 等待完成
+
+Rollbacl for v15.7
+
+Copy-Item 'f:\AI_DRAMA_FACTORY\spec\backups\v15.7_pre_20260417\multi_scene_processor.py' 'f:\AI_DRAMA_FACTORY\scripts\gear1_prod\multi_scene_processor.py' -Force
+
+
+

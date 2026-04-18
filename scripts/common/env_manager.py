@@ -1,0 +1,206 @@
+import os
+import platform
+from pathlib import Path
+from dotenv import load_dotenv
+
+# 載入 .env
+load_dotenv()
+
+class EnvConfig:
+    def __init__(self):
+        # 1. 偵測作業系統 (Windows 或 Darwin/macOS)
+        self.os_name = platform.system()
+        self.target_env = os.getenv("TARGET_ENV", self.os_name).upper()
+        
+        # 2. 動態根目錄：優先讀 WORKSPACE_ROOT 環境變數，否則依 OS 自動感知
+        _env_root = os.getenv("WORKSPACE_ROOT")
+        if _env_root:
+            self.workspace_root = Path(_env_root)
+        elif self.os_name == "Darwin":
+            # Mac 預設指向外接 APFS 硬碟掛載點
+            self.workspace_root = Path("/Volumes/AI_Workspace/AI_DRAMA_FACTORY")
+        else:
+            # Windows / Linux：以本檔案位置向上推導，不硬編碼磁碟機代號
+            self.workspace_root = Path(__file__).resolve().parents[2]
+
+        # 資料庫集中管理路徑（統一存放於 assets/data/，不散落在根目錄）
+        self.data_dir = self.workspace_root / "assets" / "data"
+        self.music_db_path = self.data_dir / "rs_music_vault.db"
+        self.visual_db_path = self.data_dir / "veo_visual_vault.db"
+
+        # 3. 動態決定 FFmpeg 影片編碼器
+        # Mac M4 使用 Apple Silicon 硬體加速，Windows 開發機暫時使用 CPU 軟解
+        if self.os_name == "Darwin":
+            self.video_codec = "hevc_videotoolbox"
+
+            # 外接硬碟掛載檢查：SKIP_MOUNT_CHECK=true 可跳過（CI/測試用）
+            skip_check = os.getenv("SKIP_MOUNT_CHECK", "false").lower() == "true"
+            if not os.path.ismount('/Volumes/AI_Workspace') and not skip_check:
+                print("⚠️  警告：外接 APFS 硬碟未掛載，workspace_root 可能指向本機。"
+                      "如欲跳過此警告，請設定環境變數 SKIP_MOUNT_CHECK=true。")
+        else:
+            self.video_codec = "libx264"
+
+        # 【v15.8 新增】影片編碼完整 Profile（雙軌策略：Windows H.264 CRF29 / Mac M4 HEVC VideoToolbox）
+        # 允許 .env 手動覆蓋：VIDEO_CODEC_PROFILE=h264_win 或 hevc_mac
+        # GOP 防禦陣列在兩個 profile 中均完整保留，確保無縫循環產線不受平台切換影響
+        _profile_override = os.getenv("VIDEO_CODEC_PROFILE", "").lower()
+        _use_hevc = (self.os_name == "Darwin") or (_profile_override == "hevc_mac")
+        if _use_hevc and _profile_override != "h264_win":
+            self.video_enc_profile = {
+                "name": "hevc_mac",
+                "common_enc": [
+                    "-map_metadata", "-1", "-an",
+                    "-c:v", "hevc_videotoolbox", "-q:v", "55", "-tag:v", "hvc1",
+                    "-pix_fmt", "yuv420p",
+                    "-g", "48", "-keyint_min", "48",
+                    "-sc_threshold", "0",
+                    "-flags", "+cgop",
+                    "-video_track_timescale", "24000",
+                ],
+                "audio_enc": ["-c:a", "aac", "-b:a", "192k", "-ar", "48000"],
+            }
+        else:
+            self.video_enc_profile = {
+                "name": "h264_win",
+                "common_enc": [
+                    "-map_metadata", "-1", "-an",
+                    "-c:v", "libx264", "-preset", "slow", "-tune", "film", "-crf", "29",
+                    "-pix_fmt", "yuv420p",
+                    "-g", "48", "-keyint_min", "48",
+                    "-sc_threshold", "0",
+                    "-flags", "+cgop",
+                    "-video_track_timescale", "24000",
+                ],
+                "audio_enc": ["-c:a", "aac", "-b:a", "192k", "-ar", "48000"],
+            }
+            
+        # 4. 動態決定字幕字體路徑
+        if self.os_name == "Darwin":
+            self.font_path = "/System/Library/Fonts/PingFang.ttc"
+        else:
+            self.font_path = "C:/Windows/Fonts/msyh.ttc"
+
+        # 5. Windows 過渡期正式金鑰（TTAPI + Kling）
+        #    與舊命名相容：若新命名缺值，回退舊環境變數名稱。
+        self.mj_api_key = os.getenv("MJ_API_KEY", os.getenv("MIDJOURNEY_API_KEY", "")).strip()
+        self.mj_base_url = os.getenv("MJ_BASE_URL", os.getenv("MIDJOURNEY_API_BASE_URL", "")).strip()
+        self.kling_ak = os.getenv("KLING_AK", "").strip()
+        self.kling_sk = os.getenv("KLING_SK", os.getenv("KLING_API_KEY", "")).strip()
+        self.zhipuai_api_key = os.getenv("ZHIPUAI_API_KEY", "").strip()
+        
+        # 【v11.2 新增】Gemini 1.5 Pro API（視覺解構大腦專用）
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
+
+        # 【v15.3 新增】NVIDIA NIM — MiniMax M2.7 (230B MoE)
+        # 相容 OpenAI 協定，base_url = https://integrate.api.nvidia.com/v1
+        self.nvidia_api_key = os.getenv("NVIDIA_API_KEY", "").strip()
+        self.nvidia_base_url = os.getenv(
+            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+        ).strip()
+
+        # 與既有程式碼相容：提供大寫屬性別名
+        self.MJ_API_KEY = self.mj_api_key
+        self.MJ_BASE_URL = self.mj_base_url
+        self.KLING_AK = self.kling_ak
+        self.KLING_SK = self.kling_sk
+        self.ZHIPUAI_API_KEY = self.zhipuai_api_key
+        self.GEMINI_API_KEY = self.gemini_api_key
+        self.NVIDIA_API_KEY = self.nvidia_api_key
+        self.NVIDIA_BASE_URL = self.nvidia_base_url
+
+        # 6. Telegram 通訊中樞（CEO 審批線路）
+        self.telegram_bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+        self.telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+        self.telegram_allowed_user_id = os.getenv("TELEGRAM_ALLOWED_USER_ID", "").strip()
+
+        # 【v15.4 Webhook 模式】留空 = 自動回退 Polling 模式
+        self.telegram_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "").strip()
+        self.telegram_webhook_port = int(os.getenv("TELEGRAM_WEBHOOK_PORT", "8443"))
+        self.telegram_webhook_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET", "").strip()
+        # 【v15.4 ngrok 隧道】免費帳戶取得：https://dashboard.ngrok.com/get-started/your-authtoken
+        self.ngrok_authtoken = os.getenv("NGROK_AUTHTOKEN", "").strip()
+
+        # 相容別名
+        self.TELEGRAM_BOT_TOKEN = self.telegram_bot_token
+        self.TELEGRAM_CHAT_ID = self.telegram_chat_id
+        self.TELEGRAM_ALLOWED_USER_ID = self.telegram_allowed_user_id
+        self.TELEGRAM_WEBHOOK_URL = self.telegram_webhook_url
+        self.TELEGRAM_WEBHOOK_PORT = self.telegram_webhook_port
+        self.TELEGRAM_WEBHOOK_SECRET = self.telegram_webhook_secret
+        self.NGROK_AUTHTOKEN = self.ngrok_authtoken
+
+        # 7. AWS S3 冷儲存配置（長期數位資產歸檔）
+        self.aws_s3_bucket = os.getenv("AWS_S3_BUCKET", "").strip()
+        self.aws_access_key = os.getenv("AWS_ACCESS_KEY_ID", "").strip()
+        self.aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
+        self.aws_region = os.getenv("AWS_REGION", "us-east-1").strip()
+        
+        # 相容別名
+        self.AWS_S3_BUCKET = self.aws_s3_bucket
+        self.AWS_ACCESS_KEY_ID = self.aws_access_key
+        self.AWS_SECRET_ACCESS_KEY = self.aws_secret_key
+        self.AWS_REGION = self.aws_region
+
+        # 8. Backblaze B2 替代方案（低成本冷儲存）
+        self.b2_account_id = os.getenv("B2_ACCOUNT_ID", "").strip()
+        self.b2_api_key = os.getenv("B2_API_KEY", "").strip()
+        self.b2_bucket_name = os.getenv("B2_BUCKET_NAME", "").strip()
+        
+        # 相容別名
+        self.B2_ACCOUNT_ID = self.b2_account_id
+        self.B2_API_KEY = self.b2_api_key
+        self.B2_BUCKET_NAME = self.b2_bucket_name
+
+        # 9. DistroKid 隱形代操配置（RPA Playwright）
+        self.distrokid_session_cookie_path = os.getenv("DISTROKID_COOKIE_PATH", str(self.workspace_root / ".cookies" / "distrokid.pkl")).strip()
+        self.distrokid_artist_name = os.getenv("DISTROKID_ARTIST_NAME", "R&S Echoes").strip()
+        
+        # 相容別名
+        self.DISTROKID_SESSION_COOKIE_PATH = self.distrokid_session_cookie_path
+        self.DISTROKID_ARTIST_NAME = self.distrokid_artist_name
+
+        # 10. 資產生命週期管理設定
+        self.mp4_lifespan_hours = int(os.getenv("MP4_LIFESPAN_HOURS", "48"))  # MP4 保留 48 小時後刪除
+        self.wav_lifespan_days = int(os.getenv("WAV_LIFESPAN_DAYS", "7"))      # WAV 保留 7 天後上傳冷儲存
+        self.daily_upload_quota = int(os.getenv("DAILY_UPLOAD_QUOTA", "10"))   # 每日最多 CEO 批准 10 首
+        
+        # 相容別名
+        self.MP4_LIFESPAN_HOURS = self.mp4_lifespan_hours
+        self.WAV_LIFESPAN_DAYS = self.wav_lifespan_days
+        self.DAILY_UPLOAD_QUOTA = self.daily_upload_quota
+
+        # 【v11.3 新增】11. 頻道專屬音聲資產隔離
+        #    確保 Light Music 與 Lofi 的素材物理隔離，防止交叉汙染
+        self.ceo_approved_beats_dir = self.workspace_root / "assets" / "audio" / "ceo_approved_beats"
+        self.light_music_vault_dir = self.workspace_root / "assets" / "audio" / "light_music_vault"
+        
+        # 掛載相容別名
+        self.CEO_APPROVED_BEATS_DIR = self.ceo_approved_beats_dir
+        self.LIGHT_MUSIC_VAULT_DIR = self.light_music_vault_dir
+
+        # 【v15.9 新增】12. 新鮮度鐵律（Freshness Policy）—— 50% 新歌強制門檻
+        #    規則：Phase 4 選曲時 dc=0 新歌必須達到 target_tracks * min_new_ratio
+        #    enforcement=strict → 不足即 raise NewSongsInsufficientException（產線中止）
+        #    可用 .env 覆蓋：FRESHNESS_RATIO_LOFI=0.4 / FRESHNESS_RATIO_LIGHT_MUSIC=0.5
+        def _f(key: str, default: float) -> float:
+            try:
+                return float(os.getenv(key, str(default)))
+            except (ValueError, TypeError):
+                return default
+        self.freshness_policy = {
+            "enabled": os.getenv("FRESHNESS_ENABLED", "true").lower() == "true",
+            "enforcement": os.getenv("FRESHNESS_ENFORCEMENT", "strict").lower(),  # strict | warn
+            "ttapi_fill_enabled": os.getenv("FRESHNESS_TTAPI_FILL", "false").lower() == "true",
+            "channels": {
+                "lofi":         {"min_new_ratio": _f("FRESHNESS_RATIO_LOFI", 0.50)},
+                "light_music":  {"min_new_ratio": _f("FRESHNESS_RATIO_LIGHT_MUSIC", 0.50)},
+            },
+        }
+
+        # 11. Midjourney / Kling 為視覺 TTAPI 選用金鑰；Phase 3 發行企劃（music_metadata_engine）
+        #    使用 llm_client + NVIDIA_API_KEY（MiniMax），不依賴 MJ/Kling。
+        #    不在此對 MJ/Kling 做「假必填」列印，以免 stdout 汙染 pipeline 診斷、誤判為 METADATA 失敗原因。
+
+# 實例化供其他模組呼叫
+config = EnvConfig()

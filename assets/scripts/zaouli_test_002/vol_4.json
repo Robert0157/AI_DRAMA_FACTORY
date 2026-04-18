@@ -1,0 +1,74 @@
+[
+  {
+    "shot_id": "shot_37",
+    "description": "微觀宇宙 - 沙粒晶體反射",
+    "duration": 5,
+    "kling_prompt": "Extreme macro microscopic shot of individual sand grains as the dancer's foot approaches. Each grain is rendered photorealistic, catching light like tiny crystals. Surreal kaleidoscopic patterns, volumetric lighting, 8k ultra-detail."
+  },
+  {
+    "shot_id": "shot_38",
+    "description": "變焦跳躍 - 距離急速縮放",
+    "duration": 5,
+    "kling_prompt": "Aggressive zoom shot starting from distant wide landscape, jumping through rapid focal lengths to extreme macro of mask details. Each transition is sharp and intentional. Dynamic energy, cinematic action editing, 4K."
+  },
+  {
+    "shot_id": "shot_39",
+    "description": "彩色光學分解 - 光譜折射",
+    "duration": 5,
+    "kling_prompt": "Creative macro shot using prismatic filters, showing dancer's silhouette separated into rainbow spectrum layers. Each color channel offset creating chromatic aberration effect. Artistic, psychedelic surreal mood."
+  },
+  {
+    "shot_id": "shot_40",
+    "description": "古代儀式 - 祭司召喚姿態",
+    "duration": 5,
+    "kling_prompt": "Medium shot of Zaouli dancer in ritualistic ceremonial pose, arms raised to sky. Mask face pointed upward with reverent expression. Glowing neon auras emanate from body. Mystic ancient energy, dramatic lighting, cinematic depth."
+  },
+  {
+    "shot_id": "shot_41",
+    "description": "暴風沙塵 - 環境動態噴發",
+    "duration": 5,
+    "kling_prompt": "Wide dynamic shot of massive sandstorm swirling around stationary dancer figure. Dust clouds spiral and dance synchronously with performer's movements. Volumetric fog, particles catching golden light, epic scale cinematic 8k."
+  },
+  {
+    "shot_id": "shot_42",
+    "description": "能量場 - 身體光圈脈動",
+    "duration": 5,
+    "kling_prompt": "Medium shot of dancer surrounded by pulsing electromagnetic energy field. Neon aura expands and contracts with each beat and footstep. Particles orbit around body. Surreal sci-fi meets tribal aesthetic, high contrast."
+  },
+  {
+    "shot_id": "shot_43",
+    "description": "時間跳躍 - 快速幀序列",
+    "duration": 5,
+    "kling_prompt": "Rapid-fire collage of 8-12 different freeze-frame poses of the dancer, each shot from different angles. Quick transitions between poses create stop-motion animation effect. Energetic editing, cinematic choreography."
+  },
+  {
+    "shot_id": "shot_44",
+    "description": "倒映水面 - 現實雙生",
+    "duration": 5,
+    "kling_prompt": "Medium split-screen shot: top half shows dancer in desert, bottom half shows perfect mirror reflection in impossible desert lake. Both dancers move identically, creating symmetrical visual harmony. Surreal dreamlike quality."
+  },
+  {
+    "shot_id": "shot_45",
+    "description": "光線描繪 - LED 塗鴨動畫",
+    "duration": 5,
+    "kling_prompt": "Creative long-exposure effect where dancer's movements draw glowing neon light trails across dark frame. Patterns form intricate geometric designs. Looks like light-painting animation. Artistic, futuristic aesthetic."
+  },
+  {
+    "shot_id": "shot_46",
+    "description": "極端廣角 - 沙漠無限地平線",
+    "duration": 5,
+    "kling_prompt": "Ultra-wide fisheye extreme lens shot showing dancer centered with massively distorted desert horizon curving around edges. Sky takesup 80% of frame showing stars and nebulae. Cinematic scope, 8k resolution."
+  },
+  {
+    "shot_id": "shot_48",
+    "description": "節奏視覺化 - 音樂棒狀圖",
+    "duration": 5,
+    "kling_prompt": "Abstract creative shot showing musical frequencies as vertical glowing bars that pulse up and down with audio spectrum. Dancer's movements synchronize with bar heights. Surreal audio-visual synesthesia effect."
+  },
+  {
+    "shot_id": "shot_48",
+    "description": "終極高潮 - 爆炸式舞蹈",
+    "duration": 5,
+    "kling_prompt": "Explosive cinematic climax shot of dancer at absolute peak intensity. All visual elements converge: dust storm, light waves, neon auras, multiple exposures, all colliding in burst of energy. Epic finale moment, 8k dramatic cinematography."
+  }
+]

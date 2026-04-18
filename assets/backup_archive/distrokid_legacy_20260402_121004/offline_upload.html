@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DistroKid Offline Sandbox</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: linear-gradient(135deg, #f4f7fb 0%, #e8eef8 100%);
+      color: #1a2233;
+    }
+    .card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(22, 34, 66, 0.12);
+      padding: 24px;
+    }
+    h1 {
+      margin-top: 0;
+      letter-spacing: 0.2px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field.full {
+      grid-column: 1 / -1;
+    }
+    label {
+      font-size: 13px;
+      color: #4a556d;
+    }
+    input {
+      height: 40px;
+      border: 1px solid #ccd5e3;
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 150ms ease;
+      background: #fbfdff;
+    }
+    input:focus {
+      border-color: #1f7ae0;
+    }
+    .date-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .date-wrapper input {
+      flex: 1;
+    }
+    .date-picker-btn {
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid #ccd5e3;
+      border-radius: 10px;
+      background: #fbfdff;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 150ms ease;
+    }
+    .date-picker-btn:hover {
+      border-color: #1f7ae0;
+      background: #eff5ff;
+    }
+    .footer {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #5f6e88;
+      line-height: 1.5;
+    }
+    .submit {
+      margin-top: 16px;
+      height: 42px;
+      border: none;
+      border-radius: 10px;
+      background: #1f7ae0;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>DistroKid Upload Sandbox</h1>
+    <p>Offline only. This page is for Playwright selector and interaction validation.</p>
+
+    <form id="upload-form">
+      <div class="grid">
+        <div class="field">
+          <label for="song-title">Song Title</label>
+          <input id="song-title" name="song_title" placeholder="Track title">
+        </div>
+        <div class="field">
+          <label for="artist-name">Artist Name</label>
+          <input id="artist-name" name="artist_name" placeholder="Artist">
+        </div>
+
+        <div class="field">
+          <label for="genre">Genre</label>
+          <input id="genre" name="genre" placeholder="Genre">
+        </div>
+        <div class="field full">
+          <label for="release-date">Release Date</label>
+          <div class="date-wrapper">
+            <input id="release-date" type="date" name="release_date">
+            <button id="set-today-btn" class="date-picker-btn" type="button" title="Set to today">📅</button>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label for="audio-upload">Audio File</label>
+          <input id="audio-upload" type="file" name="audio_file" accept="audio/*">
+        </div>
+
+        <div class="field full">
+          <label for="cover-upload">Cover Image</label>
+          <input id="cover-upload" type="file" name="cover_file" accept="image/*">
+        </div>
+      </div>
+
+      <button class="submit" type="button">Final Submit (Disabled in Automation)</button>
+      <div class="footer">
+        Safety fuse is active: automation should never click final submit in this phase.
+      </div>
+    </form>
+  </div>
+  <script>
+    document.getElementById('set-today-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('release-date').value = today;
+      console.log('Date set to:', today);
+    });
+
+      document.querySelector('button.submit').addEventListener('click', function(e) {
+        e.preventDefault();
+        this.textContent = '✅ 提交成功！正在等待系統回應...';
+        this.style.background = '#27ae60';
+        this.style.opacity = '1';
+        this.style.cursor = 'not-allowed';
+        this.disabled = true;
+        console.log('Final Submit clicked - form ready for processing');
+        setTimeout(function() {
+          document.querySelector('button.submit').textContent = '✅ 完成！請回到終端按 Enter';
+          document.querySelector('button.submit').style.background = '#2980b9';
+        }, 1000);
+      });
+  </script>
+</body>
+</html>

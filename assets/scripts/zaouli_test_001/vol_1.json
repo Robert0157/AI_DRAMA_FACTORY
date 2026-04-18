@@ -1,0 +1,16 @@
+{
+  "job_id": "zaouli_test_001",
+  "anchor_prompt": "A proud Zaouli dancer in ornate ivory-and-cobalt mask costume, dynamic posture, ceremonial village stage at dusk, cinematic composition, ultra-detailed textile patterns, stop-motion animation, puppet, claymation, 12fps",
+  "shots": [
+    {
+      "shot_id": "shot_01",
+      "duration": 5,
+      "prompt": "Zaouli dancer begins with controlled footwork and shoulder isolations, ceremonial dust rising, camera medium-wide, rhythmic movement, Cinematic, hyper-realistic, volumetric lighting, fluid dynamic dance motion, surreal dreamlike vibe, 4K"
+    },
+    {
+      "shot_id": "shot_02",
+      "duration": 5,
+      "prompt": "Continuing from previous frame, dancer accelerates into spiraling legwork and mask vibration, warm torch bokeh, camera gentle push-in, Cinematic, hyper-realistic, volumetric lighting, fluid dynamic dance motion, surreal dreamlike vibe, 4K"
+    }
+  ]
+}

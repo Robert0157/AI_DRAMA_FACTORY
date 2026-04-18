@@ -1,0 +1,53 @@
+{
+  "project_name": "Zaouli_超現實非洲舞蹈 MV",
+  "job_id": "zaouli_test_002",
+  "audio_base": "african_tribal_001.mp3",
+  "target_fps": 60,
+  "shots": [
+    {
+      "shot_id": "shot_01",
+      "title": "鏡頭 A：開場建立鏡頭 (Setting the Scene)",
+      "duration_sec": 5,
+      "music_segment": "前奏 (0:00-0:05)",
+      "description": "超現實非洲沙漠，黃金時刻的光線。舞者穿著華麗複雜的幾何圖騰服飾與 Zaouli 面具，靜止站立，營造神秘感。緩慢推軌 (Dolly in)，配合音樂的低頻鋪陳。",
+      "camera_technique": "Dolly in (緩慢推軌)",
+      "kling_prompt": "A cinematic wide shot of a vast surreal African desert dune at golden hour. A single majestic Zaouli dancer stands completely still, wearing a vibrant, intricately patterned traditional mask and colorful fringe garments. Dramatic volumetric lighting, photorealistic, 8k resolution, hyper-detailed. Slow dolly in camera movement.",
+      "style_tags": ["cinematic", "surreal", "slow-motion", "golden-hour"],
+      "reference_image": "assets/image_anchors/zaouli_desert_setting.jpg"
+    },
+    {
+      "shot_id": "shot_02",
+      "title": "鏡頭 B：細節特寫與節奏啟動 (The Beat Kicks In)",
+      "duration_sec": 5,
+      "music_segment": "密集鼓點 (0:05-0:10)",
+      "description": "極高頻率的腳步特寫。腳踝上的銀鈴鐺閃爍，快速踩踏揚起地面的沙塵。極端特寫 (Extreme Close-up)，高速快門凝結沙塵，鏡頭微震動以匹配 'Ta doom' 的重拍。",
+      "camera_technique": "Extreme Close-up + Micro-shake (微震)",
+      "kling_prompt": "Extreme close-up shot on a dancer's feet adorned with intricate silver ankle bells. The feet are rapidly and fiercely stomping on fine desert sand, kicking up dynamic clouds of dust. High shutter speed, hyper-detailed textures, cinematic lighting. Slight camera shake, fast and energetic dynamic motion.",
+      "style_tags": ["close-up", "high-energy", "dust-effects", "dynamic"],
+      "reference_image": "assets/image_anchors/zaouli_feet_bells.jpg"
+    },
+    {
+      "shot_id": "shot_03",
+      "title": "鏡頭 C：超現實物理動態 (The Core Dance)",
+      "duration_sec": 5,
+      "music_segment": "副歌高潮 (0:10-0:15)",
+      "description": "展示 Zaouli 舞的核心特徵——上半身如雕像般靜止，下半身的流蘇與雙腿以不可思議的速度瘋狂舞動。低角度仰角 (Low angle)，環繞跟拍，展現舞者的氣勢與服裝動態。",
+      "camera_technique": "Low angle + Tracking shot (環繞跟拍)",
+      "kling_prompt": "A low angle medium shot tracking a surreal African dancer. The dancer's upper body and mask are completely stoic and motionless, while their lower body and legs move at an incredibly fast, blurring speed in a traditional Zaouli dance. Vividly colored costume fringes sway rapidly. Realistic physics, high contrast, surrealistic mood, 4K, dynamic sweeping camera.",
+      "style_tags": ["dynamic", "contrast", "surreal", "fast-motion"],
+      "reference_image": "assets/image_anchors/zaouli_core_dance.jpg"
+    },
+    {
+      "shot_id": "shot_04",
+      "title": "鏡頭 D：重拍定格與魔法元素 (The Climax / Visual Accent)",
+      "duration_sec": 5,
+      "music_segment": "音樂停頓或重擊 (0:15-0:20)",
+      "description": "每次腳跟重落地時，地面產生微光的魔法波紋，增強超現實感。快速 Zoom-in，適合後期搭配音樂波形做 Speed Ramping (變速剪輯)。",
+      "camera_technique": "Fast Zoom-in + Impact frame",
+      "kling_prompt": "Dynamic fast zoom-in shot of a tribal dancer stomping hard on the ground. Glowing magical dust and subtle light ripples emit from the ground where the foot impacts. Hyper-realistic, dramatic shadows, neon accents on traditional tribal patterns, cinematic action composition.",
+      "style_tags": ["magical", "impact-driven", "visual-effects", "zoom"],
+      "reference_image": "assets/image_anchors/zaouli_magic_impact.jpg"
+    }
+  ],
+  "production_notes": "所有 4 鏡頭需透過 Kling 平台生成。每個 shot 預計 5 秒，總長 20 秒，最後配合 music_first_orchestrator 抓出的節拍進行 Phase B 變速補幀。"
+}

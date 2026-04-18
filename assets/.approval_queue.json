@@ -1,0 +1,168 @@
+{
+  "generated_at": "2026-04-02T16:52:09",
+  "queue_size": 18,
+  "queue": [
+    {
+      "track_id": "NewGenerated_CozyCorner_03_1775046774",
+      "track_name": "NewGenerated_CozyCorner_03",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\NewGenerated_CozyCorner_03_demo_60sec.mp3",
+      "created_at": "2026-04-01T20:32:54",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMgac0QffbzLh4E3zsII0-PrwgzVKkAAh4gAAJow2lWuIh5-Sz0N9A6BA"
+    },
+    {
+      "track_id": "NewGenerated_FutureCity_01_1775046783",
+      "track_name": "NewGenerated_FutureCity_01",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\NewGenerated_FutureCity_01_demo_60sec.mp3",
+      "created_at": "2026-04-01T20:33:03",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMhac0Qhbd8mW3sgwZCAAFxupgiTx9-AAIfIAACaMNpVl6ReKzyLR5TOgQ"
+    },
+    {
+      "track_id": "NewGenerated_MoonlightDream_02_1775046790",
+      "track_name": "NewGenerated_MoonlightDream_02",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\NewGenerated_MoonlightDream_02_demo_60sec.mp3",
+      "created_at": "2026-04-01T20:33:10",
+      "status": "rejected",
+      "ceo_decision_at": "2026-04-01T20:36:57",
+      "demo_url_telegram": "CQACAgUAAxkDAAMiac0QjNR4RNzOIpE9gMPzJi6YxFkAAiAgAAJow2lWsGyLFHSiAZs6BA"
+    },
+    {
+      "track_id": "NewGenerated_SilentOcean_04_1775046798",
+      "track_name": "NewGenerated_SilentOcean_04",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\NewGenerated_SilentOcean_04_demo_60sec.mp3",
+      "created_at": "2026-04-01T20:33:18",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMjac0QkhVZS1SGs4sLWbS6SD4R1rsAAiEgAAJow2lWT1twHQxc5G46BA"
+    },
+    {
+      "track_id": "CTO_v15_TimeExpansion_d454c18b_1775056098",
+      "track_name": "CTO_v15_TimeExpansion_d454c18b",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\CTO_v15_TimeExpansion_d454c18b_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:08:18",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "FutureCity_01_1775056111",
+      "track_name": "FutureCity_01",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\FutureCity_01_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:08:31",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Request_1_Batch_22ae9571_1775056121",
+      "track_name": "Request_1_Batch_22ae9571",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Request_1_Batch_22ae9571_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:08:41",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Request_1_Batch_2ceb1c14_1775056130",
+      "track_name": "Request_1_Batch_2ceb1c14",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Request_1_Batch_2ceb1c14_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:08:50",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Request_1_Batch_2dd5c1eb_1775056138",
+      "track_name": "Request_1_Batch_2dd5c1eb",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Request_1_Batch_2dd5c1eb_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:08:58",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Request_1_Batch_9e8bd0f9_1775056146",
+      "track_name": "Request_1_Batch_9e8bd0f9",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Request_1_Batch_9e8bd0f9_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:09:06",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Request_2_Batch_8e098cc0_1775056155",
+      "track_name": "Request_2_Batch_8e098cc0",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Request_2_Batch_8e098cc0_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:09:15",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Request_2_Batch_a14f0dbd_1775056166",
+      "track_name": "Request_2_Batch_a14f0dbd",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Request_2_Batch_a14f0dbd_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:09:26",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": null
+    },
+    {
+      "track_id": "Taipei Midnight Expansion Test01_1775056174",
+      "track_name": "Taipei Midnight Expansion Test01",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Taipei Midnight Expansion Test01_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:09:34",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMrac01NZWMMoJjOoNBT7k4QyMD08kAAkEeAAJow3FWtt6DXqsVQjc6BA"
+    },
+    {
+      "track_id": "Taipei Midnight v14_1775056184",
+      "track_name": "Taipei Midnight v14",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\Taipei Midnight v14_demo_60sec.mp3",
+      "created_at": "2026-04-01T23:09:44",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMsac01PrcCp4M53sicCZleZ6-votMAAkIeAAJow3FWh8V9hzGkdOs6BA"
+    },
+    {
+      "track_id": "CTO_v15_TimeExpansion_d454c18b_retest_1775094230",
+      "track_name": "CTO_v15_TimeExpansion_d454c18b_retest",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\CTO_v15_TimeExpansion_d454c18b_retest_demo_60sec.mp3",
+      "created_at": "2026-04-02T09:43:50",
+      "status": "accepted",
+      "ceo_decision_at": "2026-04-02T10:08:53",
+      "demo_url_telegram": "CQACAgUAAxkDAAMtac3J3DSyKLHNhWfxK9Z6D8APDO4AAtodAAITsXFWsahKx_Iev_A6BA"
+    },
+    {
+      "track_id": "DreamPopPeaceful_040226_004_1775094955",
+      "track_name": "DreamPopPeaceful_040226_004",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\DreamPopPeaceful_040226_004_demo_60sec.mp3",
+      "created_at": "2026-04-02T09:55:55",
+      "status": "accepted",
+      "ceo_decision_at": "2026-04-02T10:07:12",
+      "demo_url_telegram": "CQACAgUAAxkDAAMuac3MsWDXxQdBx-xTUYlbwJmfLLQAAuIdAAITsXFWV7VeBOup6Zc6BA"
+    },
+    {
+      "track_id": "_2a607201_1775119865",
+      "track_name": "_2a607201",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\_2a607201_demo_60sec.mp3",
+      "created_at": "2026-04-02T16:51:05",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMwac4t_lxn_inS_hZI7YMay5fIiC4AAjkfAAITsXFW1KOkAAEKxSz-OgQ"
+    },
+    {
+      "track_id": "_0577c2a1_1775119871",
+      "track_name": "_0577c2a1",
+      "demo_path": "F:\\AI_DRAMA_Factory\\assets\\audio\\mastered_tracks\\_demo_60sec\\_0577c2a1_demo_60sec.mp3",
+      "created_at": "2026-04-02T16:51:11",
+      "status": "pending",
+      "ceo_decision_at": null,
+      "demo_url_telegram": "CQACAgUAAxkDAAMxac4uBAdrMah9VJKp66Zgdykoy8YAAjofAAITsXFW3WuPtH7157Q6BA"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "channel_name": "Light_Music",
+  "description": "Beautiful landscape, nature scenery, zero human presence, ethereal mood, New Age, Pastorale style, Celtic influences",
+  "type": "landscape_only",
+  "image_prompt_template": "Beautiful landscape photography style. {scene}. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.",
+  "video_prompt_template": "Beautiful landscape cinematic video. {scene}. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.",
+  "negative_prompt": "人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building",
+  "no_people_suffix": ", no people, no humans, landscape only, 4k scenic view, static camera",
+  "allowed_subjects": [
+    "山水風景",
+    "森林",
+    "海洋",
+    "天空",
+    "花卉",
+    "自然光",
+    "戶外",
+    "云彩",
+    "極光",
+    "浩瀚星空",
+    "高地原野",
+    "壯麗峽谷"
+  ],
+  "scene_suggestions": [
+    "misty Celtic highlands with ancient stones and morning fog",
+    "breathtaking aurora borealis over a mirror-like lake",
+    "serene forest path with dappled sunlight and ethereal glowing motes",
+    "epic canyon with majestic golden hour light",
+    "starry night sky over a peaceful calm ocean",
+    "rolling green hills resembling a serene pastorale painting",
+    "tropical waterfall in an emerald forest with soft glowing mist",
+    "majestic snow-capped mountain reflecting in crystal clear water"
+  ],
+  "time_dilation_enabled": true,
+  "suno_tags_required": [
+    "pristine studio sound",
+    "NO vocals",
+    "NO vinyl crackle",
+    "NO tape hiss",
+    "NO background noise",
+    "New Age",
+    "Celtic",
+    "ethereal"
+  ],
+  "mastering_lufs": -18.0,
+  "sfx_volume": 0.02,
+  "music_gene_pool": ".openclaw/music_genes_light_music.md"
+}

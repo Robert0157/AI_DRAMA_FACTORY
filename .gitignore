@@ -1,0 +1,131 @@
+# ─────────────────────────────────────────────────────────────
+# R&S Echoes / AI_DRAMA_FACTORY — 根目錄 Git 忽略規則
+# ─────────────────────────────────────────────────────────────
+
+# --- 密鑰與本機環境（勿提交）---
+.env
+.env.local
+.env.*.local
+*.env
+!.env.template
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.nox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# --- 虛擬環境 ---
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- IDE / 編輯器（選擇性；若需共用設定可改為註解）---
+.idea/
+*.swp
+*.swo
+*~
+
+# --- 作業系統 ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Streamlit ---
+.streamlit/secrets.toml
+
+# --- Playwright / 瀏覽器設定 ---
+.playwright/
+.chrome_profile/
+.chrome_profile_*/
+.auth/
+
+
+# --- 本機執行產物（架構書：日誌、暫存）---
+.temp/
+.tmp/
+.tmp_debug/
+*.log
+assets/.logs/
+**/.logs/
+AI_characters/
+assets/video_clips
+assets/audio/
+assets/sfx
+assets/final_exports/
+.archive/
+.assets/backup_archive
+
+# AI 生成的影音與圖片
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.wav
+*.mp3
+*.png
+*.jpg
+*.jpeg
+
+# 可能的大型模型或快取
+*.pt
+*.pth
+*.safetensors
+*.onnx
+/outputs/
+/cache/
+/temp/
+
+# --- OBC／直播預留目錄（架構書 v15.9：錄影、場景、暫存；通常不進版控）---
+Steam/
+
+# --- 選用：大型產物（本 repo 若已追蹤音檔／文案，請勿貿然整夾忽略）---
+# assets/final_exports/**/*.wav
+# assets/final_exports/**/*.mp4
+# assets/final_exports/**/*.m4a
+
+# --- Node（若日後加前端工具）---
+node_modules/

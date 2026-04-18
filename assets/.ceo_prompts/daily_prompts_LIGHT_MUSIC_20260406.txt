@@ -1,0 +1,327 @@
+
+====================================================================================================
+🚨 【CEO 動作指南 (LIGHT_MUSIC 專用) - 版本 v11.5 物理隔離版】
+====================================================================================================
+
+親愛的 CEO，感謝您的音樂生成工作！以下是重要的下一步指示：
+
+1️⃣ 步驟一：前往 Suno 生成音樂
+   • 複製下方提示詞內容
+   • 前往 suno.ai 網站 → 點機「Create」按鈕
+   • 找到「Style of Music」欄位 → 貼入我們的 Tags
+   • 找到「Lyrics」欄位 → 貼入我們的 Prompt（記得勾選 Instrumental 開關！）
+   • 點擊「Generate」開始音樂生成
+
+2️⃣ 步驟二：【關鍵】下載生成的音樂到指定目錄
+   🚨 【此步驟極為重要 - 必須使用正確的目錄路徑】
+   
+   📁 下載目錄（複製完整路徑）：
+   
+   >>> F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\light_music\
+   
+   ✅ 此為 LIGHT_MUSIC 頻道的專屬儲存位置
+   ✅ 系統本體會自動監控此路徑
+   ✅ MP3 檔案放入後會自動觸發母帶處理
+   ✅ 不需要手動介入，一切自動化
+
+3️⃣ 步驟三：檔案管理須知
+   ✓ 將下載的 .mp3 檔案移動到上述目錄
+   ✓ 建議檔名格式：[Song Name].mp3 或 [藝術家名] - [曲名].mp3
+   ✓ 確保使用 LIGHT_MUSIC 專用目錄，勿混淆其他頻道
+   
+   ⚠️ 特別提醒：
+   ✗ 【重要】不要放入 assets/audio/ceo_approved_beats/ 根目錄（會被系統遺漏）
+   ✗ 【重要】不要放入其他頻道的目錄（會導致音樂混亂）
+   ✗ 不要修改副檔名或壓縮檔案
+   ✗ 不要刪除原始檔案直到系統完成處理
+
+4️⃣ 系統自動化流程
+   💿 Suno LIGHT_MUSIC 音樂生成
+   ↓
+   📥 下載 MP3 到 F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\light_music\
+   ↓
+   🔄 【自動發生】系統持續監控此目錄
+   ├─ 🎵 母帶處理 (-16 LUFS 標準化)
+   ├─ 🎨 視覺素材頻道匹配
+   ├─ ⭐ AI 音樂品質評分
+   └─ 📤 準備發行（DistroKid 上傳）
+
+5️⃣ 物理分區隔離政策 (v11.5 新增)
+   ☕ Lofi 頻道：
+      → ceo_approved_beats/lofi/     【Lofi 音樂存放位置】
+   
+   🌿 Light Music 頻道：
+      → ceo_approved_beats/light_music/  【Light Music 音樂存放位置】
+   
+   ⚠️  系統嚴格隔離兩個頻道，避免基因污染
+
+6️⃣ 如須要幫助或發現問題
+   • 檔案是否確實在 F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\light_music\
+   • 副檔名是否為 .mp3（區分大小寫：.MP3 也不接受）
+   • 目錄是否為您的頻道 (LIGHT_MUSIC) 專屬位置
+   • 查看系統日誌（project_learning.md）
+   • 若 6 小時未自動處理，請手動觸發（rs_manager.py [1]）
+
+====================================================================================================
+📋 提示詞版本：v11.5 物理隔離版
+✓ 頻道完全隔離（Lofi ↔ Light Music 互不干擾）
+✓ 操作指南為系統自動生成，100% 準確
+✓ CEO 務必使用上述完整路徑，系統依靠此路徑精準分類
+====================================================================================================\n\n
+【R&S Echoes CEO 每日提示詞武器庫（v11.4 頻道隔離版）】
+生成時間: 2026-04-06 22:50:03
+生成方式: GLM-4 Pure（100% 人工智能，零本地虛假）
+頻道標識: LIGHT_MUSIC
+總數量: 5 組
+================================================================================
+
+💡 使用提示：
+⚠️ 前往 Suno 官網 (suno.ai) → Create → 複製以下內容到對應欄位
+
+================================================================================
+
+【第 1 組】
+=== 🎵 歌曲名稱 (Title) ===
+Whispers of Serenity
+
+=== 📋 貼入 Suno 的【Style of Music】欄位 ===
+Ambient, Meditative, Ethereal, Solo Piano, Spacious Reverb, No Vocals, No Vinyl Crackle, No Tape Hiss, No Background Noise, Pristine Studio Sound, Therapeutic Quality, Healing Frequencies
+
+=== 🎤 貼入 Suno 的【Lyrics】欄位 (⚠️ 務必打開 Instrumental 開關) ===
+[Intro] (Ethereal synth pad, 432Hz tuning, spacious reverb)
+
+...
+...
+
+[Verse 1] (Solo Piano, no percussion, meditation tempo, gentle arpeggios)
+
+...
+...
+
+[Chorus] (Ethereal synth pads, soft rising pitch, serene atmosphere)
+
+...
+...
+
+[Verse 2] (Solo Piano, slow tempo, flowing melodies, ethereal reverb)
+
+...
+...
+
+[Bridge] (String Quartet, minimalist arrangement, soft dynamics)
+
+...
+...
+
+[Outro] (fade to silence, ethereal pads only, timelessly stretching)
+
+...
+...
+
+=== 🎨 視覺生成區 (Visual Prompts) ===
+【Image Prompt】（用於生成靜態圖像）
+Beautiful landscape photography style. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】（用於生成短影片）
+Beautiful landscape cinematic video. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration., no people, no humans, landscape only, 4k scenic view, static camera
+
+--------------------------------------------------------------------------------
+
+【第 2 組】
+=== 🎵 歌曲名稱 (Title) ===
+Whispering Pines
+
+=== 📋 貼入 Suno 的【Style of Music】欄位 ===
+Ambient, Meditative, Nature-inspired, Spacious Reverb, No Vocals, Pristine Studio Sound, NO Vinyl Crackle, NO Tape Hiss, NO Background Noise
+
+=== 🎤 貼入 Suno 的【Lyrics】欄位 (⚠️ 務必打開 Instrumental 開關) ===
+[Intro] (Ethereal Synth Pads, 432Hz Tuning, Spacious Reverb Cathedral)
+
+...
+...
+
+[Verse 1] (Solo Piano, Ethereal Reverb, Meditation Pace)
+
+...
+...
+
+[Chorus] (Warm Analog Synth, Floating Dynamics, Ethereal Pad)
+
+...
+...
+
+[Verse 2] (String Quartet, Minimalist, Atmospheric Depth)
+
+...
+...
+
+[Bridge] (Ambient Soundscape with Nature Field Recording, Crystalline Clarity, Natural Reverb)
+
+...
+...
+
+[Outro] (fade to silence, Ethereal Pads Only, Timelessly Stretching)
+
+...
+...
+
+=== 🎨 視覺生成區 (Visual Prompts) ===
+【Image Prompt】（用於生成靜態圖像）
+Beautiful landscape photography style. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】（用於生成短影片）
+Beautiful landscape cinematic video. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration., no people, no humans, landscape only, 4k scenic view, static camera
+
+--------------------------------------------------------------------------------
+
+【第 3 組】
+=== 🎵 歌曲名稱 (Title) ===
+Whispering Breeze
+
+=== 📋 貼入 Suno 的【Style of Music】欄位 ===
+Ambient, Therapeutic, Ethereal, Solo Instruments, Nature-inspired, Pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+
+=== 🎤 貼入 Suno 的【Lyrics】欄位 (⚠️ 務必打開 Instrumental 開關) ===
+[Intro] (Ambient Soundscape with nature field recording, ethereal pads, 432Hz tuning, spacious reverb)
+
+...
+...
+
+[Verse 1] (Solo Piano, no percussion, meditation tempo, ethereal reverb)
+
+...
+...
+
+[Chorus] (Warm Analog Synth, flowing and timeless, atmospheric depth)
+
+...
+...
+
+[Verse 2] (String Quartet, minimalist, breathlike dynamics, natural reverb)
+
+...
+...
+
+[Bridge] (Ethereal Synth Pads, transcendent mood, floating)
+
+...
+...
+
+[Outro] (fade to silence, ethereal pads only, timelessly stretching)
+
+...
+...
+
+=== 🎨 視覺生成區 (Visual Prompts) ===
+【Image Prompt】（用於生成靜態圖像）
+Beautiful landscape photography style. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】（用於生成短影片）
+Beautiful landscape cinematic video. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration., no people, no humans, landscape only, 4k scenic view, static camera
+
+--------------------------------------------------------------------------------
+
+【第 4 組】
+=== 🎵 歌曲名稱 (Title) ===
+Ethereal Silence
+
+=== 📋 貼入 Suno 的【Style of Music】欄位 ===
+Ambient, Therapeutic, Spacious Reverb, Meditation Pace, Mindful, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+
+=== 🎤 貼入 Suno 的【Lyrics】欄位 (⚠️ 務必打開 Instrumental 開關) ===
+[Intro] (Ethereal synth pad, 432Hz tuning, spacious reverb, ethereal and floating)
+
+...
+...
+
+[Verse 1] (Ambient Soundscape with nature field recording, very slow tempo, atmospheric depth)
+
+...
+...
+
+[Chorus] (Warm Analog Synth, binaural panoramic panning, transcendent mood)
+
+...
+...
+
+[Verse 2] (String Quartet (Minimalist)
+
+...
+...
+
+, deep calming, ethereal pads)[Bridge] (Solo Violin (Meditative)
+
+...
+...
+
+, breathlike dynamics, peaceful and serene)[Outro] (fade to silence, ethereal pads only, timelessly stretching)
+
+...
+...
+
+=== 🎨 視覺生成區 (Visual Prompts) ===
+【Image Prompt】（用於生成靜態圖像）
+Beautiful landscape photography style. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】（用於生成短影片）
+Beautiful landscape cinematic video. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration., no people, no humans, landscape only, 4k scenic view, static camera
+
+--------------------------------------------------------------------------------
+
+【第 5 組】
+=== 🎵 歌曲名稱 (Title) ===
+Mystic Whisper
+
+=== 📋 貼入 Suno 的【Style of Music】欄位 ===
+Ambient, Therapeutic, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+
+=== 🎤 貼入 Suno 的【Lyrics】欄位 (⚠️ 務必打開 Instrumental 開關) ===
+[Intro] (Ethereal Synth Pad, 432Hz Tuning, Spacious Reverb, Meditation Pace, No Percussion)
+
+...
+...
+
+[Verse 1] (Solo Piano, Ethereal Pad, No Percussion, Minimal Movement)
+
+...
+...
+
+[Chorus] (Warm Analog Synth, Deep Bass, No Drums)
+
+...
+...
+
+[Verse 2] (String Quartet, Crystalline Clarity, No Percussion)
+
+...
+...
+
+[Bridge] (Ambient Soundscape, Nature Field Recording, Ethereal)
+
+...
+...
+
+[Outro] (fade to silence, Ethereal Pad, Timeless Stretching)
+
+...
+...
+
+=== 🎨 視覺生成區 (Visual Prompts) ===
+【Image Prompt】（用於生成靜態圖像）
+Beautiful landscape photography style. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】（用於生成短影片）
+Beautiful landscape cinematic video. misty mountain landscape at sunrise. Natural scenery, ethereal lighting, dreamy colors. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration., no people, no humans, landscape only, 4k scenic view, static camera
+
+--------------------------------------------------------------------------------
+

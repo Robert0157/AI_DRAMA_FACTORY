@@ -1,0 +1,74 @@
+[
+  {
+    "shot_id": "shot_13",
+    "description": "無人機俯視 - 幾何塵埃圖案",
+    "duration": 5,
+    "kling_prompt": "Macro overhead drone shot of a Zaouli dancer creating geometric dust patterns on surreal desert dunes. Neon cyan light traces follow footsteps. Volumetric lighting, 8k, dynamic movement."
+  },
+  {
+    "shot_id": "shot_14",
+    "description": "極端特寫 - 部落面具發光細節",
+    "duration": 5,
+    "kling_prompt": "Extreme close-up of intricately patterned tribal mask. Neon accents glow as deep bass reverberates. Hyper-detailed texture focus, photorealistic, high contrast lighting."
+  },
+  {
+    "shot_id": "shot_15",
+    "description": "寬景追蹤 - 多重幻影舞者",
+    "duration": 5,
+    "kling_prompt": "Wide tracking shot of multiple phantom dancers appearing and disappearing through swirling desert dust clouds. Surrealistic atmosphere, ethereal silhouettes, glowing neon accents, cinematic depth of field."
+  },
+  {
+    "shot_id": "shot_16",
+    "description": "快速蒙太奇 - 腳步聲與鈴鐺",
+    "duration": 5,
+    "kling_prompt": "Fast cuts of rapid footsteps, ankle bells rattling in extreme close-up macro photography. Dust particles suspended mid-air catching light. High shutter speed, detailed textures, dynamic motion."
+  },
+  {
+    "shot_id": "shot_17",
+    "description": "超現實服飾軌跡 - 發光漸消",
+    "duration": 5,
+    "kling_prompt": "Surreal medium shot: dancer's costume fringe creates trails of glowing light as legs move at inhuman speeds. Upper body completely frozen. Neon cyan and gold color grading, dreamlike mood."
+  },
+  {
+    "shot_id": "shot_18",
+    "description": "無人機飛掠 - 發光幾何圖案環繞",
+    "duration": 5,
+    "kling_prompt": "Dynamic low-altitude drone flyover of tribal dancer surrounded by geometric glow patterns. Desert sand reflects magical light ripples. Volumetric atmosphere, 4K cinematic composition."
+  },
+  {
+    "shot_id": "shot_19",
+    "description": "極端特寫 - 儀式手勢與珠寶",
+    "duration": 5,
+    "kling_prompt": "Extreme close-up of dancer's hands adorned with mystical jewelry, moving in ceremonial gestures against blurred desert backdrop. Neon glow on metals, photorealistic detail, surreal lighting."
+  },
+  {
+    "shot_id": "shot_20",
+    "description": "星夜寬景 - 輪廓與宇宙塵埃",
+    "duration": 5,
+    "kling_prompt": "Wide shot of starlit desert night. Zaouli dancer in silhouette wearing glow-edged mask and costume. Swirling cosmic dust clouds, ethereal atmosphere, slow panning camera."
+  },
+  {
+    "shot_id": "shot_21",
+    "description": "分割畫面 - 晶體清晰 vs 萬花筒幻象",
+    "duration": 5,
+    "kling_prompt": "Split-screen shot: left side crystal-clear close-up of facial mask details, right side kaleidoscopic abstraction of spinning dancer. Surrealistic visual synthesis, high contrast neon colors."
+  },
+  {
+    "shot_id": "shot_22",
+    "description": "微距慢動作 - 汗珠彩虹折射",
+    "duration": 5,
+    "kling_prompt": "Macro shot of sweat droplets splashing from intense stomp, catching light particles and creating rainbow refractions. Slow-motion capture, photorealistic, hyper-detailed."
+  },
+  {
+    "shot_id": "shot_23",
+    "description": "航拍旋轉 - 大地旋轉環繞舞者",
+    "duration": 5,
+    "kling_prompt": "Aerial shot spinning around stationary dancer while legs perform impossible-speed movements. Desert landscape rotates. Dramatic shadows, volumetric light shafts, cinematic 8k."
+  },
+  {
+    "shot_id": "shot_24",
+    "description": "部落面具 - 星雲宇宙能量爆發",
+    "duration": 5,
+    "kling_prompt": "Extreme close-up of traditional tribal mask cracks revealing nebula cosmic energy within. Neon accents flash with music beat. Photorealistic texture meets surrealism, high contrast."
+  }
+]

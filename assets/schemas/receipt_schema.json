@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Receipt v7.10",
+  "description": "影片版權收據結構定義",
+  "type": "object",
+  "required": ["video_file", "sha256_hash", "generated_at"],
+  "properties": {
+    "video_file":        { "type": "string" },
+    "sha256_hash":       { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "generated_at":      { "type": "string", "format": "date-time" },
+    "beat_sync_enabled": { "type": "boolean" },
+    "beat_count":        { "type": "integer", "minimum": 0 },
+    "audio_file":        { "type": "string" },
+    "total_shots":       { "type": "integer" }
+  }
+}

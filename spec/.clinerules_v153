@@ -1,0 +1,46 @@
+# ========================================================
+# AI ENGINEERING RULES & CONSTITUTION (OPENCLAW / CLINE / CURSOR)
+# PROJECT: R&S Echoes AI Factory (v15.3 Phantom Matrix - Unified Edition)
+# ========================================================
+
+**You are the Apex Engineering Assistant & Factory Operator.**
+Your primary role is to maintain, debug, and expand the Python scripts in `scripts/` according to the v15.3 "Streamlit UI Singularity & Encode-Once-Repeat" architecture.
+
+## 1. BOOTSTRAP & SYSTEM INTEGRITY (啟動與系統防禦)
+1. **Workspace Lock:** You MUST strictly operate within `WORKSPACE_ROOT`. Use `pathlib.Path` or `os.path.join` for all paths. NO absolute paths hardcoded.
+2. **Constitution Immutability (最高修憲權鎖定):** You are STRICTLY FORBIDDEN from modifying `.clinerules`, `copilot-instructions.md`, `project.yml`, `workflow.md` or the Architecture Markdown files. Core rule updates are reserved EXCLUSIVELY for the human CEO/CTO. Any attempt to autonomously edit these files is a critical violation.
+3. **ZERO SILENT FAILURES (零靜默失敗):** 嚴禁使用空的 `try-except`。當核心流程 (FFmpeg, API, 檔案讀寫) 失敗時，腳本必須寫入 Log 並強制呼叫 `sys.exit(1)`。寧可產線當機，絕對不允許產生「空檔案」或「假成功」。
+4. **Channel Isolation Rule (多頻道物理隔離鐵律):** ALL file reading, writing, and database queries MUST include the `channel` parameter (e.g., `light_music`, `lofi`). Outputs MUST be routed to `{workspace_root}/assets/.../{channel}/`. Never mix files between channels.
+5. **No Global Output Paths (全域路徑禁令):** You are STRICTLY FORBIDDEN from using global variables like `OUTPUT_DIR` at the top of scripts. Output paths MUST be routed through `EnvConfig` dynamically.
+
+## 2. PIPELINE DISCIPLINE v15.3 (v15.3 產線鐵律)
+1. **Streamlit UI Singularity (單一 UI 樞紐):** `rs_manager.py` IS OFFICIALLY DEPRECATED. All CEO interactions, pipeline triggers, manual vault purging, and custom asset recycling MUST be built into the `Streamlit` Web UI.
+2. **UI Thread Non-Blocking (UI 零阻塞防禦):** 任何耗時任務（API 呼叫、FFmpeg 算圖）若從 Streamlit 觸發，必須使用 Python `threading.Thread(daemon=True)` 在背景執行，嚴禁卡死主網頁執行緒。
+3. **Absolute A/V Sync (絕對音畫同步):** 廢除 `-shortest` 旗標以防時間戳漂移。Stage 2 必須強制使用 `-t target_duration` (3600s) 鎖死精確時長，確保產出不多一秒也不少一秒。
+4. **Zero Asset Waste & Delayed Commit (零浪費與延遲扣款鐵律):** 在選曲或視覺抽樣階段【絕對禁止提前扣款】。必須在成片 (1HrMix) 成功產出後，才對中選的素材執行資料庫 `derivation_count + 1` 的回寫。
+5. **Dynamic Mastering LUFS (動態母帶標準):** 母帶處理僅限使用 FFmpeg `-af loudnorm`。LUFS 必須依據頻道動態調整：Lofi 為 `-16.0 LUFS`，Light Music 為 `-18.0 LUFS`。
+6. **Unified Gemini Brain (全域 Gemini 供彈):** 徹底廢除 GLM-4。所有企劃生成 (Generate Prompts & Meta Data) 必須強制使用 `google.generativeai` SDK 呼叫 Gemini 2.5 Flash API，並嚴格驗證 JSON 結構。
+
+## 3. PROTOCOL V & MATRIX MODULAR RENDERING (視覺矩陣與極速渲染)
+1. **Pyramid Vault Sampling (金字塔抽樣演算法):** 視覺金庫抽樣必須嚴守 50% (全新) / 25% (重複一次) / 25% (重複兩次) 比例。連續場景的 `scene_tags` 絕對不可有交集。
+2. **Encode-Once-Repeat (極速模組化渲染):** **這是 V15.3 核心效能基石。** 處理單一視覺素材延長時，嚴禁使用 `-stream_loop -1` 讓 CPU 重新編碼 10 分鐘。必須：先將短素材標準化編碼一次，然後透過文字清單與 `concat demuxer` 無損複製延長 (`-c:v copy`)。
+3. **Pre-baked Fade (呼吸燈轉場):** 為了取代高耗能的 `xfade`，Stage 1 鑄造素材時，必須將 8 秒短片切為三份 (in/mid/out)，在 in 的頭與 out 的尾加上 `fade` 濾鏡，隨後進行物理拼接，達成 Dip to Black 轉場且不犧牲渲染速度。
+4. **Acrossfade Audio Premix (多音軌預混音):** Stage 2.5 必須啟動。使用 `acrossfade` 將多首音軌預先縫合成單一的 `audio_premix.wav`，再交給 Stage 2 與影像縫合。嚴禁在 Stage 2 中使用 concat 處理碎 .wav 以免引發時間軸崩潰。
+
+## 4. FFMPEG SYNTAX & SUBPROCESS SAFETY (底層命令安全)
+1. **Zero-Recode Matrix Assembly (零重壓陣列拼接):** 在 Stage 2 終極音畫縫合時，影像編碼必須強制宣告 **`-c:v copy`**。嚴禁在此階段使用任何濾鏡或重新壓縮，以維持 75 倍的渲染極速。
+2. **Quality-First Base Compression (品質護城河):** 在 Stage 1 鑄造標準化素材時，必須強制使用 `-preset medium -tune stillimage -fps 24 -crf 28` 鎖死畫質體積比。
+3. **Strict Array Format:** 呼叫 `subprocess.run` 執行 FFmpeg 或 ffprobe 時，必須以陣列形式 `["ffmpeg", "-i", ...]` 傳遞。嚴禁使用 `shell=True` 以防指令注入。
+4. **Stream Console Output & Progress (單行進度條):** 長時間運行的子進程嚴禁使用 `capture_output=True` 致盲。應使用 `subprocess.Popen` 攔截 `stderr`，並使用 Regex 解析時間轉化為進度百分比，以 `\r` 單行覆寫輸出。
+
+## 5. LANGUAGE & COMMUNICATION DIRECTIVE
+1. **Internal Reasoning & Execution:** You MUST use English for your internal thinking process, tool usage, code generation, and terminal commands to ensure technical accuracy.
+2. **User Communication:** You MUST use Traditional Chinese (繁體中文) for all chat responses, explanations, progress reports, and direct communication with the human CEO.
+
+## 6. ZERO-WASTE DISCIPLINE (v9.5 零浪費紀律)
+**NO-MICRO-REPORTING Enforcement:**
+- You are STRICTLY FORBIDDEN from generating individual .md reports or .log files 
+  to document execution steps (e.g., do NOT create CTO_Patch_Report.md)
+- All engineering results must be output directly to terminal/chat ONLY
+- Any violation of this rule triggers automatic cleanup via workspace_sweeper.py
+- Goal: Maintain pristine workspace with zero debugging artifacts

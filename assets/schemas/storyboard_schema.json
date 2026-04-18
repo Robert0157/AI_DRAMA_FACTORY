@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/storyboard.schema.json",
+  "title": "Storyboard v7.10 (Merged)",
+  "description": "60s MVP 分鏡腳本結構定義（12~15 shots 硬上限）。整合顧問結構設計與 v7.10 CTO 封印鐵律。",
+  "type": "object",
+  "required": ["job_id", "target_duration_sec", "episode_metadata", "global_style", "shots"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "minLength": 1 },
+    "target_duration_sec": { "type": "integer", "const": 60 },
+    "episode_metadata": {
+      "type": "object",
+      "required": ["episode_id", "theme", "audio_file", "total_shots"],
+      "additionalProperties": false,
+      "properties": {
+        "episode_id":   { "type": "string" },
+        "theme":        { "type": "string" },
+        "audio_file":   { "type": "string" },
+        "total_shots":  { "type": "integer", "minimum": 12, "maximum": 15 },
+        "generated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "global_style": {
+      "type": "object",
+      "required": ["mv_mood", "visual_constraints"],
+      "additionalProperties": false,
+      "properties": {
+        "mv_mood":            { "type": "string", "minLength": 1 },
+        "visual_constraints": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "camera_language":    { "type": "array", "items": { "type": "string" } },
+        "loopable_motifs":    { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "shots": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "start_sec", "end_sec", "visual_prompt", "aesthetic_lock", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "shot_id":         { "type": "string", "pattern": "^shot_[0-9]{3}$" },
+          "start_sec":       { "type": "number", "minimum": 0, "maximum": 60 },
+          "end_sec":         { "type": "number", "minimum": 0, "maximum": 60 },
+          "beat_index":      { "type": "integer", "minimum": 0 },
+          "visual_prompt":   { "type": "string", "minLength": 1, "description": "英文視覺 Prompt，供即夢 Seedance 使用" },
+          "negative_prompt": { "type": "string" },
+          "aesthetic_lock":  { "type": "string", "description": "v7.10 CTO 封印：強制追加的美學字串" },
+          "action":          { "type": "string", "description": "繁體中文動作摘要，供 LLM 社群文案使用" },
+          "style_gene_ids":  { "type": "array", "items": { "type": "integer" } },
+          "seed":            { "type": "integer" }
+        }
+      }
+    }
+  }
+}

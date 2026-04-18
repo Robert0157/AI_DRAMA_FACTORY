@@ -1,0 +1,333 @@
+{
+  "episode_metadata": {
+    "episode_id": "003",
+    "theme": "全勤獎的幻覺",
+    "generated_at": "2026-03-28T16:06:58.735966",
+    "total_audio_duration_seconds": 107.81,
+    "total_shots": 32,
+    "audio_source": "assets/audio/track_Corporate satire lo-fi hip hop, melancho_20260328_160454.mp3",
+    "aesthetic_base": "cinematic lighting, tilt-shift photography, 1990s stop-motion style, highly detailed felt and wood texture"
+  },
+  "storyboard_sequence": [
+    {
+      "shot_id": "shot_01",
+      "timestamp": "00:00-00:05",
+      "start_sec": 0.0,
+      "end_sec": 5.5,
+      "duration_seconds": 5.5,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_02",
+      "timestamp": "00:05-00:11",
+      "start_sec": 5.5,
+      "end_sec": 11.0,
+      "duration_seconds": 5.5,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_03",
+      "timestamp": "00:11-00:14",
+      "start_sec": 11.0,
+      "end_sec": 14.37,
+      "duration_seconds": 3.37,
+      "visual_prompt": "Overhead shot of cluttered felt desk with sticky notes, rubber stamps and stacked folders, 1990s office still life",
+      "action": "靜物鏡：便利貼隨空調微風輕輕顫動",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_04",
+      "timestamp": "00:14-00:17",
+      "start_sec": 14.37,
+      "end_sec": 17.54,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Low-angle shot of an analog wall clock, second hand twitching back and forth, fabric-textured wall background",
+      "action": "時鐘秒針卡頓、後退、再前進，象徵時間無盡輪迴",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_05",
+      "timestamp": "00:17-00:20",
+      "start_sec": 17.54,
+      "end_sec": 20.7,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Wide shot of empty office hallway at night, single fluorescent tube flickering, puppet silhouette in distance",
+      "action": "走廊盡頭木偶身影緩緩走近，腳步聲規律如機器",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_06",
+      "timestamp": "00:20-00:23",
+      "start_sec": 20.7,
+      "end_sec": 23.87,
+      "duration_seconds": 3.17,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_07",
+      "timestamp": "00:23-00:27",
+      "start_sec": 23.87,
+      "end_sec": 27.05,
+      "duration_seconds": 3.18,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_08",
+      "timestamp": "00:27-00:30",
+      "start_sec": 27.05,
+      "end_sec": 30.21,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Overhead shot of cluttered felt desk with sticky notes, rubber stamps and stacked folders, 1990s office still life",
+      "action": "靜物鏡：便利貼隨空調微風輕輕顫動",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_09",
+      "timestamp": "00:30-00:33",
+      "start_sec": 30.21,
+      "end_sec": 33.38,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Low-angle shot of an analog wall clock, second hand twitching back and forth, fabric-textured wall background",
+      "action": "時鐘秒針卡頓、後退、再前進，象徵時間無盡輪迴",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_10",
+      "timestamp": "00:33-00:36",
+      "start_sec": 33.38,
+      "end_sec": 36.53,
+      "duration_seconds": 3.15,
+      "visual_prompt": "Wide shot of empty office hallway at night, single fluorescent tube flickering, puppet silhouette in distance",
+      "action": "走廊盡頭木偶身影緩緩走近，腳步聲規律如機器",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_11",
+      "timestamp": "00:36-00:39",
+      "start_sec": 36.53,
+      "end_sec": 39.78,
+      "duration_seconds": 3.25,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_12",
+      "timestamp": "00:39-00:42",
+      "start_sec": 39.78,
+      "end_sec": 42.88,
+      "duration_seconds": 3.1,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_13",
+      "timestamp": "00:42-00:46",
+      "start_sec": 42.88,
+      "end_sec": 46.04,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Overhead shot of cluttered felt desk with sticky notes, rubber stamps and stacked folders, 1990s office still life",
+      "action": "靜物鏡：便利貼隨空調微風輕輕顫動",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_14",
+      "timestamp": "00:46-00:49",
+      "start_sec": 46.04,
+      "end_sec": 49.22,
+      "duration_seconds": 3.18,
+      "visual_prompt": "Low-angle shot of an analog wall clock, second hand twitching back and forth, fabric-textured wall background",
+      "action": "時鐘秒針卡頓、後退、再前進，象徵時間無盡輪迴",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_15",
+      "timestamp": "00:49-00:52",
+      "start_sec": 49.22,
+      "end_sec": 52.38,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Wide shot of empty office hallway at night, single fluorescent tube flickering, puppet silhouette in distance",
+      "action": "走廊盡頭木偶身影緩緩走近，腳步聲規律如機器",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_16",
+      "timestamp": "00:52-00:55",
+      "start_sec": 52.38,
+      "end_sec": 55.54,
+      "duration_seconds": 3.16,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_17",
+      "timestamp": "00:55-00:58",
+      "start_sec": 55.54,
+      "end_sec": 58.71,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_18",
+      "timestamp": "00:58-01:01",
+      "start_sec": 58.71,
+      "end_sec": 61.89,
+      "duration_seconds": 3.18,
+      "visual_prompt": "Overhead shot of cluttered felt desk with sticky notes, rubber stamps and stacked folders, 1990s office still life",
+      "action": "靜物鏡：便利貼隨空調微風輕輕顫動",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_19",
+      "timestamp": "01:01-01:05",
+      "start_sec": 61.89,
+      "end_sec": 65.07,
+      "duration_seconds": 3.18,
+      "visual_prompt": "Low-angle shot of an analog wall clock, second hand twitching back and forth, fabric-textured wall background",
+      "action": "時鐘秒針卡頓、後退、再前進，象徵時間無盡輪迴",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_20",
+      "timestamp": "01:05-01:08",
+      "start_sec": 65.07,
+      "end_sec": 68.23,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Wide shot of empty office hallway at night, single fluorescent tube flickering, puppet silhouette in distance",
+      "action": "走廊盡頭木偶身影緩緩走近，腳步聲規律如機器",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_21",
+      "timestamp": "01:08-01:11",
+      "start_sec": 68.23,
+      "end_sec": 71.39,
+      "duration_seconds": 3.16,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_22",
+      "timestamp": "01:11-01:14",
+      "start_sec": 71.39,
+      "end_sec": 74.55,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_23",
+      "timestamp": "01:14-01:17",
+      "start_sec": 74.55,
+      "end_sec": 77.72,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Overhead shot of cluttered felt desk with sticky notes, rubber stamps and stacked folders, 1990s office still life",
+      "action": "靜物鏡：便利貼隨空調微風輕輕顫動",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_24",
+      "timestamp": "01:17-01:20",
+      "start_sec": 77.72,
+      "end_sec": 80.89,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Low-angle shot of an analog wall clock, second hand twitching back and forth, fabric-textured wall background",
+      "action": "時鐘秒針卡頓、後退、再前進，象徵時間無盡輪迴",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_25",
+      "timestamp": "01:20-01:24",
+      "start_sec": 80.89,
+      "end_sec": 84.05,
+      "duration_seconds": 3.16,
+      "visual_prompt": "Wide shot of empty office hallway at night, single fluorescent tube flickering, puppet silhouette in distance",
+      "action": "走廊盡頭木偶身影緩緩走近，腳步聲規律如機器",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_26",
+      "timestamp": "01:24-01:27",
+      "start_sec": 84.05,
+      "end_sec": 87.22,
+      "duration_seconds": 3.17,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_27",
+      "timestamp": "01:27-01:30",
+      "start_sec": 87.22,
+      "end_sec": 90.39,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_28",
+      "timestamp": "01:30-01:33",
+      "start_sec": 90.39,
+      "end_sec": 93.57,
+      "duration_seconds": 3.18,
+      "visual_prompt": "Overhead shot of cluttered felt desk with sticky notes, rubber stamps and stacked folders, 1990s office still life",
+      "action": "靜物鏡：便利貼隨空調微風輕輕顫動",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_29",
+      "timestamp": "01:33-01:36",
+      "start_sec": 93.57,
+      "end_sec": 96.74,
+      "duration_seconds": 3.17,
+      "visual_prompt": "Low-angle shot of an analog wall clock, second hand twitching back and forth, fabric-textured wall background",
+      "action": "時鐘秒針卡頓、後退、再前進，象徵時間無盡輪迴",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_30",
+      "timestamp": "01:36-01:39",
+      "start_sec": 96.74,
+      "end_sec": 99.88,
+      "duration_seconds": 3.14,
+      "visual_prompt": "Wide shot of empty office hallway at night, single fluorescent tube flickering, puppet silhouette in distance",
+      "action": "走廊盡頭木偶身影緩緩走近，腳步聲規律如機器",
+      "is_loopable": false
+    },
+    {
+      "shot_id": "shot_31",
+      "timestamp": "01:39-01:43",
+      "start_sec": 99.88,
+      "end_sec": 103.06,
+      "duration_seconds": 3.18,
+      "visual_prompt": "A worn felt puppet staring at a flickering CRT monitor in a dim cubicle, extreme close-up, dust motes in the air",
+      "action": "木偶呆滯凝視螢幕，眼神空洞，手指無意識地敲打桌面",
+      "is_loopable": true
+    },
+    {
+      "shot_id": "shot_32",
+      "timestamp": "01:43-01:47",
+      "start_sec": 103.06,
+      "end_sec": 107.81,
+      "duration_seconds": 4.75,
+      "visual_prompt": "Close-up on wooden puppet hands clutching a ceramic coffee mug, tilt-shift macro, cold desk surface",
+      "action": "手緩緩握緊馬克杯，蒸氣在昏黃燈光下飄散",
+      "is_loopable": true
+    }
+  ]
+}

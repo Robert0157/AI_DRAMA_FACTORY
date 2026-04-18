@@ -1,0 +1,33 @@
+{
+  "channel_name": "Lofi_Chill",
+  "description": "A cozy lofi aesthetic with human characters, intimate spaces, warm lighting",
+  "type": "with_people",
+  "image_prompt_template": "Lofi art style illustration. A peaceful scene with {mood}. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.",
+  "video_prompt_template": "Lofi animation style video. A peaceful scene with {mood}. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.",
+  "negative_prompt": "",
+  "allowed_subjects": [
+    "人物",
+    "室內",
+    "咖啡館",
+    "工作室",
+    "臉部表情"
+  ],
+  "mood_suggestions": [
+    "studying with warm tea",
+    "reading by window",
+    "creating digital art",
+    "working at desk",
+    "resting peacefully",
+    "listening to music alone"
+  ],
+  "time_dilation_enabled": true,
+  "suno_tags_required": [
+    "pristine studio sound",
+    "NO vocals",
+    "NO vinyl crackle",
+    "NO tape hiss",
+    "NO background noise"
+  ],
+  "mastering_lufs": -16.0,
+  "music_gene_pool": ".openclaw/GL_4M_Suno_prompt.md"
+}

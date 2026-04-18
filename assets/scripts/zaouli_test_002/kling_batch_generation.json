@@ -1,0 +1,58 @@
+{
+  "batch_name": "zaouli_test_002_kling_generation",
+  "project_id": "zaouli_test_002",
+  "generation_mode": "v2v_and_i2v",
+  "target_resolution": "960x960",
+  "target_duration": 5,
+  "target_fps": 60,
+  "reference_video": "assets/video_clips/zaouli_test_001/shots/shot_01.mp4",
+  "shots": [
+    {
+      "shot_index": 1,
+      "shot_name": "shot_01_setting_scene",
+      "kling_prompt": "A cinematic wide shot of a vast surreal African desert dune at golden hour. A single majestic Zaouli dancer stands completely still, wearing a vibrant, intricately patterned traditional mask and colorful fringe garments. Dramatic volumetric lighting, photorealistic, 8k resolution, hyper-detailed. Slow dolly in camera movement.",
+      "generation_method": "text_to_video",
+      "anchor_image": "assets/image_anchors/zaouli_desert_golden_hour.jpg",
+      "music_segment": "african_tribal_001.mp3:0-5",
+      "use_beat_sync": true,
+      "expected_beats_count": 3
+    },
+    {
+      "shot_index": 2,
+      "shot_name": "shot_02_footsteps_detail",
+      "kling_prompt": "Extreme close-up shot on a dancer's feet adorned with intricate silver ankle bells. The feet are rapidly and fiercely stomping on fine desert sand, kicking up dynamic clouds of dust. High shutter speed, hyper-detailed textures, cinematic lighting. Slight camera shake, fast and energetic dynamic motion.",
+      "generation_method": "text_to_video",
+      "anchor_image": "assets/image_anchors/zaouli_ankle_bells_close_up.jpg",
+      "music_segment": "african_tribal_001.mp3:5-10",
+      "use_beat_sync": true,
+      "expected_beats_count": 4
+    },
+    {
+      "shot_index": 3,
+      "shot_name": "shot_03_core_dance_contrast",
+      "kling_prompt": "A low angle medium shot tracking a surreal African dancer. The dancer's upper body and mask are completely stoic and motionless, while their lower body and legs move at an incredibly fast, blurring speed in a traditional Zaouli dance. Vividly colored costume fringes sway rapidly. Realistic physics, high contrast, surrealistic mood, 4K, dynamic sweeping camera.",
+      "generation_method": "text_to_video",
+      "anchor_image": "assets/image_anchors/zaouli_core_motion_statue_legs.jpg",
+      "music_segment": "african_tribal_001.mp3:10-15",
+      "use_beat_sync": true,
+      "expected_beats_count": 5
+    },
+    {
+      "shot_index": 4,
+      "shot_name": "shot_04_impact_magic",
+      "kling_prompt": "Dynamic fast zoom-in shot of a tribal dancer stomping hard on the ground. Glowing magical dust and subtle light ripples emit from the ground where the foot impacts. Hyper-realistic, dramatic shadows, neon accents on traditional tribal patterns, cinematic action composition.",
+      "generation_method": "text_to_video",
+      "anchor_image": "assets/image_anchors/zaouli_magical_impact_glow.jpg",
+      "music_segment": "african_tribal_001.mp3:15-20",
+      "use_beat_sync": true,
+      "expected_beats_count": 3
+    }
+  ],
+  "post_production": {
+    "enable_phase_b": true,
+    "target_fps_output": 60,
+    "music_sync": "beat_aligned",
+    "color_grading": "surreal_neon_african",
+    "effects": ["volumetric_lighting", "magical_dust", "ripples", "bloom"]
+  }
+}

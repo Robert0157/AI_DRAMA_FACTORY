@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  suno-api:
+    image: gcui-art/suno-api:latest
+    container_name: suno-api
+    ports:
+      - "3000:3000"
+    environment:
+      - SUNO_COOKIE=${SUNO_COOKIE}
+      - BROWSER=${BROWSER:-chromium}
+      - BROWSER_HEADLESS=${BROWSER_HEADLESS:-true}
+      - BROWSER_LOCALE=${BROWSER_LOCALE:-en}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/get_limit"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - suno-network
+
+networks:
+  suno-network:
+    driver: bridge

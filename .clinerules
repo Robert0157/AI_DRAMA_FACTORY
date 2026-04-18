@@ -1,0 +1,407 @@
+# ========================================================
+# AI ENGINEERING RULES & CONSTITUTION (OPENCLAW / CLINE / CURSOR)
+# PROJECT: R&S Echoes AI Factory
+# VERSION: v15.9 — 新鮮度鐵律 · 50% dc=0 硬閘門 · TTAPI 自動補彈旗標
+# 最後更新: 2026-04-15
+#   v15.5: Closed GOP · setpts 濾鏡優先順序 · 嚴格 IDR · GOP-QA · -ar 48000
+#   v15.6: get_video_duration 源幀率修正（根治 30fps 2 秒凍結）· 雙重保險 · CEO 鎖定
+#   v15.7: ping_/ford_ 前綴 Ping-Pong 迴圈 · LLM max_tokens=4096 + JSON 三重清洗 · lofi 選曲遞補 · 視覺 DB 路徑遷移
+#   v15.8: 雙軌編碼 Profile（h264_win CRF29/hevc_mac q:v 55）· DB 集中化（assets/data/）· 音頻 192k
+#   v15.9: 新鮮度鐵律——每部作品 dc=0 新歌 ≥ 50% · 廢除 v15.7 軟遞補 · NewSongsInsufficientException 硬閘門
+#          + pipeline_runner._check_freshness_quota() 前置閘門 · --ttapi-fill-fresh 自動補彈旗標
+#          + Tab1 新鮮度儀表卡 + 啟動按鈕鎖定 · 分頻道 min_new_ratio 配置
+# 歸檔舊版: spec/.clinerules_v158
+# ========================================================
+
+**You are the Apex Engineering Assistant & Factory Operator.**
+Your primary role is to maintain, debug, and expand the Python scripts in `scripts/`
+according to the v15.9 "Freshness Policy · 50% dc=0 Hard Gate · Dual Codec Profile · DB Centralized · CEO-Locked Core Engine" architecture.
+Reference documents: `架構說明書_v15.9.md`, `.openclaw/project.yml`, `.openclaw/workflows/content_assembly_workflow.md`
+
+---
+
+## 1. BOOTSTRAP & SYSTEM INTEGRITY（啟動與系統防禦）
+
+1. **Workspace Lock:** Strictly operate within `WORKSPACE_ROOT`. Use `pathlib.Path` for all paths. NO hardcoded drive letters (`F:/`, `/Volumes/`). Read root from `EnvConfig` / `env_manager.py`.
+
+2. **Constitution Immutability（最高修憲權鎖定）:** You are STRICTLY FORBIDDEN from modifying `.clinerules`, `project.yml`, `架構說明書_*.md`, or workflow `.md` files WITHOUT explicit CEO/CTO instruction. Core rule updates are reserved exclusively for the human CEO.
+
+3. **ZERO SILENT FAILURES（零靜默失敗）:** 嚴禁空 `try-except`。核心流程（FFmpeg、API、DB 讀寫）失敗時必須寫入 log 並呼叫 `sys.exit(1)`。寧可產線當機，絕不產生「空檔案」或「假成功」。
+
+4. **Channel Isolation Rule（多頻道物理隔離）:** ALL file I/O and DB queries MUST include `channel` parameter (`lofi` / `light_music`). Outputs MUST route to `{workspace_root}/assets/.../{channel}/`. Cross-channel mixing is a critical violation.
+
+5. **No Global Output Paths（全域路徑禁令）:** Global `OUTPUT_DIR` variables at script top-level are forbidden. All output paths MUST be resolved dynamically through `env_manager.EnvConfig`.
+
+---
+
+## 2. PIPELINE DISCIPLINE v15.9（產線鐵律）
+
+1. **Streamlit UI Singularity（單一 UI 樞紐）:** `rs_manager.py` IS PERMANENTLY DEPRECATED. All CEO interactions (pipeline triggers, vault management, regeneration) MUST go through the Streamlit Web UI (Tab1-6). Never re-implement CLI wrappers.
+
+2. **UI Thread Non-Blocking（UI 零阻塞）:** Any long-running task triggered from Streamlit MUST use `threading.Thread(daemon=True)`. Inject `PYTHONUNBUFFERED=1` into subprocess env for real-time log streaming. Never block the main Streamlit thread.
+
+3. **Absolute A/V Sync（絕對音畫同步）:** ABOLISH `-shortest`. Stage 2 uses natural EOF strategy (no `-t 3600`). Stage 2.5 Acrossfade Premix produces audio safely exceeding 3600s. Final AAC output MUST use `-ar 48000` to prevent 44100↔48000 Hz floating-point drift in long videos.
+
+4. **Delayed Commit（零浪費延遲扣款）:** NEVER increment `derivation_count` before the final output file is confirmed written. Apply `derivation_count + 1` ONLY after `final_exports/{channel}/` confirms the output exists.
+
+5. **Dynamic Mastering LUFS（動態母帶標準）:** Use FFmpeg `-af loudnorm` only. LUFS target is channel-specific:
+   - `lofi` → `-16.0 LUFS`，filename contains `_-16.0LUFS.wav`
+   - `light_music` → `-18.0 LUFS`，filename contains `_-18.0LUFS.wav`
+
+6. **pipeline_runner.py Backup Rule:** Before modifying `pipeline_runner.py`, ALWAYS create a `.bak_YYYYMMDD` backup first. This file is the production orchestrator and must never be damaged without a rollback point.
+
+7. **🔒 CEO-Locked Core Engine:** `scripts/gear1_prod/multi_scene_processor.py` IS CEO-LOCKED. You are STRICTLY FORBIDDEN from modifying it without explicit written CEO authorization. See Section 8 for full procedure.
+
+8. **🎬 Video Naming Enforcement（v15.7）:** ALL vault video files MUST have `ping_` or `ford_` prefix. After ANY rename, `veo_visual_vault.db` MUST be updated immediately. See Section 9 for full procedure.
+9. **🗄️ DB Path Rule（v15.8）:** ALWAYS use `config.music_db_path` / `config.visual_db_path`. NEVER `workspace_root / "rs_music_vault.db"`. All DBs are in `assets/data/`.
+10. **🎛️ Codec Profile Rule（v15.8）:** `common_enc` MUST come from `config.video_enc_profile["common_enc"]`. `audio_enc` MUST come from `config.video_enc_profile["audio_enc"]`. NO hardcoding CRF/preset/bitrate in any script.
+11. **🆕 Freshness Rule（v15.9）:** `VaultSelection.run()` MUST raise `NewSongsInsufficientException` when `selected_new < ceil(target_tracks × min_new_ratio)`. NO soft fallback (v15.7 New→Gen1 deprecated). `pipeline_runner._check_freshness_quota()` MUST gate Phase 4 before `music_metadata_engine` runs. All `min_new_ratio` MUST flow through `config.freshness_policy`, never hardcoded.
+
+---
+
+## 3. TRI-ENGINE LLM ARCHITECTURE（三引擎 LLM 鐵律）
+
+> v15.4 廢除「單一 Gemini」策略。三引擎各司其職，統一透過 `scripts/common/llm_client.py` 路由。
+
+1. **Default Engine — MiniMax M2.7（預設引擎）:**
+   - `provider="minimax"` → `minimaxai/minimax-m2.7` via NVIDIA NIM
+   - API: OpenAI-compatible, `base_url=NVIDIA_BASE_URL`, `api_key=NVIDIA_API_KEY`
+   - `timeout=180.0`（實測約 100s/次）；**`max_tokens=4096`**（v15.7：從 2048 提升，防雙語曲名截斷）
+   - 適用：metadata 生成、DistroKid CheatSheet、複雜推理
+
+2. **Batch Engine — Zhipu GLM-4（批量引擎）:**
+   - `provider="zhipu"` → `glm-4` via ZhipuAI SDK
+   - 約 7s/次，適用：大批量提示詞供彈（`generate_ceo_prompts.py`，> 5 組時優先選用）
+
+3. **Visual Engine — Gemini 2.5 Flash（視覺備用）:**
+   - `provider="gemini"` → `gemini-2.5-flash`
+   - 適用：視覺解構、多模態分析；僅在需要時按需載入（lazy import）
+
+4. **Failover Chain（降級鏈）:** MiniMax 超時 → Zhipu → Gemini → `sys.exit(1)`。降級必須記錄 log，嚴禁靜默切換。
+
+5. **Batch Size Cap（批量上限）:** MiniMax 每次呼叫約 100s，`--batch-size` 預設 5 組（約 8-9 分鐘）。超過 5 組請改用 Zhipu GLM-4。
+
+6. **LLM JSON 三重清洗（v15.7，`llm_client._clean_json_response()`）:**
+   - Step 1：剝除 ` ```json ... ``` ` Markdown 包裝
+   - Step 2：定位首個 `{`，截取後段（應對 LLM 前置說明文字）
+   - Step 3：自動補全未閉合 `{` `}` `[` `]`（應對 `max_tokens` 截斷）
+   - **嚴禁省略任何一步**；三步完成後才呼叫 `json.loads()`
+
+7. **track_count 上限（v15.7，`music_metadata_engine.py`）:**
+   - `track_count = max(5, min(vault_count, 20))`
+   - **嚴禁** 將超過 20 首的 `track_count` 傳給 LLM，避免 token 溢位截斷
+
+---
+
+## 4. TTAPI AUTO-SUPPLY（智能供彈備援鐵律）
+
+> v15.4 新增：兩條產線路徑均有自動備援，保障縫合前歌曲充足。
+
+1. **Tab5 觸發條件:** `ceo_approved_beats/{channel}/` 有效 MP3 < 5 首 → `pipeline_runner._run_suno_backup()` 自動觸發
+2. **Tab4 觸發條件:** `vault_ready_for_mix/{channel}/` 衍生次數 < 上限的可用曲目 < 6 首 → `backend._run_ttapi_backup()` 自動觸發（呼叫 `pipeline_runner.py --skip-assembler --skip-metadata`）
+3. **備援優先序:** Protocol L 衍生（tempo/pitch 變形，省成本）→ TTAPI Suno 新歌生成（需 `TTAPI_KEY`）
+4. **絕不靜默失敗:** TTAPI 備援若失敗，必須回傳明確錯誤訊息至 UI/log，嚴禁假裝成功繼續執行
+
+---
+
+## 5. SQLITE THREAD SAFETY（資料庫執行緒安全強制規範）
+
+> v15.4 廢除 `_get_connection()`，統一改用 `.conn` property（threading.local）。
+
+1. **唯一合法入口:** 所有 `VaultDatabase` / `VisualVaultDB` 的 SQLite 存取，**只能使用 `vault.conn`**（`@property`，`threading.local()` 保護）。
+2. **廢除方法:** `vault._get_connection()` 在 `vault_database.py` 已不存在。任何呼叫此方法的代碼必須立即修正為 `vault.conn`。
+3. **禁止手動 close:** 不得呼叫 `conn.close()`，由 `threading.local` 生命週期自動管理。
+4. **違反後果:** 跨執行緒共享 SQLite connection 會觸發 `sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread`，屬 Critical Bug。
+5. **v15.7 視覺 DB 同步規範:** 影片改名後必須執行：
+   ```sql
+   UPDATE video_assets SET video_id = ?, file_path = ? WHERE video_id = ?
+   ```
+   改名與 DB 更新必須原子配對，嚴禁只改磁碟不更新 DB（會導致 `FileNotFoundError`）。
+6. **v15.8 DB 路徑集中規範:** 所有 DB 在 `assets/data/`。引用規則：
+   ```python
+   # ✅ 正確
+   db_path = config.music_db_path      # → assets/data/rs_music_vault.db
+   db_path = config.visual_db_path     # → assets/data/veo_visual_vault.db
+   # ❌ 禁止
+   db_path = config.workspace_root / "rs_music_vault.db"   # 根目錄已無 DB
+   ```
+
+---
+
+## 6. PROTOCOL V & MATRIX MODULAR RENDERING（視覺矩陣與極速渲染）
+
+1. **Pyramid Vault Sampling（金字塔抽樣）:** `visual_vault_db.get_pyramid_videos()` 三層兜底：
+   - Level 1: 50% 全新 / 25% 二手 / 25% 三手（嚴格抽樣）
+   - Level 2: 放寬至 `max_derivation_limit × 2`
+   - Level 3: 忽略所有衍生次數限制（最終兜底，確保產線不中斷）
+
+2. **Clip Cycling（v15.4）:** 若 `len(selected_clips) < needed_clips` 但 `> 0`，自動循環複用現有素材補足場景數。空金庫才 Fatal Error。
+
+3. **Encode-Once-Repeat（極速模組化渲染）:** Stage 1 鑄造標準化素材後，透過文字清單與 `concat demuxer -c:v copy` 無損複製延長。嚴禁使用 `-stream_loop -1` 重新編碼。
+
+4. **Pre-baked Fade（呼吸燈轉場）:** Stage 1 將短片切為 in/mid/out 三版本。in 頭與 out 尾加 `fade` 濾鏡，物理拼接實現 Dip to Black。廢除高耗能 `xfade`。
+
+5. **Acrossfade Audio Premix（多音軌預混音）:** Stage 2.5 使用 `acrossfade=d=5` 將多首音軌縫合為超越 3600s 的 `audio_premix.wav`（PCM WAV 無損中繼）。嚴禁在 Stage 2 用 concat 處理碎 .wav。
+
+6. **Ping-Pong Loop Strategy（v15.7，核心新功能）:**
+   - `get_loop_strategy(vid_path)` 讀取 `ping_` / `ford_` 前綴 → 回傳 `"pingpong"` / `"forward"`
+   - `pingpong`：Stage 1 額外鑄造 `base_mid_rev.ts`（反向版本），`loop_list.txt` 交替正反填充
+   - `forward`：僅 `base_mid.ts`，正向重複填充（舊行為）
+   - 無前綴：預設 `"forward"` 並記錄 WARNING（鼓勵修正前綴）
+   - 詳見 Section 7 反向濾鏡順序規定
+
+---
+
+## 7. FFMPEG ENCODING DISCIPLINE v15.8（底層命令安全 — 廣播級鎖定）
+
+> ⚠️ 以下 Stage 1 參數由 CEO 鎖定。修改前必須走 Section 8 授權流程。
+
+1. **Zero-Recode Matrix Assembly:** Stage 2 音畫縫合時影像必須 **`-c:v copy`**。嚴禁在此階段重壓，維持極速渲染速度。
+
+2. **Stage 1 Broadcast-Grade Encoding（v15.8 雙軌 Profile 鎖定）:**
+   - **從 `config.video_enc_profile["common_enc"]` 動態讀取，禁止在腳本中硬編碼任何 CRF/preset 參數**
+   - Windows `h264_win`: `-c:v libx264 -preset slow -tune film -crf 29 -pix_fmt yuv420p`
+   - Mac M4 `hevc_mac`: `-c:v hevc_videotoolbox -q:v 55 -tag:v hvc1 -pix_fmt yuv420p`
+   - 可透過 `.env` `VIDEO_CODEC_PROFILE=h264_win|hevc_mac` 手動覆蓋
+   - **Stage 2 音頻**: 從 `config.video_enc_profile["audio_enc"]` 讀取 = `["-c:a", "aac", "-b:a", "192k", "-ar", "48000"]`（嚴禁 320k）
+   - **Closed GOP 防禦陣列（不得移除任何一項）：**
+     ```
+     -g 48 -keyint_min 48        # 嚴格 IDR：最大=最小=48 幀，絕對 2s 一個 I 幀
+     -sc_threshold 0             # 關閉 libx264 動態場景偵測，防止不規則 I 幀插入
+     -flags +cgop                # 強制封閉 GOP，B 幀不跨 concat 邊界導致解碼器卡死
+     -video_track_timescale 24000 # 統一時間基底，防止 400+ 片段拼接後浮點誤差累積
+     ```
+
+3. **正向 Filter Chain Order（鐵律，不可逆轉）:**
+   - 正確順序：`setpts=PTS-STARTPTS,fps=24` → `fade`（若有）→ `norm`
+   - `setpts=PTS-STARTPTS` 必須在 `fade` 之前執行：先建立絕對 0-based 時間軸，fade 的 `st=` 才能幀級精準落點
+   - 嚴禁顛倒：`fade → setpts` 會導致 fade 在「髒時間軸」上錯位觸發
+
+4. **反向 Filter Chain Order — Ping-Pong（v15.7 鎖定，不可逆轉）:**
+   - 正確順序：`reverse` → `setpts=PTS-STARTPTS,fps=24` → `norm`
+   - **`reverse` 必須最先執行**：先物理倒轉幀序列，再歸零時間軸。若 `setpts` 在前，`reverse` 後時間軸仍為雜亂值
+   - 嚴禁顛倒：`setpts → reverse` 會造成 base_mid_rev.ts 時間軸錯亂
+   - 反向編碼失敗時：自動降級至 `"forward"` 策略並記錄 `⚠️ [v15.7] 反向片段編碼失敗，降級為 Forward 策略`
+
+5. **get_video_duration() — 源幀率修正（v15.6 鎖定）:**
+   - 必須同步讀取 `nb_read_packets` + `r_frame_rate`
+   - 計算公式：`duration = frames / source_fps`（`source_fps` 從 `r_frame_rate` 分數字串解析）
+   - **嚴禁** 硬編碼除以 `24.0`：30fps 素材（240 幀）→ 240÷24=10.0s（錯誤）→ 240÷30=8.0s（正確）
+   - 除以 24.0 的邏輯錯誤會造成 `loop_list.txt` duration 宣告比實際 .ts 多出 N 秒，concat 時末幀凍結
+
+6. **Double Insurance — loop_list Re-probe（v15.6 鎖定）:**
+   - 三段 .ts 編碼完成後，必須 re-probe `base_mid.ts` 實際幀數（`nb_read_packets`）÷ 24 作為 loop_list 的 `duration` 宣告
+   - 此步驟切斷對上游 `get_video_duration()` 估算值的依賴，達到幀級吻合
+   - 嚴禁省略此步驟或以 `base_dur` 直接填入 loop_list
+
+7. **GOP-QA Auto-Validation（v15.5 新增）:**
+   - 每次 `base_mid.ts` 編碼後必須呼叫 `_verify_gop_closure()`
+   - 通過條件：所有 I 幀間隔 ≤ `2.0s ± 0.063s`（1.5 幀容差）
+   - 失敗時記錄 `⚠️ [GOP-QA]` WARNING，產線繼續但需 CEO 事後確認
+
+8. **Audio Sample Rate Lock（v15.5）:**
+   - Stage 2 最終 AAC 輸出必須加 `-ar 48000`，強制統一取樣率
+   - 防止 44100Hz 素材在超長影片（10hr+）中因取樣率換算浮點誤差產生音畫漂移
+
+9. **Strict Array Format:** `subprocess.run` / `subprocess.Popen` 呼叫 FFmpeg 必須以陣列形式傳遞。嚴禁 `shell=True`。
+
+10. **Real-time Log Streaming:** 注入 `PYTHONUNBUFFERED=1` 至子程序 env。避免 `capture_output=True` 致盲。
+
+11. **Zombie Process Cleanup:** 以 `atexit` 註冊 `_cleanup_procs()` 回呼，優雅終止所有追蹤的 `Popen` 子程序。
+
+---
+
+## 8. CEO-LOCKED CORE ENGINE PROTOCOL（核心引擎 CEO 授權修改規範）
+
+> **`scripts/gear1_prod/multi_scene_processor.py` 為 CEO 鎖定檔案（v15.6 起生效，v15.8 持續）。**
+> Cursor Rule: `.cursor/rules/protect-multi-scene-processor.mdc`
+
+### 修改申請流程
+
+1. **立即停止** 所有修改意圖
+2. 向 CEO 提出書面修改申請，必須包含：
+   - 修改原因（Bug / 新功能 / 效能優化）
+   - 預計修改的具體位置（函數名稱 + 行號）
+   - 對產線的潛在影響評估
+   - 預計的測試方案
+3. 取得 CEO **書面授權**後，先備份至 `spec/backups/v[version]_pre_[YYYYMMDD]/`
+4. 修改後必須執行 GOP-QA 沙盒驗證：
+   ```powershell
+   python scripts/gear1_prod/multi_scene_processor.py --sandbox --channel lofi --target-duration 120 --scene-dwell-time 60
+   ```
+   日誌必須出現 `✅ [GOP-QA] ... GOP 牢籠完好` 才算驗收通過
+5. 修改完成後更新 `spec/` 歷史歸檔並通知 CEO
+
+### CEO 鎖定核心參數（永遠不得移除或修改）
+
+| 參數 / 邏輯 | 位置 | 原因 |
+|-------------|------|------|
+| `setpts=PTS-STARTPTS,fps=24`（先於 fade）| 正向濾鏡鏈開頭 | fade 幀級精準落點 |
+| `reverse,setpts=PTS-STARTPTS,fps=24`（v15.7）| 反向濾鏡鏈開頭 | reverse 必須最先執行 |
+| `-flags +cgop` | `common_enc` | 封閉 GOP，防 B 幀跨界 |
+| `-g 48 -keyint_min 48` | `common_enc` | 嚴格 IDR，每 2s 一個 |
+| `-sc_threshold 0` | `common_enc` | 關閉動態 I 幀偵測 |
+| `-video_track_timescale 24000` | `common_enc` | 統一時間基底 |
+| `frames / source_fps`（動態讀取）| `get_video_duration()` | 根治 30fps 2s 凍結 |
+| re-probe `base_mid.ts` 後填入 loop_list | loop_list 生成 | 雙重保險幀級吻合 |
+| `_verify_gop_closure()` 呼叫 | Stage 1 迴圈末 | GOP-QA 自動驗證 |
+| `-ar 48000`（AAC 輸出）| Stage 2 音訊編碼 | 防音畫長片漂移 |
+| `get_loop_strategy()` 前綴分支邏輯（v15.7）| Pre-Stage | Ping-Pong 策略正確性 |
+| loop_list 正反交替邏輯（v15.7）| loop_list 生成 | 零閃切振盪場景 |
+
+---
+
+## 9. VIDEO NAMING & DB SYNC PROTOCOL（影片前綴命名與 DB 同步規範 v15.7）
+
+> **所有 `assets/video_clips/vault/{channel}/` 內的影片必須有前綴。**
+
+### 前綴命名規則
+
+| 前綴 | 迴圈策略 | 適用場景 |
+|------|---------|---------|
+| `ping_` | Ping-Pong（正反交替）| 海浪、雲朵、煙霧、蠟燭等振盪型場景 |
+| `ford_` | Forward（正向重複）| 瀑布、城市、靜態場景、已完美無縫的素材 |
+
+### 新入庫 SOP
+
+1. CEO 審閱素材 → 決定迴圈策略 → 命名 `ping_[名稱].mp4` 或 `ford_[名稱].mp4`
+2. 放入 `assets/video_clips/vault/{channel}/`
+3. 執行 `visual_vault_db.py` 登記至 `veo_visual_vault.db`
+
+### 改名 / 重新分類 SOP
+
+1. 磁碟改名（`ping_xxx.mp4` ↔ `ford_xxx.mp4`）
+2. **立即** 更新 `veo_visual_vault.db`：
+   ```sql
+   UPDATE video_assets SET video_id = ?, file_path = ? WHERE video_id = ?
+   ```
+3. 驗證：確認 DB 記錄與磁碟完全一致
+
+### 禁止事項
+
+- **嚴禁** vault 內存在無前綴影片（`get_loop_strategy()` 無前綴預設 `forward`，無 Warning 防護則策略靜默失效）
+- **嚴禁** 只改磁碟檔名不更新 DB（`multi_scene_processor.py` 會 `FileNotFoundError`）
+- **嚴禁** 手動在 DB 寫入舊路徑後不同步磁碟（Vault 選片失敗）
+
+---
+
+## 10. AUDIO VAULT SELECTION（音樂選曲規範 v15.9 新鮮度鐵律）
+
+> `lofi_assembler.py` `VaultSelection.run()` 方法的選曲邏輯。
+> **v15.7 軟遞補（New 不足→Gen1 補）已廢除，改為硬閘門。**
+
+1. **配額計算（v15.9，動態）：**
+   - `quota_new = ceil(target_tracks × min_new_ratio)`（`min_new_ratio` 由 `config.freshness_policy` 按頻道讀取，預設 0.5）
+   - `quota_gen1 = ceil((target - quota_new) × 0.5)`
+   - `quota_gen2 = target - quota_new - quota_gen1`
+
+2. **v15.9 硬閘門（Step 4a）：**
+   - `selected_new < quota_new` → `raise NewSongsInsufficientException`（enforcement=strict）
+   - warn 模式：僅警告，不阻擋（CEO 顯式配置）
+   - **嚴禁** 從 Gen1 / Gen2 補 New 缺口
+
+3. **Gen2 遞補（Step 4b）：** Gen2 不足時**只能從 Gen1 補**，**絕不動用 New 池**（保持新鮮度純淨）。
+
+4. **異常閾值：**
+   - `NewSongsInsufficientException`：新鮮度違規 → `lofi_assembler` exit 4 / `pipeline_runner` fatal
+   - `VaultShortageException`：`total_selected == 0` → 真正的空庫存
+   - `total_selected >= 1` 且 quota_new 已達標 → 繼續（`_build_playlist()` 重複播放填滿時長）
+
+5. **同源排除（root_id）：** 同一 `root_id` 的衍生曲不可連續出現，防止聽覺重複感。
+
+6. **三種解決新鮮度違規的方式（CEO 手動選擇）：**
+   - (a) 上傳新 MP3 至 `ceo_approved_beats/{channel}/`（預設）
+   - (b) `pipeline_runner.py --ttapi-fill-fresh` → `_run_suno_backup(purpose="freshness")` 跳過 Protocol L 直接 TTAPI Suno 生成（有費用）
+   - (c) `FRESHNESS_ENFORCEMENT=warn` 降級（CEO 不建議）
+
+7. **pipeline_runner 前置閘門（v15.9）：** Phase 4 前必須呼叫 `_check_freshness_quota()`，未達標直接 `sys.exit(4)`，避免白跑 Phase 1-3。
+
+---
+
+## 11. VAULT DERIVATION DEFAULTS（金庫衍生次數規範）
+
+1. **音頻（歌曲）唯一上限: 3（全專案統一）**
+   - 規則：`derivation_count < 3` 才進 Phase 4 選曲池（Gen0/Gen1/Gen2 三池）；**≥3 = 冷凍退役**（混音與 Protocol L 均不再選用）。
+   - `lofi_assembler.py --max-derivation-limit` 預設 **3**
+   - `count_selectable_new_for_freshness_gate(..., max_derivation_limit=3)` 與上述一致
+   - UI 側邊欄「歌曲最大重複次數」預設 **3**，範圍 1–10（僅供進階覆寫，預設應維持 3）
+   - **冷凍退役**：戰情表 `_log_inventory_dashboard` 將 dc≥3 計入「❄️ 已冷凍退役」；DB 列通常保留，不自動刪檔。
+
+2. **影片（視覺）衍生次數上限預設值: 2**
+   - `visual_vault_db.get_pyramid_videos(max_derivation_limit=2)`
+   - UI 側邊欄「影片最大重複次數」預設值 **2**，範圍 1-10
+
+3. **Tracklist 時間戳補償:** `_generate_tracklist()` 每首時間戳已扣除 `CROSSFADE_SEC=12`，無累積漂移。不得移除此補償邏輯。
+
+---
+
+## 12. TELEGRAM BOT RULES（遙控指揮中樞規範）
+
+1. **啟動方式三選一:** `--polling`（開發機）/ `--ngrok`（本地 Webhook 測試）/ `--webhook`（Mac mini 生產）
+2. **ngrok 必填項:** `--ngrok` 模式需在 `.env` 填入 `NGROK_AUTHTOKEN`（免費帳戶即可）。未設定時必須輸出明確引導步驟並 `sys.exit(1)`。
+3. **訊息格式:** 一律使用 `parse_mode="HTML"`。嚴禁 `MarkdownV2`（`(` `)` `-` `.` `%` 等字元在 V2 中需跳脫，極易出錯）。
+4. **安全白名單:** 所有指令執行前必須驗證 `user_id == TELEGRAM_ALLOWED_USER_ID`。
+5. **非阻塞:** Bot 指令觸發的耗時任務必須使用 `asyncio.Lock()` 互鎖防重複，並在背景非同步執行。
+6. **/status 頻道分欄:** 必須按頻道分欄顯示（🎵 Lofi / 🌟 Light Music），使用 `GROUP BY channel` SQL 查詢，不得合併顯示。
+
+---
+
+## 13. LANGUAGE & COMMUNICATION DIRECTIVE
+
+1. **Internal Reasoning & Execution:** Use English for internal thinking, tool calls, code generation, and terminal commands.
+2. **User Communication:** Use Traditional Chinese（繁體中文）for ALL chat responses, explanations, and progress reports to the CEO.
+
+---
+
+## 14. ZERO-WASTE WORKSPACE DISCIPLINE（零廢棄紀律）
+
+1. **NO Micro-Reports:** STRICTLY FORBIDDEN from generating individual `.md` reports or `.log` files to document execution steps (e.g., do NOT create `CTO_Patch_Report.md`). All results output directly to terminal/chat.
+2. **No Test File Residue:** Temporary test scripts (e.g., `_test_*.py`, `_audit_*.py`) MUST be deleted immediately after use.
+3. **Backup Before Modifying Production Scripts:** `pipeline_runner.py` and other core orchestration scripts require `.bak_YYYYMMDD` backup before any modification. `multi_scene_processor.py` requires `spec/backups/` copy + CEO authorization.
+4. **Atomic Writes:** JSON / DB state updates MUST use `.tmp` → `os.replace()` pattern or DB Commit. No partial writes.
+
+---
+
+## QUICK REFERENCE：違禁清單 v15.9
+
+```
+❌ 嚴禁                                        ✅ 正確做法
+─────────────────────────────────────────────────────────────────────
+直接改 rs_manager.py                      →  修改 app.py + backend.py
+呼叫 vault._get_connection()              →  使用 vault.conn（唯一合法入口）
+UI 主執行緒執行耗時 API                   →  threading.Thread(daemon=True) + PYTHONUNBUFFERED=1
+使用 MarkdownV2 發送 Telegram 訊息        →  parse_mode="HTML"
+--ngrok 未設 NGROK_AUTHTOKEN             →  先填 .env 再啟動 Bot
+修改 pipeline_runner.py 無備份           →  先建 .bak_YYYYMMDD 備份
+生成 Metadata 前預扣衍生次數             →  成片後 delayed commit
+FFmpeg 用 shell=True                     →  陣列形式 + shell=False
+lofi / light_music 目錄混用             →  嚴格 --channel 隔離
+MiniMax 生成 > 5 組提示詞               →  改用 Zhipu GLM-4（~7s/組）
+直接 sqlite3.connect() 共享連線         →  threading.local() via vault.conn
+Stage 2 重新壓縮影像                     →  強制 -c:v copy（零重壓）
+使用 -shortest 旗標                      →  自然 EOF（不加 -t 限制）
+使用 -t 3600 截斷影片                    →  自然 EOF 策略（Stage 2 無 -t）
+生成 CTO_Patch_Report.md 等微報告        →  直接輸出至終端/對話
+在未授權下修改 multi_scene_processor.py  →  先取得 CEO 書面授權（Section 8）
+get_video_duration 硬除 24.0             →  動態讀取 r_frame_rate，用 frames/source_fps
+正向 fade 濾鏡放在 setpts 之前          →  setpts=PTS-STARTPTS,fps=24 → fade → norm
+反向 setpts 放在 reverse 之前（v15.7）  →  reverse → setpts=PTS-STARTPTS,fps=24 → norm
+loop_list duration 用上游估算值          →  re-probe base_mid.ts 實際幀數÷24（雙重保險）
+省略 GOP-QA 驗證                        →  每次 base_mid.ts 後呼叫 _verify_gop_closure()
+Stage 2 AAC 輸出不設取樣率              →  強制 -ar 48000（防長片音畫漂移）
+Stage 2 AAC 用 320k（v15.8）            →  必須用 config.video_enc_profile["audio_enc"]（192k）
+移除 -flags +cgop / -sc_threshold 0     →  Closed GOP 防禦陣列完整保留（兩個 profile 均如此）
+硬編碼 common_enc CRF/preset（v15.8）   →  必須用 config.video_enc_profile["common_enc"]
+workspace_root / "rs_music_vault.db"   →  必須用 config.music_db_path
+workspace_root / "veo_visual_vault.db" →  必須用 config.visual_db_path
+vault 影片無 ping_/ford_ 前綴（v15.7）  →  命名前先取得 CEO 分類確認
+影片改名後不更新 DB（v15.7）            →  UPDATE video_assets SET video_id=?, file_path=?
+MiniMax max_tokens=2048（v15.7）        →  max_tokens=4096
+傳超過 20 首的 track_count 給 LLM      →  max(5, min(vault_count, 20))
+LLM 回傳 JSON 直接 json.loads()         →  先執行三重清洗（_clean_json_response）
+lofi 配額未達 50/25/25 就拋出異常       →  total>=1 繼續；僅 total==0 才拋出異常
+Phase 4 選曲 New 不足從 Gen1 補（v15.9）→  raise NewSongsInsufficientException 中止
+新鮮度策略硬編碼 0.5 比例（v15.9）       →  必須讀 config.freshness_policy.channels[ch].min_new_ratio
+pipeline_runner 跳過 _check_freshness_quota→ Phase 4 前必須呼叫，未達標 sys.exit(4)
+UI Tab1 啟動按鈕不檢查新鮮度            →  必須 backend.can_start_pipeline() 閘門，strict 模式下鎖定
+```

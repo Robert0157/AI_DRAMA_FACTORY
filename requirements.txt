@@ -1,0 +1,13 @@
+playwright>=1.40.0
+playwright-stealth==2.0.3
+beautifulsoup4==4.12.3
+requests==2.31.0
+python-dotenv==1.0.1
+# MiniMax via NVIDIA NIM (OpenAI-compatible API) — music_metadata_engine / llm_client
+openai>=1.40.0
+yt-dlp==2024.5.26
+zhipuai==2.1.5
+sniffio
+PyJWT==2.9.0
+python-telegram-bot==20.3
+edge-tts==6.1.9

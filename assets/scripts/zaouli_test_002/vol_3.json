@@ -1,0 +1,74 @@
+[
+  {
+    "shot_id": "shot_25",
+    "description": "極限慢動作 - 塵埃粒子漂浮",
+    "duration": 5,
+    "kling_prompt": "Extreme slow-motion macro shot of fine desert dust particles suspended in mid-air, illuminated by golden volumetric light. Each particle is photorealistic, catching prismatic light. Surreal dreamlike quality, 8k detail."
+  },
+  {
+    "shot_id": "shot_26",
+    "description": "低角度追蹤 - 面具旋轉動態",
+    "duration": 5,
+    "kling_prompt": "Low-angle tracking shot following tribal dancer's mask as it rotates with hypnotic motion. Intricate patterns catch light and shadow. Background blurs with velocity. High contrast, cinematic depth."
+  },
+  {
+    "shot_id": "shot_27",
+    "description": "廣角環景 - 多層幻影重疊",
+    "duration": 5,
+    "kling_prompt": "Wide panoramic shot revealing multiple overlapping phantom images of the same dancer at different poses, creating ghostly multi-exposure effect. Neon cyan halos around each figure. Surrealistic dreamy atmosphere."
+  },
+  {
+    "shot_id": "shot_28",
+    "description": "近景特寫 - 腳踝鈴鐺共鳴",
+    "duration": 5,
+    "kling_prompt": "Close-up macro shot of intricate silver ankle bells resonating with vibration, sound waves visualized as neon concentric circles propagating outward. Dust swirls synchronously with vibration. Photorealistic physics simulation."
+  },
+  {
+    "shot_id": "shot_29",
+    "description": "極速旋轉 - 環境失焦模糊",
+    "duration": 5,
+    "kling_prompt": "Ultra-fast 360-degree rotation shot of dancer spinning at impossible speeds. The dancer is razor-sharp focus while entire desert landscape becomes motion-blurred streaks. Cinematic, dynamic energy, 4K."
+  },
+  {
+    "shot_id": "shot_30",
+    "description": "微距特寫 - 鮮豔服飾紋理",
+    "duration": 5,
+    "kling_prompt": "Extreme macro close-up of colorful woven fabric fringe and beaded costume details. Each thread and bead rendered in photorealistic hyper-detail, catching light with metallic sheen. Shallow depth of field, artistic focus."
+  },
+  {
+    "shot_id": "shot_31",
+    "description": "俯視無人機 - 沙地光線軌跡",
+    "duration": 5,
+    "kling_prompt": "Aerial overhead view of dancer from 50 meters altitude. Neon light trails trace each footstep pattern on the sand below, creating glowing geometric designs. Volumetric atmosphere, dust waves rippling outward."
+  },
+  {
+    "shot_id": "shot_32",
+    "description": "暗調戲劇 - 隆起陰影輪廓",
+    "duration": 5,
+    "kling_prompt": "Dramatically backlit silhouette shot of tribal dancer against glowing desert sunset. Only the outline is visible, with intense rim lighting highlighting costume edges. Mysterious, cinematic, high contrast black and gold."
+  },
+  {
+    "shot_id": "shot_33",
+    "description": "極限變焦 - 面具細節漸變模糊",
+    "duration": 5,
+    "kling_prompt": "Extreme close-up of tribal mask with rapid focus pulling. Starts macro-focused on intricate carved details, then pulls back revealing full mask, then zooms to eyes. Each transition is sharp and dynamic. Artistic focus choreography."
+  },
+  {
+    "shot_id": "shot_34",
+    "description": "幻影殘像 - 舞步軌跡多重曝光",
+    "duration": 5,
+    "kling_prompt": "Multiple-exposure effect showing dancer's footsteps as ghostly phantom trails. Each step creates a luminescent footprint that fades to neon purple. Time-lapse quality, surreal dreamy aesthetic, cinematic mood."
+  },
+  {
+    "shot_id": "shot_35",
+    "description": "聲波視覺化 - 鼓聲衝擊波",
+    "duration": 5,
+    "kling_prompt": "Abstract visualization of sound waves emanating from each stomp. Concentric rings of neon energy ripple outward across the sand, synced to bass beats. Cinematic particle effects, volumetric lighting, 8k."
+  },
+  {
+    "shot_id": "shot_36",
+    "description": "結尾漸淡 - 沙海無限延伸",
+    "duration": 5,
+    "kling_prompt": "Wide landscape shot of dancer in center of vast infinite desert dune field. Camera slowly pulls back revealing endless waves of golden sand under starlit sky. Ethereal, contemplative, fadeout mood, cinematic 4K."
+  }
+]

@@ -1,0 +1,40 @@
+# 將本儲存庫以 git mirror 推送到「備份用」第二個 GitHub repo。
+# 需設定 Secret：BACKUP_MIRROR_URL（見 .github/BACKUP_REPO.md）
+# 本機同等指令：python scripts/maintenance/push_backup_mirror.py
+name: Backup mirror (secondary repo)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每週日 05:00 UTC（可視需要調整）
+    - cron: "0 5 * * 0"
+
+concurrency:
+  group: backup-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout full history + tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Push mirror to backup remote
+        env:
+          BACKUP_URL: ${{ secrets.BACKUP_MIRROR_URL }}
+        run: |
+          set -e
+          if [ -z "$BACKUP_URL" ]; then
+            echo "::warning::BACKUP_MIRROR_URL 未設定，已略過備份。請參閱 .github/BACKUP_REPO.md"
+            exit 0
+          fi
+          git remote add rs-backup-mirror "$BACKUP_URL"
+          git push rs-backup-mirror --mirror
+          git remote remove rs-backup-mirror

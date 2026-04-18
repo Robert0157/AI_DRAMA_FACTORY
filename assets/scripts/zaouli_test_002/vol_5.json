@@ -1,0 +1,74 @@
+[
+  {
+    "shot_id": "shot_49",
+    "description": "序列轉折 - 節奏變速加速",
+    "duration": 5,
+    "kling_prompt": "Medium shot showing dancer's movements visibly accelerating. Footsteps increase in frequency, creating staccato rapid-fire pattern. Music tempo appears to quicken. Dynamic energy buildup, cinematic acceleration effect, 4K motion capture."
+  },
+  {
+    "shot_id": "shot_50",
+    "description": "絲絹飄舞 - 服飾漫延動態",
+    "duration": 5,
+    "kling_prompt": "Artistic medium shot focusing on dancer's vibrant fringe garment in extreme close-up. Each strand moves individually like liquid silk, flowing and coiling around body. Slow-motion grace, photorealistic fabric physics, artistic depth of field."
+  },
+  {
+    "shot_id": "shot_51",
+    "description": "雙重曝光 - 人與景融合",
+    "duration": 5,
+    "kling_prompt": "Creative double-exposure shot merging dancer's silhouette with desert landscape textures. Dunes appear to form the mask pattern, sand drifts create fringe details. Artistic surreal blend, high-contrast B&W with color accents."
+  },
+  {
+    "shot_id": "shot_52",
+    "description": "地心吸力反轉 - 懸浮舞蹈",
+    "duration": 5,
+    "kling_prompt": "Creative surreal shot of dancer appearing to float and drift through air as if defying gravity. Body hovers above ground with no visible support. Ethereal wisps swirl around. Dreamlike impossible physics, cinematic fantasy mood."
+  },
+  {
+    "shot_id": "shot_53",
+    "description": "黑光紫外 - 隱形圖案顯現",
+    "duration": 5,
+    "kling_prompt": "Creative blacklight ultraviolet shot where hidden fluorescent patterns on dancer's costume become visible. Intricate tribal designs glow brilliant neon pink and cyan. Dramatic contrast, artistic photography, surreal aesthetics."
+  },
+  {
+    "shot_id": "shot_54",
+    "description": "地震波 - 沙地律動紋理",
+    "duration": 5,
+    "kling_prompt": "Wide ground-level shot showing rhythmic waves of sand rippling outward from dancer's footsteps like seismic activity. Sands form concentric circles and patterns. Volumetric particles suspended in each wave. Epic geologic motion, 8k."
+  },
+  {
+    "shot_id": "shot_55",
+    "description": "低調神祕 - 松明火光環繞",
+    "duration": 5,
+    "kling_prompt": "Moody atmospheric shot of dancer in ritual torch circle at dusk. Flickering firelight dances across mask and costume details. Shadows stretch and shrink. Ancient ceremonial mood, dramatic low-key lighting, cinematic mystique."
+  },
+  {
+    "shot_id": "shot_56",
+    "description": "極速定格 - 瞬間凝結時間",
+    "duration": 5,
+    "kling_prompt": "Dramatic freeze-frame shot capturing dancer mid-movement with perfect clarity. Dust particles frozen in mid-air around dancer. Background motion-blurred but subject perfectly sharp. High-speed photography effect, cinematic precision."
+  },
+  {
+    "shot_id": "shot_57",
+    "description": "萬千破碎 - 玻璃鏡像粉碎",
+    "duration": 5,
+    "kling_prompt": "Creative visual effect shot of dancer viewed through shattering glass or mirror fragments. Each fragment shows slightly different angle/pose of dancer. Surreal fractured perspective, pieces falling and dissolving. Artistic surrealism."
+  },
+  {
+    "shot_id": "shot_58",
+    "description": "低空掠過 - 地面急速平移",
+    "duration": 5,
+    "kling_prompt": "Dynamic ground-level camera racing horizontally past dancer at high speed. Dancer remains centered while landscape blurs. Creates sense of impossible velocity. Cinematic action shot, 4K motion, dynamic energy."
+  },
+  {
+    "shot_id": "shot_59",
+    "description": "靈魂出竅 - 光體分離漂浮",
+    "duration": 5,
+    "kling_prompt": "Surreal mystical shot where glowing light-body emerges and separates from dancer's physical form. Both figures visible: solid dancer and glowing ethereal duplicate hovering upward. Fantasy spiritual aesthetic, neon glow effects."
+  },
+  {
+    "shot_id": "shot_60",
+    "description": "第五鏡頭結尾 - 藝術漸淡黑",
+    "duration": 5,
+    "kling_prompt": "Artistic finale shot of dancer silhouette gradually fading to black. Light gradually dims from golden ambient to complete darkness. Slow fade provides contemplative artistic closure. Cinematically paced ending transition, 8k quality."
+  }
+]

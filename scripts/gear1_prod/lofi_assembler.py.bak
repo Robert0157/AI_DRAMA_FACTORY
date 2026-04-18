@@ -1,0 +1,896 @@
+﻿#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+lofi_assembler.py — Phase 4 無縫縫合機 v2.0 (CTO 戰略修正版)
+將存放於 vault_ready_for_mix/ 的多首單曲，以 FFmpeg acrossfade 濾鏡
+融合成一首長達 1 小時的無縫長曲，並以平滑淡出收尾。
+輸出格式：純音頻 .wav（無影片），用於 YouTube 頻道上傳。
+"""
+from __future__ import annotations
+import argparse
+import json
+import random
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+# --- 路徑鐵律：引入動態 config，禁止硬編碼磁碟路徑 ---
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+from scripts.common.env_manager import config
+from scripts.gear2_rnd.vault_database import VaultDatabase
+import math
+import re
+
+# ─────────────────────────────────────────────
+#  自定義異常
+# ─────────────────────────────────────────────
+class VaultShortageException(Exception):
+    """庫存不足異常：無法滿足最低選曲需求"""
+    pass
+
+# ─────────────────────────────────────────────
+#  常數設定
+# ─────────────────────────────────────────────
+VAULT_DIR            = config.workspace_root / "assets" / "audio" / "vault_ready_for_mix"
+OUTPUT_DIR           = config.workspace_root / "assets" / "final_exports"
+LEARNING_LOG         = config.workspace_root / "project_learning.md"
+TARGET_DURATION_SEC  = 3600   # 目標輸出長度：1 小時
+CROSSFADE_SEC        = 12     # acrossfade 交叉淡化秒數（雙向各 6 秒）
+FINAL_FADEOUT_SEC    = 10     # 結尾 afade 淡出秒數
+MIN_TRACK_DURATION   = 15     # 低於此秒數的音檔直接跳過，避免 acrossfade 出錯
+SUPPORTED_EXTS = {".wav", ".mp3", ".flac", ".aiff", ".m4a"}
+# ─────────────────────────────────────────────
+#  致命錯誤處理器（全局鐵律：記錄 + sys.exit(1)）
+# ─────────────────────────────────────────────
+def _log_fatal(msg: str) -> None:
+    """將致命錯誤 Append 寫入 project_learning.md，禁止靜默失敗。"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = f"\n\n## [{timestamp}] lofi_assembler.py 致命錯誤\n{msg}\n"
+    try:
+        with open(LEARNING_LOG, "a", encoding="utf-8") as f:
+            f.write(entry)
+    except Exception:
+        pass
+# ─────────────────────────────────────────────
+#  ffprobe 取得音頻精確秒數
+# ─────────────────────────────────────────────
+def _get_duration(audio_path: Path) -> float:
+    """使用 ffprobe 量測音頻精確秒數（符合「音樂先行」鐵律）。"""
+    cmd = [
+        "ffprobe", "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "json",
+        str(audio_path),
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        data = json.loads(result.stdout)
+        return float(data["format"]["duration"])
+    except Exception as e:
+        raise RuntimeError(f"ffprobe 無法讀取 [{audio_path.name}]: {e}")
+# ─────────────────────────────────────────────
+#  掃描 Vault 資料夾
+# ─────────────────────────────────────────────
+def _scan_vault(vault_dir: Path) -> list[Path]:
+    """掃描指定資料夾，回傳所有支援格式的音頻檔案（按修改時間倒序排列，最新優先）。【CTO v9.0 修復】確保新素材優先使用。"""
+    vault_dir.mkdir(parents=True, exist_ok=True)
+    valid_files = []
+    try:
+        for item in vault_dir.iterdir():
+            try:
+                # 只掃描檔案，不掃描目錄；檢查副檔名
+                if item.is_file() and item.suffix.lower() in SUPPORTED_EXTS:
+                    valid_files.append(item)
+            except (OSError, PermissionError) as e:
+                # 跳過無法讀取的項目，繼續掃描
+                print(f"[VAULT_SCAN] ⚠️  無法讀取 {item.name}: {e}")
+                continue
+    except Exception as e:
+        print(f"[VAULT_SCAN] 警告: 掃描 {vault_dir} 時遇到異常: {e}")
+        # 繼續使用已收集的有效檔案
+    
+    # 【CTO v9.0 修復】按修改時間倒序排列（最新的檔案優先）
+    valid_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    
+    return valid_files
+# ─────────────────────────────────────────────
+#  建立播放清單（隨機選取 + 重複直到超過目標長度）
+# ─────────────────────────────────────────────
+def _build_playlist(
+    all_tracks: list[Path],
+    durations: dict[Path, float],
+    target_sec: int,
+) -> list[Path]:
+    """
+    隨機選取並重複拼接歌曲，直到考量 crossfade 重疊後的總長度 >= target_sec。
+    每跑完一輪就重新洗牌，避免曲目順序過於重複。
+    """
+    playlist: list[Path] = []
+    accumulated = 0.0
+    shuffled = all_tracks[:]
+    random.shuffle(shuffled)
+    cycle_idx = 0
+    while accumulated < target_sec:
+        track = shuffled[cycle_idx % len(shuffled)]
+        # 第一首全量累計；之後每首扣除 crossfade 重疊秒數
+        accumulated += durations[track] if not playlist else (durations[track] - CROSSFADE_SEC)
+        playlist.append(track)
+        cycle_idx += 1
+        # 每完整跑完一輪就重新洗牌
+        if cycle_idx % len(shuffled) == 0:
+            random.shuffle(shuffled)
+    return playlist
+
+# ─────────────────────────────────────────────
+#  v9.5 智能選曲演算法：50/25/25 排播矩陣 + 同源排斥
+# ─────────────────────────────────────────────
+class VaultSelection:
+    """v9.5 Vault 智能選曲引擎 (Bucketing + Anti-Collision)"""
+    
+    def __init__(self, target_tracks: int = 20):
+        """
+        初始化選曲引擎
+        
+        Args:
+            target_tracks: 目標選曲數量（默認 20 首）
+        """
+        self.target_tracks = target_tracks
+        self.db = VaultDatabase()
+        self.used_roots = set()
+        self.playlist = []
+        
+    def _extract_root_id(self, track_id: str) -> str:
+        """
+        從 track_id 中解析出基因 Root ID。
+        核心策略：移除所有衍生後綴，保留基原 ID
+        
+        例如：
+          - "R&S_Echoes_20260404_153000_tempo_up" → "R&S_Echoes_20260404_153000"
+          - "original_track_pitch_down" → "original_track"
+        """
+        root = track_id
+        
+        # 列出所有可能的衍生後綴
+        suffixes = [
+            "_tempo_up", "_tempo_down", 
+            "_pitch_up", "_pitch_down",
+            "_reverb", "_chorus",
+            "_speed_up", "_speed_down"
+        ]
+        
+        for suffix in suffixes:
+            if suffix in root:
+                # 只移除最後一次出現
+                parts = root.rsplit(suffix, 1)
+                root = parts[0]
+        
+        return root.strip() if root else track_id
+    
+    def _extract_root_from_filename(self, filename: str) -> str:
+        """從檔名中解析 Root ID（備用方法，以防 track_id 格式不一致）"""
+        # 移除副檔名
+        name = filename.rsplit('.', 1)[0] if '.' in filename else filename
+        # 移除前綴序號
+        name = re.sub(r'^\d+_', '', name)
+        # 移除後綴
+        name = re.sub(r'(_tempo_up|_tempo_down|_pitch_up|_pitch_down|_reverb|_chorus|_YT|-16LUFS).*$', '', name, flags=re.IGNORECASE)
+        return name
+    
+    def _select_from_pool(self, pool: list[dict], quota: int) -> list[dict]:
+        """
+        從指定的 pool 中選取指定數量的曲目，實施同源排斥機制
+        
+        Args:
+            pool: track 記錄列表 (含 track_id, original_path, derivation_count)
+            quota: 需要選取的數量
+            
+        Returns:
+            已選取的 track 記錄列表
+        """
+        selected = []
+        pool_copy = pool[:]
+        random.shuffle(pool_copy)
+        
+        for track_record in pool_copy:
+            if len(selected) >= quota:
+                break
+                
+            track_id = track_record.get("track_id", "")
+            original_path = track_record.get("original_path", "")
+            root = self._extract_root_id(track_id)
+            
+            # 同源排斥檢查：若該基因已使用，跳過
+            if root in self.used_roots:
+                continue
+            
+            # 確認檔案存在
+            file_path = VAULT_DIR / Path(original_path).name
+            if not file_path.exists():
+                continue
+            
+            selected.append(track_record)
+            self.used_roots.add(root)
+        
+        return selected
+    
+    def run(self) -> list[Path]:
+        """
+        執行 v9.5 50/25/25 選曲演算法
+        
+        Returns:
+            已選定的播放清單 (Path 列表)
+            
+        Raises:
+            VaultShortageException: 庫存不足無法滿足選曲需求
+        """
+        # 第一步：從資料庫讀取所有 track，按 derivation_count 分組
+        all_tracks = self.db.get_all_tracks(order_by="derivation_count ASC, created_at DESC")
+        
+        pool_new = [t for t in all_tracks if t.get("derivation_count", 0) == 0]
+        pool_gen1 = [t for t in all_tracks if t.get("derivation_count", 0) == 1]
+        pool_gen2 = [t for t in all_tracks if t.get("derivation_count", 0) == 2]
+        
+        print(f"\n[VAULT_V95] 庫存分佈：新歌={len(pool_new)}, Gen1={len(pool_gen1)}, Gen2={len(pool_gen2)}")
+        
+        # 第二步：計算配額
+        quota_new = math.ceil(self.target_tracks * 0.50)
+        quota_gen1 = math.ceil(self.target_tracks * 0.25)
+        quota_gen2 = self.target_tracks - quota_new - quota_gen1
+        
+        print(f"[VAULT_V95] 配額目標：新歌={quota_new}, Gen1={quota_gen1}, Gen2={quota_gen2}")
+        
+        # 第三步：按配額從各 pool 選取（同源排斥）
+        selected_new = self._select_from_pool(pool_new, quota_new)
+        selected_gen1 = self._select_from_pool(pool_gen1, quota_gen1)
+        selected_gen2 = self._select_from_pool(pool_gen2, quota_gen2)
+        
+        print(f"[VAULT_V95] 實際選取：新歌={len(selected_new)}, Gen1={len(selected_gen1)}, Gen2={len(selected_gen2)}")
+        
+        # 第四步：動態降級 - 若 Gen2 不足，從 New 補足
+        deficit = quota_gen2 - len(selected_gen2)
+        if deficit > 0:
+            print(f"[VAULT_V95] ⚠️  Gen2 跤貨 {deficit} 首，嘗試從 New 補足...")
+            additional_from_new = self._select_from_pool(pool_new, deficit)
+            selected_new.extend(additional_from_new)
+            deficit -= len(additional_from_new)
+        
+        # 第五步：若仍無法滿足，拋出異常
+        total_selected = len(selected_new) + len(selected_gen1) + len(selected_gen2)
+        if total_selected < self.target_tracks:
+            shortage = self.target_tracks - total_selected
+            msg = f"庫存不足：僅能選取 {total_selected} 首，需要 {self.target_tracks} 首，缺少 {shortage} 首"
+            raise VaultShortageException(msg)
+        
+        # 第六步：將 track 記錄轉換為 Path，打亂順序並回傳
+        all_selected_records = selected_new + selected_gen1 + selected_gen2
+        
+        # 【CTO 緊急指令】實裝選曲寫回機制 - 安全的資料庫連接方式
+        print(f"[VAULT_V95] 📝 正在將 {len(all_selected_records)} 首選中曲目的使用次數寫回資料庫...")
+        
+        # 安全地獲取連接 - 使用 VaultDatabase 的私有方法
+        conn = self.db._get_connection()
+        cursor = conn.cursor()
+        
+        if not cursor or not conn:
+            print("[VAULT_V95] ⚠️ 資料庫連接不可用，跳過寫回")
+        else:
+            for record in all_selected_records:
+                track_id = record.get("track_id")
+                if track_id:
+                    try:
+                        # 直接執行 SQL 將 derivation_count + 1
+                        cursor.execute(
+                            "UPDATE audio_assets SET derivation_count = derivation_count + 1 WHERE track_id = ?",
+                            (track_id,)
+                        )
+                    except Exception as e:
+                        print(f"[VAULT_V95] ⚠️ 更新 {track_id} 計數失敗: {e}")
+            
+            # Commit 變更
+            try:
+                conn.commit()
+                print(f"[VAULT_V95] ✅ 成功寫回 {len(all_selected_records)} 首曲目的使用次數")
+            except Exception as e:
+                print(f"[VAULT_V95] ⚠️ Commit 失敗: {e}")
+        
+        conn.close()
+        
+        playlist = []
+        for record in all_selected_records:
+            original_path = record.get("original_path", "")
+            file_path = VAULT_DIR / Path(original_path).name
+            playlist.append(file_path)
+        
+        random.shuffle(playlist)
+        
+        print(f"[VAULT_V95] ✅ 成功選取 {len(playlist)} 首，已實施同源排斥 (獨立基因={len(self.used_roots)})")
+        return playlist
+
+def _scan_vault_v95(target_tracks: int = 20) -> list[Path]:
+    """
+    v9.5 新選曲引擎包裝函數（公用介面）
+    
+    Args:
+        target_tracks: 目標選曲數量
+        
+    Returns:
+        已選定的播放清單
+        
+    Raises:
+        VaultShortageException: 庫存不足
+    """
+    selection = VaultSelection(target_tracks=target_tracks)
+    return selection.run()
+
+# ─────────────────────────────────────────────
+#  計算 crossfade 後的精確輸出總秒數
+# ─────────────────────────────────────────────
+def _compute_output_duration(playlist: list[Path], durations: dict[Path, float]) -> float:
+    """計算所有 acrossfade 重疊後的實際輸出長度（秒）。"""
+    total = 0.0
+    for i, track in enumerate(playlist):
+        total += durations[track] if i == 0 else (durations[track] - CROSSFADE_SEC)
+    return total
+
+# ─────────────────────────────────────────────
+#  提取乾淨的曲名（CTO v9.0 時間軸任務）
+# ─────────────────────────────────────────────
+def _extract_clean_title(filename: str) -> str:
+    """
+    【商業化升級】從檔名中剝離序號與後綴，還原真實曲名並標註效果標籤。
+    
+    範例：
+      001_Midnight_Rain_YT_-16LUFS.wav → Midnight Rain
+      002_Coffee_and_Code_tempo_up_YT_-16LUFS.mp3 → Coffee and Code [Remix 1]
+      003_Neon_Solitude_pitch_down_YT_-16LUFS.wav → Neon Solitude [Remix 3]
+    
+    效果映射：
+      - tempo_up → Remix 1 (加速)
+      - tempo_down → Remix 2 (減速)
+      - pitch_down → Remix 3 (降調)
+      - pitch_up → Remix 4 (升調)
+    """
+    import re
+    
+    # 移除檔案副檔名
+    name = filename.rsplit('.', 1)[0] if '.' in filename else filename
+    
+    # 偵測效果標籤
+    remix_tags = {
+        r'tempo_up': '[Remix 1]',
+        r'tempo_down': '[Remix 2]',
+        r'pitch_down': '[Remix 3]',
+        r'pitch_up': '[Remix 4]',
+    }
+    
+    remix_suffix = ""
+    for pattern, tag in remix_tags.items():
+        if re.search(pattern, name, re.IGNORECASE):
+            remix_suffix = f" {tag}"
+            # 移除效果標籤本身
+            name = re.sub(pattern, '', name, flags=re.IGNORECASE)
+            break
+    
+    # 移除前綴序號（例：001_ 或 01_ 或 1_）
+    name = re.sub(r'^\d+_', '', name)
+    
+    # 移除後綴模式（例：_YT、-16LUFS、_YT_-16LUFS、_2026XXXX 等）
+    name = re.sub(r'(_YT|_-16LUFS|-16LUFS|_YT_-16LUFS|_2026\d+).*$', '', name, flags=re.IGNORECASE)
+    
+    # 移除孤立的底線（由效果標籤移除後遺留）
+    name = re.sub(r'_+$', '', name)
+    
+    # 將底線替換回空格
+    name = name.replace('_', ' ')
+    
+    # 清理多個空格
+    name = re.sub(r'\s+', ' ', name).strip()
+    
+    return (name if name else "Unknown Track") + remix_suffix
+
+# ─────────────────────────────────────────────
+#  生成 Tracklist（CTO v10.0 商業化升級）
+# ─────────────────────────────────────────────
+def _generate_tracklist(playlist: list[Path], durations: dict[Path, float]) -> str:
+    """
+    【商業化升級】生成 YouTube 相容的 Tracklist，自動標註重複曲目。
+    
+    計算公式：
+    - 第 N 首歌起始時間 = 前 (N-1) 首歌的總秒數 - ((N-1) * CROSSFADE_SEC)
+    
+    重複處理：
+    - 首次出現：如常 "Midnight Rain"
+    - 第 2 次出現：添加 "Vol. 2" 標籤 → "Midnight Rain Vol. 2"
+    - 第 3 次出現：添加 "Vol. 3" 標籤 → "Midnight Rain Vol. 3"
+    
+    範例輸出：
+    00:00 - Midnight Rain
+    02:45 - Neon Solitude [Remix 1]
+    05:22 - Coffee and Code
+    08:10 - Midnight Rain Vol. 2
+    """
+    tracklist_lines = []
+    current_time = 0.0
+    title_counts = {}  # 【商業化升級】追蹤曲目出現次數
+    
+    for idx, track in enumerate(playlist):
+        # 提取乾淨的曲名（含效果標籤，如 [Remix 1]）
+        clean_title = _extract_clean_title(track.name)
+        
+        # 【商業化升級】若曲名重複，添加 Vol. 標籤
+        if clean_title in title_counts:
+            title_counts[clean_title] += 1
+            final_title = f"{clean_title} Vol. {title_counts[clean_title]}"
+        else:
+            title_counts[clean_title] = 1
+            final_title = clean_title
+        
+        # 格式化時間戳記（MM:SS）
+        minutes = int(current_time) // 60
+        seconds = int(current_time) % 60
+        timestamp = f"{minutes:02d}:{seconds:02d}"
+        
+        tracklist_lines.append(f"{timestamp} - {final_title}")
+        
+        # 計算下一首歌的起始時間
+        if idx < len(playlist) - 1:
+            track_duration = durations[track]
+            if idx == 0:
+                current_time += track_duration - CROSSFADE_SEC
+            else:
+                current_time += track_duration - CROSSFADE_SEC
+    
+    return "\n".join(tracklist_lines)
+
+# ─────────────────────────────────────────────
+#  保存 Tracklist 到檔案（CTO v9.0）
+# ─────────────────────────────────────────────
+def _save_tracklist(tracklist_content: str, output_dir: Path) -> Path:
+    """
+    將 Tracklist 保存為 Tracklist_[日期].txt。
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    tracklist_file = output_dir / f"Tracklist_{timestamp}.txt"
+    
+    try:
+        with open(tracklist_file, "w", encoding="utf-8") as f:
+            f.write("【R&S Echoes 1 小時無縫混音 - Tracklist】\n")
+            f.write("=" * 60 + "\n")
+            f.write(tracklist_content)
+            f.write("\n" + "=" * 60 + "\n")
+            f.write(f"生成時間：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        
+        print(f"\n✅ Tracklist 已保存: {tracklist_file}")
+        return tracklist_file
+    except Exception as e:
+        print(f"⚠️ 保存 Tracklist 失敗: {e}")
+        return None
+# ─────────────────────────────────────────────
+#  【CTO SFX 過場橋樑】計算所有 Crossfade 時間戳記（毫秒）
+# ─────────────────────────────────────────────
+def _compute_crossfade_timestamps(playlist: list[Path], durations: dict[Path, float], cf_sec: int) -> list[int]:
+    """
+    計算每個 Crossfade 發生時的精確時間戳記（毫秒）。
+    
+    示例：
+    - 歌1 (180s) → Crossfade @ 180-6=174s = 174000ms
+    - 歌2 (120s, 扣除 crossfade) → Crossfade @ 174+120-6=288s = 288000ms
+    ...
+    """
+    timestamps = []
+    accumulated = 0.0
+    
+    for i in range(len(playlist) - 1):
+        # 首首歌的結尾時間 = accumulated + 歌曲長度 - crossfade/2
+        crossfade_point = accumulated + durations[playlist[i]] - (cf_sec / 2.0)
+        timestamps.append(int(crossfade_point * 1000))  # 轉換為毫秒
+        
+        # 累計：加上當前歌曲長度，然後扣除 crossfade 重疊
+        accumulated += durations[playlist[i]] - cf_sec
+    
+    return timestamps
+
+# ─────────────────────────────────────────────
+#  【CTO 鐵血軍令】重構 SFX 過場濾鏡 (O(1) 記憶體複雜度)
+# ─────────────────────────────────────────────
+def _build_sfx_overlay_filters(num_tracks: int, sfx_input_idx: int, cf_sec: int = 12) -> tuple[str, list[str]]:
+    """
+    【新架構 v9.0】 SFX 與軌道交叉淡化一體化設計
+    
+    核心策略：廢除多副本 + adelay 的記憶體浪費！
+    取 SFX 的前 12 秒，直接與「每一首即將接續的 Track」的開頭進行 amix 混合。
+    
+    邏輯流程：
+    1. 抽取 SFX 的前 CROSSFADE_SEC 秒，儲為 [sfx0]（單份，內存O(1)）
+    2. 使用 asplit 分割為 (num_tracks - 1) 份副本（虛擬分割，不耗內存）
+    3. 每份副本與對應高階Track的開頭進行 amix 混合
+    4. 然後進行 acrossfade 交叉淡化
+    
+    返回值：
+    - sfx_prefix：SFX 抽取 + asplit 的濾波器前綴
+    - overlay_paths：每個軌道對應的 SFX 混合輸出標籤
+    
+    示例（num_tracks=3）：
+    [3:a]atrim=0:12,volume=0.04,asplit=2[sfx0_0][sfx0_1];
+    [1:a][sfx0_0]amix=inputs=2:duration=first[t1_sfx];
+    [2:a][sfx0_1]amix=inputs=2:duration=first[t2_sfx];
+    """
+    # 邊界檢查：至少需要 2 首軌道才能有 SFX 過場
+    if num_tracks < 2:
+        return "", [f"[{i}:a]" for i in range(num_tracks)]
+    
+    n_copies = num_tracks - 1  # 【CTO 終極糾偏】SFX 副本數 = 軌道數 - 1（只有過場點需要 SFX）
+    
+    filters = []
+    overlay_paths = []
+    
+    # 【第 1 步】抽取 SFX 的前 CROSSFADE_SEC 秒，添加 volume 調整
+    # 使用 asplit 分割為(n-1)個副本供過場點使用
+    sfx_labels = "".join([f"[sfx0_{i}]" for i in range(n_copies)])
+    filters.append(f"[{sfx_input_idx}:a]atrim=0:{cf_sec},volume=0.04,asplit={n_copies}{sfx_labels}")
+    
+    # 軌道 0 保持原樣，直接加入overlay_paths
+    overlay_paths.append(f"[0:a]")
+    
+    # 【第 2 步】將每份 SFX 副本與對應軌道進行 amix 混合（從軌道 1 開始）
+    for i in range(1, num_tracks):
+        sfx_label = f"sfx0_{i-1}"
+        overlay_label = f"t{i}_with_sfx"
+        
+        # 軌道 i 與 SFX 副本 (i-1) 混合
+        filters.append(f"[{i}:a][{sfx_label}]amix=inputs=2:duration=first[{overlay_label}]")
+        overlay_paths.append(f"[{overlay_label}]")
+    
+    sfx_prefix = ";".join(filters)
+    return sfx_prefix, overlay_paths
+
+# ─────────────────────────────────────────────
+#  建構 FFmpeg filter_complex 字串
+# ─────────────────────────────────────────────
+def _build_filter_complex(n: int, fade_start: float, has_sfx: bool = False, sfx_input_idx: int = None) -> str:
+    """
+    【CTO 鐵血軍令 v9.0】為 n 個輸入音軌建構 acrossfade 串接 filter_complex 字串。
+    
+    新架構（O(1) 記憶體複雜度）：
+    - 如果 has_sfx=True，使用 _build_sfx_overlay_filters 生成 SFX amix 與 acrossfade 邏輯
+    - 否則使用原本乾淨的 acrossfade 邏輯
+    """
+    cf    = CROSSFADE_SEC
+    fo    = FINAL_FADEOUT_SEC
+    
+    parts = []
+    
+    if has_sfx and sfx_input_idx is not None:
+        # 【有 SFX 的情況】：由 _build_sfx_overlay_filters 負責所有 SFX amix + acrossfade
+        sfx_prefix, overlay_paths = _build_sfx_overlay_filters(n, sfx_input_idx, cf_sec=cf)
+        parts.append(sfx_prefix)
+        
+        # 移除標籤的方括號進行串接
+        inputs_no_brackets = [p.strip("[]") for p in overlay_paths]
+        
+        afade_out = f"afade=t=out:st={fade_start:.3f}:d={fo}[out]"
+        
+        if n == 1:
+            # 單首軌道：直接淡出
+            parts.append(f"[{inputs_no_brackets[0]}]{afade_out}")
+        elif n == 2:
+            # 兩首軌道：[0:a] 與 [t1_with_sfx] 進行 acrossfade + afade
+            parts.append(f"[{inputs_no_brackets[0]}][{inputs_no_brackets[1]}]acrossfade=d={cf}:c1=exp:c2=exp,{afade_out}")
+        else:
+            # 多首軌道：逐一 crossfade
+            # 第一個 crossfade：軌道 0 與軌道 1（已混好 SFX）
+            parts.append(f"[{inputs_no_brackets[0]}][{inputs_no_brackets[1]}]acrossfade=d={cf}:c1=exp:c2=exp[cf0]")
+            
+            # 中間的 crossfades
+            for i in range(2, n):
+                parts.append(f"[cf{i - 2}][{inputs_no_brackets[i]}]acrossfade=d={cf}:c1=exp:c2=exp[cf{i - 1}]")
+            
+            # 最後的 crossfade + afade
+            last_in = f"cf{n - 2}"
+            parts.append(f"[{last_in}]{afade_out}")
+    else:
+        # 【無 SFX 的情況】：使用原本乾淨的 acrossfade 邏輯
+        afade_out = f"afade=t=out:st={fade_start:.3f}:d={fo}[out]"
+        
+        if n == 1:
+            # 單首軌道：直接淡出
+            parts.append(f"[0:a]{afade_out}")
+        elif n == 2:
+            # 兩首軌道
+            parts.append(f"[0:a][1:a]acrossfade=d={cf}:c1=exp:c2=exp,{afade_out}")
+        else:
+            # 多首軌道：逐一 crossfade
+            # 第一個 crossfade：軌道 0 與軌道 1
+            parts.append(f"[0:a][1:a]acrossfade=d={cf}:c1=exp:c2=exp[cf0]")
+            
+            # 中間的 crossfades
+            for i in range(2, n):
+                parts.append(f"[cf{i - 2}][{i}:a]acrossfade=d={cf}:c1=exp:c2=exp[cf{i - 1}]")
+            
+            # 最後的 crossfade + afade
+            last_in = f"cf{n - 2}"
+            parts.append(f"[{last_in}]{afade_out}")
+    
+    return ";".join(parts)
+# ─────────────────────────────────────────────
+#  主縫合函式
+# ─────────────────────────────────────────────
+def assemble(output_name: str | None = None, target_sec: int = TARGET_DURATION_SEC, sfx_path: str | None = None, sfx_mode: str = "global") -> Path | None:
+    """
+    【CTO 戰略重構 v10】兩段式輕量級縫合流程
+    
+    阶段一：纯音乐无缝串接（acrossfade）→ 生成纯音乐母帯
+    阶段二：后期 SFX 叠加（循环 SFX + amix）→ 混合成最终音乐
+    
+    优势：
+    - FFmpeg 只需处理 2 条音轨的混合，避免超长 filter_complex 导致的崩溃
+    - 代码复杂度大幅降低
+    - 连续的环保音更符合 Lofi 陪伴系的听感
+    """
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # === 【CTO 架構修正 v10.1】廢除固定首數，實作動態時長驅動選曲 ===
+    print(f"\n[PHASE 1.5] 啟動動態時長驅動選曲引擎...")
+    try:
+        # 1. 掃描金庫，取得所有可用媒體檔案
+        all_files = _scan_vault(VAULT_DIR)
+        if not all_files:
+            raise VaultShortageException("金庫為空，無可用媒體檔案")
+        
+        # 2. 隨機抽樣 5 首（或全部若少於 5 首），估算平均單曲時長
+        sample_size = min(5, len(all_files))
+        sample_files = random.sample(all_files, sample_size)
+        total_sample_duration = sum(_get_duration(f) for f in sample_files)
+        avg_duration = total_sample_duration / sample_size
+        
+        # 3. 計算動態目標首數
+        # 公式：(目標秒數 / 平均秒數) + 2 首緩衝
+        # 緩衝用途：補償 crossfade 扣除的秒數，確保最終輸出不低於目標時長
+        estimated_tracks_needed = math.ceil(target_sec / avg_duration) + 2
+        
+        # 4. 日誌輸出
+        print(f"[動態時長] 掃描結果: 金庫共 {len(all_files)} 首可用媒體")
+        print(f"[動態時長] 抽樣樣本: {sample_size} 首，平均時長: {avg_duration:.1f} 秒")
+        print(f"[動態時長] 計算公式: ceil({target_sec} / {avg_duration:.1f}) + 2 = {estimated_tracks_needed} 首")
+        print(f"[動態時長] 系統決定動態抓取: {estimated_tracks_needed} 首媒體")
+        
+        # 5. 將動態計算出的首數傳給 50/25/25 選曲演算法
+        playlist = _scan_vault_v95(target_tracks=estimated_tracks_needed)
+        
+    except VaultShortageException as e:
+        print(f"[STATUS] {e}。系統將觸發自動備援補充。")
+        return None
+    except Exception as e:
+        _log_fatal(f"選曲引擎發生未知錯誤: {e}")
+        sys.exit(1)
+
+    # 取得 durations 以供後續 crossfade 計算
+    durations: dict[Path, float] = {}
+    for track in playlist:
+        durations[track] = _get_duration(track)
+        
+    output_duration = _compute_output_duration(playlist, durations)
+    n = len(playlist)
+    print(f"\n[PLAYLIST] 智能選曲完成！共 {n} 首，預估輸出長度：{output_duration:.1f}s ({output_duration / 60:.1f} 分鐘)")
+    
+    # 輸出檔案名稱
+    if output_name is None:
+        ts = datetime.now().strftime("%Y%m%d_%H%M")
+        output_name = f"R&S_Echoes_1HrMix_{ts}.wav"
+    output_path = OUTPUT_DIR / output_name
+    
+    # ═══════════════════════════════════════════════════════════
+    # 【阶段一】纯音乐無縫串接
+    # ═══════════════════════════════════════════════════════════
+    print(f"\n[PHASE 1] 開始纯音乐母帯縫合...")
+    fade_start = max(0.0, output_duration - FINAL_FADEOUT_SEC)
+    
+    # 簡化的 acrossfade 鏈（無 SFX 複雜邏輯）
+    cf = CROSSFADE_SEC
+    fo = FINAL_FADEOUT_SEC
+    
+    filter_parts = []
+    if n == 1:
+        # 單首軌道
+        filter_parts.append(f"[0:a]afade=t=out:st={fade_start:.3f}:d={fo}[out]")
+    elif n == 2:
+        # 兩首軌道
+        filter_parts.append(f"[0:a][1:a]acrossfade=d={cf}:c1=exp:c2=exp,afade=t=out:st={fade_start:.3f}:d={fo}[out]")
+    else:
+        # 多首軌道：逐一 crossfade
+        filter_parts.append(f"[0:a][1:a]acrossfade=d={cf}:c1=exp:c2=exp[cf0]")
+        for i in range(2, n):
+            filter_parts.append(f"[cf{i - 2}][{i}:a]acrossfade=d={cf}:c1=exp:c2=exp[cf{i - 1}]")
+        last_in = f"cf{n - 2}"
+        filter_parts.append(f"[{last_in}]afade=t=out:st={fade_start:.3f}:d={fo}[out]")
+    
+    pure_music_filter = ";".join(filter_parts)
+    
+    # 組建 FFmpeg 指令（纯音乐，不含 SFX）
+    ffmpeg_inputs = []
+    for track in playlist:
+        ffmpeg_inputs.extend(["-i", str(track)])
+    
+    # 臨時輸出：纯音乐母帤
+    temp_music_path = OUTPUT_DIR / f"_temp_pure_music_{datetime.now().strftime('%H%M%S')}.wav"
+    
+    cmd_phase1 = (
+        ["ffmpeg", "-y"]
+        + ffmpeg_inputs
+        + [
+            "-filter_complex", pure_music_filter,
+            "-map", "[out]",
+            "-c:a", "pcm_s16le",
+            "-ar", "44100",
+            "-ac", "2",
+            str(temp_music_path),
+        ]
+    )
+    
+    print(f"[FFMPEG P1] 縫合 {n} 首歌曲成純音樂母帶...")
+    try:
+        result = subprocess.run(cmd_phase1, capture_output=True, text=True, timeout=3600)
+        if result.returncode != 0:
+            msg = f"Phase 1 失敗（returncode={result.returncode}）\n{result.stderr[-1500:]}"
+            _log_fatal(msg)
+            print(f"[FATAL] {msg}")
+            sys.exit(1)
+        print(f"✅  Phase 1 完成：{temp_music_path.name}")
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        _log_fatal(f"Phase 1 異常：{e}")
+        sys.exit(1)
+    
+    # ═══════════════════════════════════════════════════════════
+    # 【阶段二】後期 SFX 疊加
+    # ═══════════════════════════════════════════════════════════
+    if sfx_path:
+        print(f"\n[PHASE 2] 開始後期 SFX 疊加（模式: {sfx_mode}）...")
+        sfx_file = Path(sfx_path)
+        if sfx_file.exists() and sfx_file.suffix.lower() in {'.wav', '.mp3', '.flac', '.aiff', '.m4a'}:
+            # 計算交叉淡化時間點（用於 transition 模式）
+            crossfade_times = []
+            if sfx_mode == "transition" and n > 1:
+                current_time = 0
+                for i in range(len(playlist) - 1):
+                    track = playlist[i]
+                    duration = durations[track]
+                    # 交叉淡化開始的時間點（該軌道結尾前 CROSSFADE_SEC 秒）
+                    fade_start_time = current_time + max(0, duration - CROSSFADE_SEC)
+                    fade_end_time = fade_start_time + CROSSFADE_SEC
+                    crossfade_times.append((fade_start_time, fade_end_time))
+                    current_time += duration
+            
+            # 根據模式構建 FFmpeg 濾鏡
+            if sfx_mode == "transition" and crossfade_times:
+                # Transition 模式：only apply SFX during crossfade moments
+                # 構建 between() 表達式
+                between_expr_parts = []
+                for start, end in crossfade_times:
+                    between_expr_parts.append(f"between(t,{start:.3f},{end:.3f})")
+                between_expr = "+".join(between_expr_parts) if between_expr_parts else "0"
+                
+                # 使用 volume 濾鏡動態控制 SFX 音量
+                # 【CTO 糾偏】添加單引號包覆表達式，音量降為 0.02 (2%)
+                sfx_mix_filter = (
+                    f"[1:a]volume='0.02*({between_expr})':eval=frame[sfx_vol];"
+                    f"[0:a][sfx_vol]amix=inputs=2:duration=first[out]"
+                )
+                print(f"   [Transition Mode] {len(crossfade_times)} 個過場點生成 between() 遮罩")
+            else:
+                # Global 模式或無交叉淡化：entire track at 2%
+                sfx_mix_filter = (
+                    "[1:a]volume=0.02[sfx_vol];"
+                    "[0:a][sfx_vol]amix=inputs=2:duration=first[out]"
+                )
+                if sfx_mode == "transition":
+                    print(f"   [Transition Mode 備援] 播放列表只有 {n} 首歌，無交叉淡化點，使用 Global 模式")
+                else:
+                    print(f"   [Global Mode] SFX 應用於全程（2% 音量）")
+            
+            cmd_phase2 = [
+                "ffmpeg", "-y",
+                "-i", str(temp_music_path),
+                "-stream_loop", "-1", "-i", str(sfx_file),
+                "-filter_complex", sfx_mix_filter,
+                "-t", str(int(output_duration)),  # 限制輸出長度
+                "-map", "[out]",
+                "-c:a", "pcm_s16le",
+                "-ar", "44100",
+                "-ac", "2",
+                str(output_path),
+            ]
+            
+            print(f"[FFMPEG P2] 混合純音樂 + 循環 SFX（{sfx_file.name}，模式: {sfx_mode}）...")
+            try:
+                result = subprocess.run(cmd_phase2, capture_output=True, text=True, timeout=3600)
+                if result.returncode != 0:
+                    msg = f"Phase 2 失敗（returncode={result.returncode}）\n{result.stderr[-1500:]}"
+                    _log_fatal(msg)
+                    print(f"[FATAL] {msg}")
+                    sys.exit(1)
+                print(f"✅  Phase 2 完成：混合 SFX（{sfx_mode} 模式）")
+            except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+                _log_fatal(f"Phase 2 異常：{e}")
+                sys.exit(1)
+        else:
+            print(f"⚠️  SFX 檔案無效，跳過 Phase 2，輸出純音樂...")
+            import shutil
+            shutil.move(str(temp_music_path), str(output_path))
+    else:
+        print(f"\n[PHASE 2] 跳過 SFX 疊加（未指定 SFX 檔案）")
+        import shutil
+        shutil.move(str(temp_music_path), str(output_path))
+    
+    # 清理臨時檔案
+    try:
+        temp_music_path.unlink(missing_ok=True)
+    except:
+        pass
+    
+    # 最後結果
+    print("\n" + "=" * 80)
+    print(f"✅  【完全完成】1 小時無縫 Lofi 音樂")
+    print(f"    輸出檔案：{output_path}")
+    print(f"    總長度：{output_duration / 60:.1f} 分鐘（{output_duration:.0f} 秒）")
+    print(f"    使用曲目：{n} 首（含重複）")
+    if sfx_path and Path(sfx_path).exists():
+        print(f"    背景 SFX：{Path(sfx_path).name}（循環，2% 音量）")
+    print("=" * 80)
+    
+    # 【CTO v9.0 時間軸任務】生成 Tracklist
+    tracklist_content = _generate_tracklist(playlist, durations)
+    _save_tracklist(tracklist_content, OUTPUT_DIR)
+    
+    return output_path
+# ─────────────────────────────────────────────
+#  CLI 入口
+# ─────────────────────────────────────────────
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="R&S Echoes 1 小時無縫縫合機 (lofi_assembler v2.0)"
+    )
+    parser.add_argument(
+        "--vault",
+        type=str,
+        default=None,
+        help="覆蓋預設 Vault 資料夾路徑（預設: assets/audio/vault_ready_for_mix/）",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default=None,
+        help="輸出檔案名稱（預設：R&S_Echoes_1HrMix_YYYYMMDD_HHMM.wav）",
+    )
+    parser.add_argument(
+        "--target",
+        type=int,
+        default=TARGET_DURATION_SEC,
+        help=f"目標輸出秒數（預設: {TARGET_DURATION_SEC}）",
+    )
+    parser.add_argument(
+        "--sfx",
+        type=str,
+        default=None,
+        help="可選的環境音檔案路徑 (WAV/MP3/FLAC)，將以 2% 音量疊加到混音中",
+    )
+    parser.add_argument(
+        "--sfx-mode",
+        type=str,
+        choices=["transition", "global"],
+        default="global",
+        help="SFX 播放模式：transition (僅過場) 或 global (全程)",
+    )
+    args = parser.parse_args()
+    if args.vault:
+        VAULT_DIR = Path(args.vault)
+    if args.target < 60:
+        print("[FATAL] --target 至少需 60 秒")
+        sys.exit(1)
+    
+    # CTO 修正：安全處理 assemble() 返回值（可能返回 None 表示庫存為 0）
+    result = assemble(output_name=args.output, target_sec=args.target, sfx_path=args.sfx, sfx_mode=args.sfx_mode)
+    if result is None:
+        print("[STATUS] 庫存為 0，混音已跳過。系統將觸發自動備援補充。")
+        sys.exit(0)  # 安全退出，不視為失敗

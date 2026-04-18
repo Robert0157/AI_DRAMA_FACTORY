@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/title_post.schema.json",
+  "title": "Title & Post Package v7.10 (Merged)",
+  "description": "社群行銷文案結構定義。整合顧問結構設計與 v7.10 CTO 鉚式連結。",
+  "type": "object",
+  "required": ["job_id", "short_titles", "hashtags", "community_posts", "pinned_comment"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "minLength": 1 },
+    "short_titles": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "type": "string", "minLength": 5 }
+    },
+    "hashtags": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": { "type": "string", "pattern": "^#", "minLength": 2 }
+    },
+    "community_posts": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["text"],
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string", "minLength": 10 },
+          "cta":  { "type": "string" }
+        }
+      }
+    },
+    "pinned_comment": { "type": "string", "minLength": 5 },
+    "compliance_notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

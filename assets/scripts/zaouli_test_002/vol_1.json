@@ -1,0 +1,59 @@
+[
+  {
+    "shot_id": "shot_01",
+    "description": "開場建立鏡頭 (Setting the Scene - 對應音樂前奏)",
+    "duration": 5,
+    "kling_prompt": "A cinematic wide shot of a vast surreal African desert dune at golden hour. A single majestic Zaouli dancer stands completely still, wearing a vibrant, intricately patterned traditional mask and colorful fringe garments. Dramatic volumetric lighting, photorealistic, 8k resolution, hyper-detailed. Slow dolly in camera movement.",
+    "is_anchor": true,
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_02",
+    "description": "細節特寫與節奏啟動 (The Beat Kicks In - 對應密集鼓點)",
+    "duration": 5,
+    "kling_prompt": "Extreme close-up shot on a dancer's feet adorned with intricate silver ankle bells. The feet are rapidly and fiercely stomping on fine desert sand, kicking up dynamic clouds of dust. High shutter speed, hyper-detailed textures, cinematic lighting. Slight camera shake, fast and energetic dynamic motion.",
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_03",
+    "description": "超現實物理動態 (The Core Dance - 對應副歌高潮)",
+    "duration": 5,
+    "kling_prompt": "A low angle medium shot tracking a surreal African dancer. The dancer's upper body and mask are completely stoic and motionless, while their lower body and legs move at an incredibly fast, blurring speed in a traditional Zaouli dance. Vividly colored costume fringes sway rapidly. Realistic physics, high contrast, surrealistic mood, 4K, dynamic sweeping camera.",
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_04",
+    "description": "重拍定格與魔法元素 (The Climax / Visual Accent - 對應音樂重擊)",
+    "duration": 5,
+    "kling_prompt": "Dynamic fast zoom-in shot of a tribal dancer stomping hard on the ground. Glowing magical dust and subtle light ripples emit from the ground where the foot impacts. Hyper-realistic, dramatic shadows, neon accents on traditional tribal patterns, cinematic action composition.",
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_05",
+    "description": "🚀 [CTO Create] 超現實動態捕捉 - 幾何圖騰生成",
+    "duration": 5,
+    "kling_prompt": "Cinematic low-altitude drone flyover shot. A surreal tribal dancer in detailed glowing attire creates intricate geometric patterns on the desert floor through fierce stomping. The patterns glow with cyan light against the golden sand. Volumetric dust clouds, 8k, dynamic movement.",
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_06",
+    "description": "🚀 [CTO Create] 銀鈴特寫 (極致紋理) - 配合打擊樂獨奏",
+    "duration": 5,
+    "kling_prompt": "Macro extreme close-up shot of intricate silver ankle bells vibrating violently on a dancer's ankle. Highly detailed textures, metallic glint, blurred desert background. Intense focus on the bells during a percussion solo beat.",
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_07",
+    "description": "🚀 [CTO Create] 萬物覺醒 - 面具下的星塵高潮",
+    "duration": 5,
+    "kling_prompt": "Surreal medium shot of a Zaouli dancer in heavy tribal mask. As a deep electronic bass drop hits, the mask cracks, revealing swirling nebula cosmic energy beneath. Neon accents on costume patterns flash. Photorealistic, dynamic atmosphere, high contrast.",
+    "beat_sequence": [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+  },
+  {
+    "shot_id": "shot_08",
+    "description": "🚀 [CTO Create] 歸於寂靜 - 終場建立鏡頭",
+    "duration": 5,
+    "kling_prompt": "A wide shot of the vast surreal desert at night under a clear starry sky. The Zaouli dancer stands completely still again in the darkness, only the edges of the colorful mask garments subtly glowing with neon light. The dust has settled. Slow dolly out camera movement.",
+    "beat_sequence": []
+  }
+]

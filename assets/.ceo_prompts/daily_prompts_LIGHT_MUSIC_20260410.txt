@@ -1,0 +1,254 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LIGHT_MUSIC]
+生成時間: 2026-04-10 22:12:42
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\light_music\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: Silent Whisper
+[[[SUNO_TAGS_START]]]
+Acoustic Guitar, Sacred, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Gentle strumming of an acoustic guitar, ethereal reverb, serene atmosphere)
+
+...
+...
+
+[Verse 1] (Warm, fingerstyle acoustic guitar, soft piano pads, sacred ambiance)
+
+...
+...
+
+[Chorus] (Acoustic guitar melody, soaring strings, ethereal choirs, mystical space)
+
+...
+...
+
+[Verse 2] (Gentle plucking of the guitar, subtle piano harmonies, tranquil forest sounds)
+
+...
+...
+
+[Bridge] (Acoustic guitar solo, deep, resonant tones, vast cathedral reverb)
+
+...
+...
+
+[Outro] (fade to silence, acoustic guitar notes lingering, sacred and serene)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: Ethereal Threshold
+[[[SUNO_TAGS_START]]]
+Saxophone, profound, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ethereal Soprano Saxophone, hauntingly beautiful, profound ambiance, vast reverb)
+
+...
+...
+
+[Verse 1] (Soft, resonant Saxophone notes, serene melody, subtle electronic pads)
+
+...
+...
+
+[Chorus] (Saxophone solo, emotional peaks, cinematic swell, ethereal harmonies)
+
+...
+...
+
+[Verse 2] (Melodic Saxophone, reflective mood, subtle electronic textures, ambient padding)
+
+...
+...
+
+[Bridge] (Saxophone and electronic harmonies, shifting dynamics, mystical progression)
+
+...
+...
+
+[Outro] (fade to silence, Saxophone echo, tranquil ambiance)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: Whispering Streams
+[[[SUNO_TAGS_START]]]
+pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise, Violin, Peaceful, Ethereal, Nature-inspired, New Age
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Gentle violin notes, flowing river pacing, ethereal reverb)
+
+...
+...
+
+[Verse 1] (Soft violin melodies, serene nature sounds, tranquil ambiance)
+
+...
+...
+
+[Chorus] (Lush violin harmonies, cinematic swelling, vast reverb)
+
+...
+...
+
+[Verse 2] (Melodic violin lines, peaceful forest atmosphere, subtle bird songs)
+
+...
+...
+
+[Bridge] (Vibrato violin solos, mystical woodlands, deep resonant tones)
+
+...
+...
+
+[Outro] (fade to silence, violin whispers, ethereal pads)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: Silent Streams
+[[[SUNO_TAGS_START]]]
+Ambient Synth, Peaceful, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ambient synth pads, subtle water droplet sounds, tranquil reverb)
+
+...
+...
+
+[Verse 1] (Soft synth harmonies, gentle piano notes, peaceful melody)
+
+...
+...
+
+[Chorus] (Ethereal synth swell, sustained chords, serene atmosphere)
+
+...
+...
+
+[Verse 2] (Whispering synth lines, subtle wind chimes, calm ambiance)
+
+...
+...
+
+[Bridge] (Harmonic synth progression, soft drum hits, peaceful flow)
+
+...
+...
+
+[Outro] (fade to silence, ambient synth pads only, timelessly stretching)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: Epic Resonance
+[[[SUNO_TAGS_START]]]
+Cello, profound, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise, New Age, ethereal, healing frequencies
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Deep, resonant cello melody, cathedral reverb, hauntingly profound)
+
+...
+...
+
+[Verse 1] (Solemn cello plucks, echoing in vast space, emotional depth)
+
+...
+...
+
+[Chorus] (Majestic cello solo, soaring strings, profound atmosphere, healing energy)
+
+...
+...
+
+[Verse 2] (Lyrical cello phrases, shifting to mystical landscapes, profound beauty)
+
+...
+...
+
+[Bridge] (Haunting cello arpeggios, ethereal pads, profound transition)
+
+...
+...
+
+[Outro] (fade to silence, ethereal cello pads, profound peace stretching)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+

@@ -1,0 +1,5 @@
+{
+  "pid": 19136,
+  "created_at": "2026-04-02T11:58:13",
+  "script": "telegram_approval_gate.py"
+}
