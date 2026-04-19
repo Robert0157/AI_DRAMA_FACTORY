@@ -32,12 +32,12 @@ python -m pip list | grep telegram
 在 `.env` 文件中確保已設定以下變數：
 
 ```env
-# CEO Bot 授權
-TELEGRAM_BOT_TOKEN="8530950674:AAEJ5xmp1XzFCgj55g_nrbFLG2eAiOWmnvk"
-TELEGRAM_ALLOWED_USER_ID="6857631085"
+# CEO Bot 授權（請向 @BotFather 取得真實 Token，勿將實值提交 Git）
+TELEGRAM_BOT_TOKEN="123456789:ABCDefGhiJklmnoPqRstuvWxyz"
+TELEGRAM_ALLOWED_USER_ID="your-telegram-user-id"
 
 # 可選：Protocol L 配置 (金庫查詢)
-TTAPI_KEY="49be7713-7dd4-5fed-7c07-7c47523a5e40"
+TTAPI_KEY="your-ttapi-master-key"
 TT_BASE_URL="https://api.ttapi.io"
 ```
 
