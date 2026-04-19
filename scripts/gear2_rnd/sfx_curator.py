@@ -321,8 +321,8 @@ def print_manual_guide():
      python scripts/gear1_prod/audio_mastering_engine.py --decay-sec 1.2 \\
        --sfx-volume 0.10 --clip-threshold-db -3.0 --seed 42 --timeout-sec 180
 
-  2. Action 3 - 啟動 Telegram 背景監聽:
-     python scripts/gear1_prod/telegram_approval_gate.py --daemon
+  2. Telegram CEO Bot（遠端中控）:
+     python scripts/start_telegram_bot.py
 
 CEO 正在等待第一首融合「BBC 等級真實自然音」的 1 分鐘 Demo！
 
