@@ -3,7 +3,9 @@
 
 **Target:** R&S Echoes 多頻道影音全自動封裝產線（Lofi / Light Music 雙頻道物理隔離）  
 **Infrastructure:** Windows 10 開發機（現役）→ Mac mini M4（24/7 部署目標）  
-**最後更新:** 2026-04-15  
+**Mac 正式根目錄:** /Volumes/AI_Workspace/AI_Drama_Factory  
+**Mac Python venv 目錄:** /Volumes/AI_Workspace/envs/openclaw_project  
+**最後更新:** 2026-04-20（新增 Mac 外接 SSD 全量部署鐵律）  
 　v15.5：Closed GOP · setpts 優先濾鏡順序 · 嚴格 IDR · GOP-QA 自動驗證 · -ar 48000 音訊漂移防禦  
 　v15.6：get_video_duration 源幀率修正（根治 30fps 素材 2 秒凍結）· 雙重保險 re-probe · CEO 鎖定  
 　v15.7：ping_/ford_ 前綴 Ping-Pong 策略 · LLM JSON 截斷修復 · lofi 偽短缺修復 · 視覺 DB 路徑遷移  
@@ -20,6 +22,7 @@
 | 2 | **UI 非阻塞** | 耗時任務以 `threading.Thread(daemon=True)` 背景執行 |
 | 3 | **絕對音畫同步** | Stage 2 自然 EOF 策略；音軌先在 Stage 2.5 以 acrossfade 預混音（-ar 48000）|
 | 4 | **雙棲實體路徑隔離** | `.env` 的 `WORKSPACE_ROOT` + `env_manager.py` 跨平台解析，嚴禁硬編碼磁碟符號 |
+| 4a | **Mac 外接 SSD 全量部署（新增）** | Mac mini 上所有代碼/腳本/設定/`Streaming` MP4 與 manifest 必須位於外接 SSD `WORKSPACE_ROOT`；禁止系統碟分散部署 |
 | 5 | **零浪費延遲扣款** | 成片寫入後才執行 `derivation_count + 1`，絕不預扣款 |
 | 6 | **多頻道物理隔離** | `--channel lofi / light_music` 嚴格隔離基因、DB 與目錄 |
 | 7 | **零容忍靜默失敗** | 核心異常必須 `sys.exit(1)`；嚴禁空 `try-except` 假成功 |
@@ -505,3 +508,4 @@ python scripts/start_telegram_bot.py --webhook   # 生產（Mac mini，需 TELEG
 | v15.7 | `spec/content_assembly_workflow.v15.7.md` | Ping-Pong 智能迴圈、LLM JSON 修復、lofi 遞補邏輯、視覺 DB 路徑遷移、Protocol VN 新增 |
 | v15.8 | `spec/content_assembly_workflow.v15.8.md` | 雙軌編碼 Profile（Win CRF29/Mac HEVC）、DB 集中化（assets/data/）、音頻 192k、Protocol 14+15 新增 |
 | **v15.9（現役）** | `.openclaw/workflows/content_assembly_workflow.md` | 新鮮度鐵律（50% dc=0 硬閘門）、廢除 v15.7 軟遞補、`NewSongsInsufficientException`、`--ttapi-fill-fresh` 旗標、UI Tab1 儀表卡、分頻道 `min_new_ratio`、Protocol FP 新增、Protocol VS 修訂 |
+

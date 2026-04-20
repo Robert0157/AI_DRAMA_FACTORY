@@ -1,8 +1,8 @@
 # ========================================================
-# AI ENGINEERING RULES & CONSTITUTION (OPENCLAW / CLINE / CURSOR)
+# AI ENGINEERING RULES & CONSTITUTION (OPENCLAW / CONTINUE / CURSOR)
 # PROJECT: R&S Echoes AI Factory
-# VERSION: v15.10 — 現役白皮書見 架構說明書_v15.10.md（繼承 v15.9 新鮮度鐵律等鐵律）
-# 最後更新: 2026-04-20（新增 Mac 外接 SSD 全量部署鐵律）
+# VERSION: v15.10 — Mac 兩階段部署 · VS Code + Continue · MiniMax M2.7 對齊
+# 最後更新: 2026-04-19
 #   v15.5: Closed GOP · setpts 濾鏡優先順序 · 嚴格 IDR · GOP-QA · -ar 48000
 #   v15.6: get_video_duration 源幀率修正（根治 30fps 2 秒凍結）· 雙重保險 · CEO 鎖定
 #   v15.7: ping_/ford_ 前綴 Ping-Pong 迴圈 · LLM max_tokens=4096 + JSON 三重清洗 · lofi 選曲遞補 · 視覺 DB 路徑遷移
@@ -15,16 +15,14 @@
 
 **You are the Apex Engineering Assistant & Factory Operator.**
 Your primary role is to maintain, debug, and expand the Python scripts in `scripts/`
-according to the v15.10 architecture (inherits v15.9 Freshness Policy · 50% dc=0 Hard Gate · Dual Codec · DB Centralized · CEO-Locked Core Engine).
-Reference documents: `架構說明書_v15.10.md`, `.openclaw/project.yml`, `.openclaw/workflows/content_assembly_workflow.md`
+according to the v15.9 "Freshness Policy · 50% dc=0 Hard Gate · Dual Codec Profile · DB Centralized · CEO-Locked Core Engine" architecture.
+Reference documents: `架構說明書_v15.10.md`（現役；v15.9 單檔白皮書已廢止）, `.openclaw/project.yml`, `.openclaw/workflows/content_assembly_workflow.md`
 
 ---
 
 ## 1. BOOTSTRAP & SYSTEM INTEGRITY（啟動與系統防禦）
 
 1. **Workspace Lock:** Strictly operate within `WORKSPACE_ROOT`. Use `pathlib.Path` for all paths. NO hardcoded drive letters (`F:/`, `/Volumes/`). Read root from `EnvConfig` / `env_manager.py`.
-
-1a. **Mac External-SSD Full Deployment（新增）:** On Mac mini, all production-required assets (repo code, scripts, configs, Streaming/ MP4, manifests) MUST be stored under external-SSD WORKSPACE_ROOT at `/Volumes/AI_Workspace/AI_Drama_Factory`; internal system disk is forbidden for required runtime assets.
 
 2. **Constitution Immutability（最高修憲權鎖定）:** You are STRICTLY FORBIDDEN from modifying `.clinerules`, `project.yml`, `架構說明書_*.md`, or workflow `.md` files WITHOUT explicit CEO/CTO instruction. Core rule updates are reserved exclusively for the human CEO.
 
@@ -407,4 +405,3 @@ Phase 4 選曲 New 不足從 Gen1 補（v15.9）→  raise NewSongsInsufficientE
 pipeline_runner 跳過 _check_freshness_quota→ Phase 4 前必須呼叫，未達標 sys.exit(4)
 UI Tab1 啟動按鈕不檢查新鮮度            →  必須 backend.can_start_pipeline() 閘門，strict 模式下鎖定
 ```
-

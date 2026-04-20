@@ -1,0 +1,5 @@
+# 一行一個「相對於 Steam/queue/ 的檔名」。以 # 開頭為註解。
+# 若此檔複製為 Steam/queue/order.txt，則以此順序輪播；否則依檔名字串排序。
+#
+# 01_R_S_Echoes_Hour_A.mp4
+# 02_R_S_Echoes_Hour_B.mp4

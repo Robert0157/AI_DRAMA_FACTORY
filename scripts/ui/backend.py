@@ -816,7 +816,7 @@ Perfect for: 📚 Studying / 🎧 Relaxation / 😴 Sleep / 🎮 Gaming
         max_retries: int = 3,
     ) -> Tuple[bool, str]:
         """
-        【架構說明書 §4.1 Tab2】背景執行 generate_ceo_prompts.py（threading + Popen 日誌）。
+        【架構說明書_v15.10 §4.1 Tab2】背景執行 generate_ceo_prompts.py（threading + Popen 日誌）。
         與 content_assembly_workflow Protocol A：`--provider` + `--batch-size`。
         """
         ch = self.current_channel

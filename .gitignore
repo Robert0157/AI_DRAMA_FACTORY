@@ -120,7 +120,7 @@ assets/final_exports/
 /temp/
 
 # --- OBC／直播預留目錄（架構書 v15.9：錄影、場景、暫存；通常不進版控）---
-Steam/
+Streaming/
 
 # --- 選用：大型產物（本 repo 若已追蹤音檔／文案，請勿貿然整夾忽略）---
 # assets/final_exports/**/*.wav

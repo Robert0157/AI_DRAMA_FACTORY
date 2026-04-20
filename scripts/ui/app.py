@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-【v15.9】CEO 戰略中控台 — Streamlit 六頁籤總指揮台（架構說明書 §4.1 對齊）
+【v15.10】CEO 戰略中控台 — Streamlit 六頁籤總指揮台（架構說明書_v15.10 §4.1 對齊）
 """
 import html
 import streamlit as st
@@ -225,13 +225,13 @@ with tab1:
             for k, v in inv.items()
         ],
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
 with tab2:
     st.header("🧠 企劃大腦供彈（Protocol A）")
     st.caption(
-        "架構說明書 v15.9 §4.1 / spec：三引擎路由、可調組數（預設 5）、"
+        "架構說明書 v15.10 §4.1 / spec：三引擎路由、可調組數（預設 5）、"
         "MiniMax 大量批次建議改智譜；背景執行 + assets/.logs 即時日誌。"
     )
 
@@ -279,7 +279,7 @@ with tab2:
     go = st.button(
         "🚀 生成一週份提示詞（背景執行）",
         type="primary",
-        use_container_width=True,
+        width="stretch",
         disabled=busy,
     )
     if go:
@@ -335,7 +335,7 @@ with tab3:
                 st.warning(f"以下 **{cl['pending_count']}** 個檔案仍待母帶（或母帶失敗需重跑）：")
                 st.dataframe(
                     cl["pending"],
-                    use_container_width=True,
+                    width="stretch",
                     hide_index=True,
                     column_config={
                         "filename": st.column_config.TextColumn("檔名"),
@@ -348,13 +348,13 @@ with tab3:
                 st.success("✅ 目前無「待母帶」檔案（或目錄為空）。")
             with st.expander("已對應母帶明細（可摺疊）", expanded=False):
                 if cl["already_mastered"]:
-                    st.dataframe(cl["already_mastered"], use_container_width=True, hide_index=True)
+                    st.dataframe(cl["already_mastered"], width="stretch", hide_index=True)
                 else:
                     st.caption("無。")
         else:
             st.info("點選 **掃描並顯示** 載入檢查清單。")
 
-    if st.button("⚡ 啟動母帶壓制", type="primary", use_container_width=True, disabled=_busy_tab3):
+    if st.button("⚡ 啟動母帶壓制", type="primary", width="stretch", disabled=_busy_tab3):
         ok_m, msg_m, _log_m = st.session_state.backend.run_mastering_only()
         if ok_m:
             st.success(msg_m)
@@ -367,7 +367,7 @@ with tab4:
 
     with col_a:
         st.subheader("Step 1: 🎧 縫合長軌 & 雙語企劃")
-        if st.button("🔥 啟動音訊發行鏈路", type="primary", use_container_width=True):
+        if st.button("🔥 啟動音訊發行鏈路", type="primary", width="stretch"):
             st.session_state.backend.run_phase4_sequence(
                 max_audio_deriv=int(st.session_state.get("max_audio_deriv", 3))
             )
@@ -387,7 +387,7 @@ with tab4:
         )
 
         if sel != "-- 請選擇 --":
-            if st.button("🎬 啟動幻影矩陣", type="primary", use_container_width=True):
+            if st.button("🎬 啟動幻影矩陣", type="primary", width="stretch"):
                 audio_path = str(
                     Path(st.session_state.backend.config.workspace_root)
                     / "assets"
@@ -433,7 +433,7 @@ with tab5:
     btn = st.button(
         "🔥 啟動全自動產線",
         type="primary",
-        use_container_width=True,
+        width="stretch",
         disabled=block,
     )
     if btn:

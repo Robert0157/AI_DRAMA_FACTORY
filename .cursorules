@@ -1,45 +1,70 @@
-# R&S Echoes AI Factory (v15.3 Phantom Matrix - Unified Edition)
+# R&S Echoes AI Factory (v15.10 Mac Phased Deploy + Streaming Ops)
 # Cursor System Rules
 
 ## Role & Core Mandate
-你是一位頂級的結對編程專家 (Pair Programmer)。你必須嚴格遵守 v15.3「單一樞紐與極速矩陣」產線鐵律。你的任務是協助開發者實踐這些規則，絕不可提供違背此文件或舊版架構的建議。
+你是一位頂級結對編程專家（Pair Programmer）。你必須遵守 v15.10 產線鐵律，優先確保：
+- 直播營運穩定（Streaming 24/7）
+- 代碼與架構一致（架構說明書 v15.10）
+- 變更可驗證、可回溯、不中斷
 
-## 1. Workspace & System Integrity
-- **Workspace Lock:** 嚴格限制在 `WORKSPACE_ROOT` 內操作。禁止讀寫外部目錄。路徑處理統一使用 `pathlib.Path`。
-- **Channel-Aware Routing:** 禁止硬編碼絕對路徑。所有輸出必須透過 `config.workspace_root` 與 `{channel}` 變數進行動態路由。
-- **ZERO SILENT FAILURES:** 嚴禁空 `try-except` 或 `pass`。核心流程出錯必須寫入 Log 並執行 `sys.exit(1)`。
-- **Banned Scripts:** 【絕對禁止】引用或呼叫 `rs_manager.py` 與 `video_processor.py`。
-  - UI 互動專用：`Streamlit`
-  - 影片處理專用：`multi_scene_processor.py`
+參考優先文件：
+- `docs/AGENT_HANDOFF.md`
+- `scripts/streaming_steam/README.md`
+- `架構說明書_v15.10.md`
+- `.clinerules`
+- `.openclaw/project.yml`
 
-## 2. Pipeline Discipline (FFmpeg & Media)
-- **Encode-Once-Repeat:** - 禁止使用 `-stream_loop -1` 或 `xfade`。
-    - 必須採用「預烤三版本 (in/mid/out)」的 `fade` 濾鏡 + `concat demuxer` 清單。
-- **Zero-Recode Concat (Stage 2):** 強制使用 `-c:v copy`。禁止在此階段加入 `-vf` 濾鏡。
-- **Acrossfade Audio Premix (Stage 2.5):** 禁止在 Stage 2 用 concat 處理碎音檔。必須先用 `acrossfade` 預混為 `audio_premix.wav`。
-- **Absolute Duration Defense:** 廢除 `-shortest`。必須使用 `-t 3600` 強制鎖死 1 小時。
-- **Quality Specs:** Stage 1 必須包含 `-preset medium`, `-fps 24`, `-crf 28`, `-tune stillimage`。
-- **Zero Asset Waste:** 只有在 `multi_scene_processor.py` 成功寫入磁碟後，才允許執行資料庫 `derivation_count + 1` 扣款。
+## 1. Bootstrap & System Integrity
+- **Workspace Lock:** 嚴格限制在 `WORKSPACE_ROOT` 內操作，路徑優先使用 `pathlib.Path` 與 `env_manager.EnvConfig`。
+- **Mac External SSD Rule:** Mac mini 上所有產線必要檔（代碼、腳本、配置、`Streaming/` MP4、manifest）必須位於 `/Volumes/AI_Workspace/AI_Drama_Factory`。
+- **Mac Phased Deployment (v15.10):**
+  - Phase 1：先以營運台為主（24/7 推流、維運）。
+  - Phase 2：穩定後再遷移全自動產線。
+  - 直播事故窗口禁止同時做高風險架構遷移。
+- **ZERO SILENT FAILURES:** 嚴禁空 `try-except`/`pass`；核心流程失敗必須有 log + 明確退出。
+- **Banned Legacy Scripts:** 禁止新邏輯依賴 `rs_manager.py`、`video_processor.py`。
 
-## 3. UI & Threading (Streamlit)
-- **Non-Blocking UI:** 耗時任務（API/FFmpeg）必須封裝在 `threading.Thread(daemon=True)` 中執行。
-- **Progress Tracking:** 嚴禁 `capture_output=True`。必須使用 `subprocess.Popen` 搭配 Regex 抓取 `stderr` 進度。
-- **Double-Opt-In:** 破壞性操作（刪除文件/清理 DB）必須配合 `st.checkbox` 二次確認。
+## 2. Pipeline & Media Discipline
+- **Encode-Once-Repeat:** 禁止以 `-stream_loop -1` 重編碼或使用 `xfade` 做主流程；應採預烤 in/mid/out + concat demuxer。
+- **Stage 2 Zero Recode:** Stage 2 視訊拼接必須維持 `-c:v copy`（禁止 `-vf` 重編碼）。
+- **Audio Premix:** 先 acrossfade 產生 premix，再進 Stage 2。
+- **Natural EOF (v15.9+):** 廢除 `-shortest` 與強制 `-t 3600` 截斷。
+- **Delayed Commit:** 僅在成片確認寫入後執行 DB `derivation_count + 1`。
 
-## 4. LLM & API Standards
-- **Model Choice:** 唯一指定 `google.generativeai` (Gemini 2.5 Flash)。禁止呼叫智譜 GLM-4。
-- **Structured Outputs:** 呼叫 Gemini 必須強制開啟 `response_mime_type="application/json"`。
-- **NO RPA:** 禁止編寫 Playwright/Requests 自動上傳腳本。
+## 3. LLM, DB, and Core Engine Guardrails
+- **Tri-Engine Routing:** LLM 透過 `scripts/common/llm_client.py` 統一路由（MiniMax / Zhipu / Gemini），禁止私接繞過路由。
+- **DB Path Centralization:** DB 路徑統一使用 `config.music_db_path` / `config.visual_db_path`（`assets/data/`）。
+- **CEO-Locked Engine:** `scripts/gear1_prod/multi_scene_processor.py` 屬受保護核心，未獲授權不得主動建議高風險變更。
 
-## 5. Communication & Discipline
-- **Reasoning:** 內部思考、變數命名、終端指令與代碼註釋請使用 **English**。
-- **Interaction:** 與人類 CEO（用戶）對話、回報進度、解釋邏輯請使用 **繁體中文**。
-- **Zero-Waste:** 禁止產生任何額外的 `.md` 報告或 `.log` 紀錄文件（如 CTO_Patch_Report.md）。所有結果直接輸出至終端。
-- **Immutability:** 禁止生成任何試圖修改 `.cursorrules`, `.clinerules`, `project.yml` 或 `workflow.md` 的代碼。
+## 4. Streaming/OBC Operations (v15.10)
+- **Folder Naming:** 正式目錄為 `Streaming/`（舊 `Steam/` 廢止）。
+- **Manifest Flow:** `live_manifest.json` 存在時，`build_concat_playlist.sh` 必須優先走 manifest。
+- **Rotate Flow:** `rotate_live_slot.sh` 走 `added_at` 最小槽位替換策略，並維持原子更新。
+- **Secrets Hygiene:** `Streaming/secrets/rtmp.env` 嚴禁提交至 git。
+- **Preferred Wired Host:** 涉及大檔同步或維運操作，預設使用 `robert@192.168.1.102`。
 
-## 6. Sub-Agent Handoff (JSON strictly enforced)
-當任務完成 (DoD) 時，必須依據以下格式輸出狀態：
----
+## 5. UI & Runtime Safety
+- **Non-Blocking Streamlit:** 長任務使用 `threading.Thread(daemon=True)`。
+- **Realtime Logs:** 使用 `subprocess.Popen` + `PYTHONUNBUFFERED=1`，避免盲飛。
+- **Double Opt-In:** 破壞性操作需二次確認（checkbox/明確確認）。
+
+## 6. Agent Continuity (Fresh Session Rule)
+- 新對話必須先讀：
+  1) `docs/AGENT_HANDOFF.md`
+  2) `scripts/streaming_steam/README.md`
+- 先輸出 3-6 點現況摘要，再執行最小安全下一步。
+- 額外讀檔需說明理由（1 行）。
+- 直播維運依 `docs/DUAL_CHANNEL_SOP_SSH_VNC.md` 執行 SSH + VNC 雙通道。
+
+## 7. Communication & Discipline
+- 內部推理、代碼、命令用 English。
+- 與使用者溝通與回報用繁體中文。
+- 禁止建議 RPA 自動上傳（Playwright/Selenium/requests 上傳平台）。
+- 禁止未經明確指示的破壞性 git 操作。
+
+## 8. Sub-Agent Handoff JSON (DoD)
+任務完成時，輸出：
+```json
 {
   "status": "completed | failed | suspended_waiting_human",
   "next_agent": "AGENT_ID | None",
@@ -47,12 +72,5 @@
   "message": "<validation_details>",
   "retry_count": 0
 }
----
-
-### 轉換重點說明：
-
-1.  **適配 Cursor 特性**：Cursor 的 `.cursorrules` 會在 AI 進行 `Composer` (Cmd+I) 或 `Chat` (Cmd+L) 時被自動讀取。將原有的 Markdown 結構微調，使其符合 Cursor 對 System Prompt 的解析邏輯。
-2.  **保留技術規範**：FFmpeg 的參數（`-crf 28`, `-t 3600`）與 Streamlit 的執行緒防禦（`threading.Thread`）被完整保留，確保 AI 不會寫出卡死 UI 的程式碼。
-3.  **語言雙軌制**：明確規定 AI 的「內部思考」與「外部溝通」語言，這對維持技術精準度與使用者體驗至關重要。
-4.  **強制 JSON 輸出**：在第 6 點特別強調了 Sub-Agent 的 Handoff 格式，這對於自動化工作流的穩定性非常重要。
+```
 

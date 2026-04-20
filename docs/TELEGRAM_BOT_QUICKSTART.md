@@ -245,10 +245,10 @@ After=network.target
 [Service]
 Type=simple
 User=ai_user
-WorkingDirectory=/Volumes/AI_Workspace/AI_DRAMA_FACTORY
-Environment="PATH=/Volumes/AI_Workspace/AI_DRAMA_FACTORY/venv/bin"
+WorkingDirectory=/Volumes/AI_Workspace/AI_Drama_Factory
+Environment="PATH=/Volumes/AI_Workspace/envs/openclaw_project/bin"
 Environment="PYTHONUNBUFFERED=1"
-ExecStart=/Volumes/AI_Workspace/AI_DRAMA_FACTORY/venv/bin/python scripts/start_telegram_bot.py
+ExecStart=/Volumes/AI_Workspace/envs/openclaw_project/bin/python scripts/start_telegram_bot.py
 Restart=on-failure
 RestartSec=30
 StandardOutput=journal
@@ -342,7 +342,8 @@ python scripts/start_telegram_bot.py --webhook
 ```bash
 # .env（Mac mini 設定）
 TARGET_ENV=MAC_M4
-WORKSPACE_ROOT=/Volumes/AI_Workspace/AI_DRAMA_FACTORY
+WORKSPACE_ROOT=/Volumes/AI_Workspace/AI_Drama_Factory
+# 建議：獨立虛擬環境放在 /Volumes/AI_Workspace/envs/openclaw_project
 TELEGRAM_WEBHOOK_URL=https://rs-echoes.yourdomain.com
 TELEGRAM_WEBHOOK_PORT=8443
 TELEGRAM_WEBHOOK_SECRET=your-random-secret-string
@@ -435,3 +436,4 @@ cat logs/telegram_bot.log | grep ERROR
 ---
 
 **🚀 系統就緒！CEO 可以開始通過 Telegram 遠端控制 Mac mini 了！**
+

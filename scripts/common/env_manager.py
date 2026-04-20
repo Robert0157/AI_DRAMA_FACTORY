@@ -18,7 +18,7 @@ class EnvConfig:
             self.workspace_root = Path(_env_root)
         elif self.os_name == "Darwin":
             # Mac 預設指向外接 APFS 硬碟掛載點
-            self.workspace_root = Path("/Volumes/AI_Workspace/AI_DRAMA_FACTORY")
+            self.workspace_root = Path("/Volumes/AI_Workspace/AI_Drama_Factory")
         else:
             # Windows / Linux：以本檔案位置向上推導，不硬編碼磁碟機代號
             self.workspace_root = Path(__file__).resolve().parents[2]

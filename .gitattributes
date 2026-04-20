@@ -1,0 +1,2 @@
+# Bash 腳本在 Windows 上須為 LF，否則 Git Bash 會出現 `env: bash\r`
+scripts/streaming_steam/*.sh text eol=lf

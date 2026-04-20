@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "label": "OBC live wheel — copy to Streaming/config/live_manifest.json",
+  "expected_slots": 24,
+  "entries": [
+    {
+      "slot": 1,
+      "file": "live_slot_01.mp4",
+      "added_at": "2026-01-01"
+    },
+    {
+      "slot": 2,
+      "file": "live_slot_02.mp4",
+      "added_at": "2026-01-02"
+    },
+    {
+      "slot": 3,
+      "file": "live_slot_03.mp4",
+      "added_at": "2026-01-03"
+    },
+    {
+      "slot": 4,
+      "file": "live_slot_04.mp4",
+      "added_at": "2026-01-04"
+    },
+    {
+      "slot": 5,
+      "file": "live_slot_05.mp4",
+      "added_at": "2026-01-05"
+    },
+    {
+      "slot": 6,
+      "file": "live_slot_06.mp4",
+      "added_at": "2026-01-06"
+    },
+    {
+      "slot": 7,
+      "file": "live_slot_07.mp4",
+      "added_at": "2026-01-07"
+    },
+    {
+      "slot": 8,
+      "file": "live_slot_08.mp4",
+      "added_at": "2026-01-08"
+    },
+    {
+      "slot": 9,
+      "file": "live_slot_09.mp4",
+      "added_at": "2026-01-09"
+    },
+    {
+      "slot": 10,
+      "file": "live_slot_10.mp4",
+      "added_at": "2026-01-10"
+    },
+    {
+      "slot": 11,
+      "file": "live_slot_11.mp4",
+      "added_at": "2026-01-11"
+    },
+    {
+      "slot": 12,
+      "file": "live_slot_12.mp4",
+      "added_at": "2026-01-12"
+    },
+    {
+      "slot": 13,
+      "file": "live_slot_13.mp4",
+      "added_at": "2026-01-13"
+    },
+    {
+      "slot": 14,
+      "file": "live_slot_14.mp4",
+      "added_at": "2026-01-14"
+    },
+    {
+      "slot": 15,
+      "file": "live_slot_15.mp4",
+      "added_at": "2026-01-15"
+    },
+    {
+      "slot": 16,
+      "file": "live_slot_16.mp4",
+      "added_at": "2026-01-16"
+    },
+    {
+      "slot": 17,
+      "file": "live_slot_17.mp4",
+      "added_at": "2026-01-17"
+    },
+    {
+      "slot": 18,
+      "file": "live_slot_18.mp4",
+      "added_at": "2026-01-18"
+    },
+    {
+      "slot": 19,
+      "file": "live_slot_19.mp4",
+      "added_at": "2026-01-19"
+    },
+    {
+      "slot": 20,
+      "file": "live_slot_20.mp4",
+      "added_at": "2026-01-20"
+    },
+    {
+      "slot": 21,
+      "file": "live_slot_21.mp4",
+      "added_at": "2026-01-21"
+    },
+    {
+      "slot": 22,
+      "file": "live_slot_22.mp4",
+      "added_at": "2026-01-22"
+    },
+    {
+      "slot": 23,
+      "file": "live_slot_23.mp4",
+      "added_at": "2026-01-23"
+    },
+    {
+      "slot": 24,
+      "file": "live_slot_24.mp4",
+      "added_at": "2026-01-24"
+    }
+  ]
+}
