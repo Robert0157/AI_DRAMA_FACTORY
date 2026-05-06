@@ -16,6 +16,7 @@ import sys
 import textwrap
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -305,6 +306,93 @@ def compose_lofi_youtube_seo(
     return "\n".join(parts)
 
 
+def _is_too_similar(candidate: str, existing_keys: Set[str], threshold: float = 0.75) -> bool:
+    """Return True if candidate is ≥threshold similar to any existing normalised title key."""
+    for key in existing_keys:
+        if SequenceMatcher(None, candidate, key).ratio() >= threshold:
+            return True
+    return False
+
+
+def _get_content_signals_from_vaults(channel: str) -> Dict:
+    """
+    Query audio + visual vaults and return content_signals dict used to
+    constrain the LLM so album_title / track_list reflect ACTUAL content.
+
+    Gracefully returns empty signals if vaults are unavailable (new installs,
+    CI runs, etc.) — the rest of the generation still proceeds normally.
+    """
+    signals: Dict = {"audio_moods": [], "audio_genres": [], "video_scenes": []}
+
+    try:
+        from scripts.gear2_rnd.vault_database import VaultDatabase
+        _av = VaultDatabase()
+        cur = _av.conn.cursor()
+        cur.execute(
+            "SELECT mood, COUNT(*) c FROM audio_assets "
+            "WHERE channel=? AND derivation_count=0 AND mood IS NOT NULL "
+            "GROUP BY mood ORDER BY c DESC LIMIT 5",
+            (channel,),
+        )
+        signals["audio_moods"] = [r[0] for r in cur.fetchall()]
+        cur.execute(
+            "SELECT genre, COUNT(*) c FROM audio_assets "
+            "WHERE channel=? AND derivation_count=0 AND genre IS NOT NULL "
+            "GROUP BY genre ORDER BY c DESC LIMIT 3",
+            (channel,),
+        )
+        signals["audio_genres"] = [r[0] for r in cur.fetchall()]
+        _av.close()
+    except Exception:
+        pass
+
+    try:
+        from scripts.gear2_rnd.visual_vault_db import VisualVaultDB
+        _vv = VisualVaultDB()
+        cur2 = _vv.conn.cursor()
+        cur2.execute(
+            "SELECT scene_tags FROM video_assets WHERE channel=? AND is_archived=0",
+            (channel,),
+        )
+        counter: Dict[str, int] = {}
+        for (raw_tags,) in cur2.fetchall():
+            try:
+                tags = json.loads(raw_tags) if isinstance(raw_tags, str) else []
+            except Exception:
+                tags = []
+            for t in tags:
+                counter[t] = counter.get(t, 0) + 1
+        signals["video_scenes"] = [
+            t for t, _ in sorted(counter.items(), key=lambda x: x[1], reverse=True)[:5]
+        ]
+        _vv.close()
+    except Exception:
+        pass
+
+    return signals
+
+
+def _build_content_constraint_block(signals: Dict) -> str:
+    """Build LLM constraint paragraph from content_signals; returns '' if no data."""
+    lines: List[str] = []
+    if signals.get("audio_moods"):
+        lines.append(f"- Actual audio mood tags: {', '.join(signals['audio_moods'])}")
+    if signals.get("audio_genres"):
+        lines.append(f"- Audio genres present: {', '.join(signals['audio_genres'])}")
+    if signals.get("video_scenes"):
+        scenes = ", ".join(signals["video_scenes"])
+        lines.append(f"- Video scene tags used in this production: {scenes}")
+        lines.append(
+            "- The album_title and track names MUST semantically match these actual scenes."
+        )
+        lines.append(
+            "- Do NOT reference visual elements or instruments NOT listed above."
+        )
+    if not lines:
+        return ""
+    return "\n\nCONTENT ACCURACY CONSTRAINTS (mandatory — violation = rejection):\n" + "\n".join(lines)
+
+
 def _title_registry_path() -> Path:
     return config.workspace_root / "assets" / "data" / "youtube_title_registry.json"
 
@@ -555,6 +643,7 @@ def _generate_light_music_metadata(
     track_count: int,
     volume: str,
     provider: str,
+    content_signals: Optional[Dict] = None,
 ) -> dict:
     """light_music：LLM 產生前綴 + 固定尾段；總長度 ≤ 100；並產出 track_list / spotify_subgenre。"""
     genre_hint = "Light Music, Cinematic Ambient, Acoustic"
@@ -565,6 +654,7 @@ def _generate_light_music_metadata(
 
     max_c = _max_prefix_chars(LIGHT_MUSIC_ALBUM_TITLE_SUFFIX)
     suf_literal = LIGHT_MUSIC_ALBUM_TITLE_SUFFIX
+    content_block = _build_content_constraint_block(content_signals or {})
     base_prompt = f"""Generate light_music (ambient / nature) release metadata for an album with exactly {track_count} tracks. Volume context: {volume}.
 
 The FINAL store-facing album title will be EXACTLY: your `album_title` field text IMMEDIATELY concatenated with NO extra spaces as:
@@ -575,7 +665,7 @@ CONSTRAINTS:
 - The creative part MUST be at most {max_c} Unicode characters so that the full title is at most {ALBUM_TITLE_MAX_TOTAL} characters total.
 - Do NOT use "R&S Echoes Vol.X:" prefix. Match ambient / nature / healing vibe.
 
-Musical Style: {genre_hint}.
+Musical Style: {genre_hint}.{content_block}
 
 Output strictly in this JSON format:
 {{
@@ -592,6 +682,8 @@ The track_list array MUST contain exactly {track_count} non-empty strings."""
         f"[METADATA] 正在呼叫 {engine_label} 生成 light_music 企劃 "
         f"(Tracks: {track_count}, Provider: {provider})..."
     )
+    if content_signals and any(content_signals.values()):
+        print(f"[METADATA] 🎯 Content signals: {content_signals}")
 
     existing_title_keys = _collect_existing_title_keys("light_music")
     rejected_titles: List[str] = []
@@ -627,6 +719,12 @@ The track_list array MUST contain exactly {track_count} non-empty strings."""
         title_key = _normalize_title_key(full_title)
         if title_key in existing_title_keys:
             last_reason = "album_title 與既有標題重複"
+            rejected_titles.append(full_title)
+            print(f"[METADATA] ⚠️ 第 {attempt}/3 次重試：{last_reason} -> {full_title}")
+            continue
+
+        if _is_too_similar(title_key, existing_title_keys):
+            last_reason = "album_title 與既有標題相似度過高 (>75%)"
             rejected_titles.append(full_title)
             print(f"[METADATA] ⚠️ 第 {attempt}/3 次重試：{last_reason} -> {full_title}")
             continue
@@ -671,6 +769,7 @@ def _generate_lofi_metadata(
     track_count: int,
     volume: str,
     provider: str,
+    content_signals: Optional[Dict] = None,
 ) -> dict:
     """lofi：LLM 產生前綴 + LOFI_ALBUM_TITLE_SUFFIX；總長度 ≤ ALBUM_TITLE_MAX_TOTAL。"""
     genre_hint = "Lo-fi Hip Hop, Chillhop"
@@ -681,6 +780,7 @@ def _generate_lofi_metadata(
 
     max_c = _max_prefix_chars(LOFI_ALBUM_TITLE_SUFFIX)
     suf_literal = LOFI_ALBUM_TITLE_SUFFIX
+    content_block = _build_content_constraint_block(content_signals or {})
     base_prompt = f"""Generate lofi / chillhop release metadata for an album with exactly {track_count} tracks. Volume context: {volume}.
 
 The FINAL store-facing album title will be EXACTLY: your `album_title` field text IMMEDIATELY concatenated with NO extra spaces as:
@@ -691,7 +791,7 @@ CONSTRAINTS:
 - The creative part MUST be at most {max_c} Unicode characters so that the full title is at most {ALBUM_TITLE_MAX_TOTAL} characters total.
 - Do NOT use "R&S Echoes Vol.X:" prefix. Match lo-fi / chillhop / study beats vibe.
 
-Musical Style: {genre_hint}.
+Musical Style: {genre_hint}.{content_block}
 
 Output strictly in this JSON format:
 {{
@@ -708,6 +808,8 @@ The track_list array MUST contain exactly {track_count} non-empty strings."""
         f"[METADATA] 正在呼叫 {engine_label} 生成 lofi 企劃 "
         f"(Tracks: {track_count}, Provider: {provider})..."
     )
+    if content_signals and any(content_signals.values()):
+        print(f"[METADATA] 🎯 Content signals: {content_signals}")
 
     existing_title_keys = _collect_existing_title_keys("lofi")
     rejected_titles: List[str] = []
@@ -741,6 +843,12 @@ The track_list array MUST contain exactly {track_count} non-empty strings."""
         title_key = _normalize_title_key(full_title)
         if title_key in existing_title_keys:
             last_reason = "album_title 與既有標題重複"
+            rejected_titles.append(full_title)
+            print(f"[METADATA] ⚠️ 第 {attempt}/3 次重試：{last_reason} -> {full_title}")
+            continue
+
+        if _is_too_similar(title_key, existing_title_keys):
+            last_reason = "album_title 與既有標題相似度過高 (>75%)"
             rejected_titles.append(full_title)
             print(f"[METADATA] ⚠️ 第 {attempt}/3 次重試：{last_reason} -> {full_title}")
             continue
@@ -786,11 +894,14 @@ def generate_metadata(
     track_count: int,
     volume: str = "1",
     provider: str = "minimax",
+    content_signals: Optional[Dict] = None,
 ) -> dict:
+    if content_signals is None:
+        content_signals = _get_content_signals_from_vaults(channel)
     if channel == "light_music":
-        return _generate_light_music_metadata(track_count, volume, provider)
+        return _generate_light_music_metadata(track_count, volume, provider, content_signals)
     if channel == "lofi":
-        return _generate_lofi_metadata(track_count, volume, provider)
+        return _generate_lofi_metadata(track_count, volume, provider, content_signals)
     _fatal_exit("Config", f"不支援的 channel: {channel}")
 
 
