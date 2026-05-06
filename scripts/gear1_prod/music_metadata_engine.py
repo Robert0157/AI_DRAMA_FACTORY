@@ -25,7 +25,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from scripts.common.atomic_io import atomic_write_json, atomic_write_text
 from scripts.common.env_manager import config
-from scripts.common.llm_client import generate_structured_json
+from scripts.common.llm_client import generate_structured_json, generate_with_full_fallback
 
 
 @dataclass
@@ -698,10 +698,9 @@ The track_list array MUST contain exactly {track_count} non-empty strings."""
         )
         user_prompt = base_prompt + rejected_block
         try:
-            response_json = generate_structured_json(
+            response_json = generate_with_full_fallback(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
-                provider=provider,
             )
         except Exception as e:
             _fatal_exit("LLM Generation", str(e))
@@ -824,10 +823,9 @@ The track_list array MUST contain exactly {track_count} non-empty strings."""
         )
         user_prompt = base_prompt + rejected_block
         try:
-            response_json = generate_structured_json(
+            response_json = generate_with_full_fallback(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
-                provider=provider,
             )
         except Exception as e:
             _fatal_exit("LLM Generation", str(e))
