@@ -1,0 +1,299 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LIGHT_MUSIC]
+生成時間: 2026-04-24 12:49:56
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\light_music\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: Violin's Eternal Horizon
+[[[SUNO_TAGS_START]]]
+Pure Ambient Therapeutic, Ethereal Violin, Cinematic Nature Soundscape, Solo Violin, New Age Celtic, Mystic Woodland, Heavenly Reverb, Spiritual Awakening, Therapeutic Ambient, pristine studio sound, NO vocals, NO drums, NO percussion, NO vinyl crackle, NO background noise, New Age, Celtic, ethereal, healing frequencies, NO tape hiss
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ethereal synth pads fade in slowly like distant starlight, shimmering with vast cathedral-like reverb, establishing an infinite cosmic atmosphere over which the music will unfold)
+
+...
+...
+
+[Verse 1] (Solo Violin enters with long, bowed lyrical phrases, high register, deeply resonant and weeping with emotional warmth, expansive cinematic reverb fills the entire space, no percussion whatsoever, breathlike dynamics rise and fall like distant ocean waves, painting an ethereal horizon)
+
+...
+...
+
+[Melodic Development] (Violin melody deepens with richerharmonics, layer of soft orchestral strings enters beneath like a distant choir, pan flute adds delicate high counter-melody, overall pacing remains achingly slow and majestic, every note hangs suspended in crystalline air)
+
+...
+...
+
+[Chorus] (Full orchestral string section swells beneath the violin, lush and cinematic, dramatic emotional crescendo with vast epic reverb, violin soars above the ensemble reaching toward the heavens, ethereal atmosphere thickens with warmth and spiritual light, every phrase radiates profound healing energy)
+
+...
+...
+
+[Verse 2] (Orchestral layers recede gracefully, solo Violin returns alone, playing a transformed variation of the initial theme, richer and more introspective, wide open space with ethereal synth pads providing gentle harmonic foundation, pacing becomes even more rubato and timeless, flowing like a meditation in deep twilight)
+
+...
+...
+
+[Bridge] (Celtic harp enters with gentle arpeggios woven beneath the violin's soaring lines, creating a luminous blend of pastoral and celestial, breathlike dynamics expand and contract, building toward a transcendent peak before dissolving into meditative stillness, the horizon stretches infinitely)
+
+...
+...
+
+[Final Resolution] (Violin returns one last time, playing the purest form of the main theme with supreme serenity, accompanied only by ethereal synth pads, each note sustaining impossibly long in pristine studio clarity, transcendent and timeless, touching the deepest frequencies of healing)
+
+...
+...
+
+[Outro] (fade to silence, ethereal synth pads and solo violin only, stretching timelessly into infinite silence, leaving only the memory of light)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: Chambers of the Eternal
+[[[SUNO_TAGS_START]]]
+New Age, Therapeutic Ambient, String Quartet, Cinematic Soundscape, Ethereal, Profound Meditation, Orchestral, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise, New Age, Celtic, ethereal, healing frequencies
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ethereal string quartet emerges from silence, viola and cello establishing profound depth, crystal-clear studio acoustic, timeless void atmosphere)
+
+...
+...
+
+[Verse 1] (First violin joins with sustained lyrical phrase, second violin and viola weaving gentle countermelodies, cello providing resonant foundation, breathing-like dynamics, spacious reverb chamber)
+
+...
+...
+
+[Profound Bridge] (All four voices of the string quartet unite in sweeping harmonic progression, violin crying softly above sustained viola drones, cello pizzicato moments creating celestial texture, deeply meditative pacing)
+
+...
+...
+
+[Chorus] (Full string quartet swells with majestic emotional intensity, cascading arpeggios from first violin, profound sense of transcendence, cinematic orchestral warmth, NO percussion whatsoever)
+
+...
+...
+
+[Interlude] (Solo viola takes center stage with deeply expressive melody, second violin and cello creating ethereal harmonic halo, profound stillness and contemplation, ambient therapeutic space)
+
+...
+...
+
+[Verse 2] (String quartet returns with renewed spiritual depth, imitative counterpoint between violins, viola and cello providing grounding resonance, flowing rubato tempo, profound elegance)
+
+...
+...
+
+[Climax] (All strings reach soaring emotional peak together, tremolo passages creating ethereal shimmer, profound beauty and serene grandeur, vast cinematic reverb expanding the acoustic space)
+
+...
+...
+
+[Outro] (fade to silence, solo cello descending into profound depths, ethereal viola harmonics lingering, timeless stretching into infinite stillness)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: Sacred Breath of Dawn
+[[[SUNO_TAGS_START]]]
+New Age, Ambient Therapeutic, Ethereal Soprano Saxophone, Sacred Atmosphere, Cinematic Soundscape, Solo Instrumental, Orchestral Strings, Pristine Studio Sound, NO vocals, NO drums, NO percussion, NO vinyl crackle, NO background noise, ethereal, healing frequencies, NO tape hiss
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ethereal synth pad fades in slowly, sustained orchestral string chord tremolo, sacred atmosphere fills the space, soprano saxophone enters with a single pure breath of sound)
+
+...
+...
+
+[Verse 1] (Soprano saxophone begins a deeply lyrical solo line, phrasing like a prayer rising through a cathedral of nature, lush cinematic strings swell gently underneath, pristine studio clarity, breathlike pacing, no percussion)
+
+...
+...
+
+[Chorus] (The saxophone elevates to its full ethereal range, sustained melodic notes ring with sacred resonance, orchestral strings layer into a majestic tapestry, the dynamic swells like dawn breaking over still water, deeply healing and transcendent)
+
+...
+...
+
+[Verse 2] (Solo saxophone continues its windlike journey, now accompanied by soft shimmering high hats (ethereal chimes only, NO percussion)
+
+...
+...
+
+, the harmonic palette shifts to a more celestial tonality, flowing river pacing, mystical woodland acoustics, soprano saxophone soars above like a spirit unbound)[Bridge] (Saxophone temporarily rests as ethereal choir pads enter with wordless hums, celestial bell tones resonate, sacred atmosphere deepens, the space opens into infinite reverent silence before the instrument returns)
+
+...
+...
+
+[Climax] (Soprano saxophone returns with its most powerful and emotional statement, orchestral strings reach their fullest cinematic swell, all elements combine into a majestic therapeutic peak, the sound breathes and rises with timeless grandeur)
+
+...
+...
+
+[Resolution] (Saxophone gently descends from its heights, returning to a quiet whisper of sacred melody, strings soften to barely audible sustains, the sacred atmosphere wraps everything in serene peace)
+
+...
+...
+
+[Outro] (fade to silence, ethereal soprano saxophone holds one final long note, distant synth pads dissolve into the ether, the sacred breath hangs in the air timelessly)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: Echoes of the Quiet Mind
+[[[SUNO_TAGS_START]]]
+Pure Ambient Therapeutic, Ethereal Synth Pads, New Age Meditation, Introspective Soundscape, Ambient Synth, Solitary Piano Layers, Vast Reverb Hall, Healing Frequencies, pristine studio sound, NO vocals, NO drums, NO percussion, NO vinyl crackle, NO tape hiss, NO background noise, New Age, Celtic, ethereal, healing frequencies
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Ambient synth pad slowly emerges from deep silence, infinite reverb spreading across empty space, filter sweep gradually revealing harmonic layers, pure introspection atmosphere, no percussion whatsoever)
+
+...
+...
+
+[Verse 1] (Sustained ambient synth chords with wide stereo field, gentle filter automation creates breathing motion, vast cathedral-like reverb, layers of ethereal atmosphere building slowly like morning mist, introspective and deeply meditative)
+
+...
+...
+
+[Ambient Chorus] (Full ambient synth texture blooms with harmonic richness, multiple layered pads creating a lush yet spacious soundbed, celestial resonance throughout, cinematic reverb expanding the sonic horizon infinitely, transcendent therapeutic warmth)
+
+...
+...
+
+[Verse 2] (Subtle melodic line introduced via soft synth arpeggio, filtered at very low frequencies, ambient synth continues as the sovereign foundation, every sound fades into enormous reverb tail, the distance between sounds feels cosmic and infinite)
+
+...
+...
+
+[Bridge] (Ambient synth pad slowly thins, leaving only the purest fundamental tones, introspective space deepens, gentle harmonic subtraction creates emotional release, vast silence between notes holds the listener in deep contemplation)
+
+...
+...
+
+[Breakdown] (Solo ambient synth voice, extremely slow movement, gentle modulation and shimmer, introspective solitude, time appears to stop entirely, therapeutic frequencies washing over the listener like distant starlight)
+
+...
+...
+
+[Resolution] (Ambient synth gradually rebuilds with richer harmonic content, warmth returning to the sonic space, layers of pads interweave with subtle string-like synth textures, the introspection completes its journey, majestic serenity restored)
+
+...
+...
+
+[Outro] (fade to silence, ethereal ambient synth and distant synth shimmer only, introspective silence stretching timelessly into infinite horizon)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: Abyss of Still Water
+[[[SUNO_TAGS_START]]]
+Pure Ambient Therapeutic, New Age, Cinematic Cello Meditation, Ethereal Soundscape, Deep Healing Frequencies, Solo Cello Meditation, Peaceful Pastorale, Majestic Serenity, Solo Cello and Piano, therapeutic new age, pristine studio sound, NO vocals, NO drums, NO percussion, NO vinyl crackle, NO tape hiss, NO background noise, New Age, Celtic, ethereal, healing frequencies
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Solo Cello enters with a deep, resonant open fifth — a slow, breath-like vibrato that stretches across vast cathedral reverb — ethereal synth pad swells beneath, gentle orchestral strings emerge distantly in the fog of ambience, no percussion, peaceful pacing at 52 BPM rubato)
+
+...
+...
+
+[Verse 1] (Solo Cello unfolds a long, melancholic melody in the lower register — each phrase sustained and aching — crystalline reverb tails echo through an imagined stone cathedral — ambient piano enters in high register like distant starlight, solo cello continues weeping beneath)
+
+...
+...
+
+[Chorus] (Lush orchestral strings swell in a broad, cinematic crescendo — Solo Cello rises to its mid-range, playing an expansive, hymn-like theme — vast cinematic reverb envelops every note, the soundstage widens into an infinite horizon of still water — breathlike dynamics, deeply healing and nostalgic)
+
+...
+...
+
+[Verse 2] (Solo Cello descends back to its lowest register — hollow, resonant open strings ring like a Tibetan bowl — ethereal synth pads shift to a cooler, aquatic tonal color — the pace flows like deep river current, unhurried, timeless — no percussion whatsoever, only sustained resonance)
+
+...
+...
+
+[Bridge] (Solo Cello plays a sparse, meditative two-note phrase — long fermata pauses filled with vast reverb tails — a distant Celtic harp enters with a single, shimmering arpeggio — the two instruments circle each other in slow motion like light on water — majestic serenity fills the space)
+
+...
+...
+
+[Interlude] (Solo Cello returns alone — playing a deeply personal, almost whispered passage — bowing near the cello's bridge creates a glassy, ethereal overtone texture — ambient nature-inspired tonal color deepens — the reverb stretches each note into infinity)
+
+...
+...
+
+[Outro] (Solo Cello sustains a final, luminous harmonic — the sound gently fades into deep silence — ethereal synth pads and a single sustained cello tone linger, stretching timelessly into nothing — Peaceful, profound, whole)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Beautiful landscape photography style. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Detailed environment with atmospheric elements. Perfect composition, professional lighting, serene and majestic mood. High quality, cinematic, nature focused.
+
+Negative: 人, 人物, 臉, 人臉, 人類, face, people, human, person, indoor, 室內, 建築, building, no people, no humans, landscape only, 4k scenic view, static camera
+
+【Video Prompt】
+Beautiful landscape cinematic video. misty Celtic highlands with ancient stones and morning fog. Natural scenery, ethereal lighting, dreamy colors, New Age aesthetic. Cinematic still shot, locked perspective, zero camera movement. Static camera, subtle environmental motion (clouds, water, light shifting). Atmospheric details, serene and majestic mood, minimal camera movement. Professional composition, cinematic quality, nature focused, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly., no people, no humans, landscape only, 4k scenic view, static camera
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+

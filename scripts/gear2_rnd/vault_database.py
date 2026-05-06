@@ -67,7 +67,11 @@ class VaultDatabase:
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous = FULL;")
         
-        print(f"🛠️  正在初始化【v12.15 終極大一統】地基: {self.db_path}")
+        # v15.10 P2#5: 只在首次建立 schema 時印 log，避免每次實例化污染 pipeline log
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='audio_assets'")
+        _first_init = cursor.fetchone() is None
+        if _first_init:
+            print(f"🛠️  正在初始化【v12.15 終極大一統】地基: {self.db_path}")
         
         # ========== 建立核心資料表 ==========
         cursor.execute("""
@@ -120,7 +124,8 @@ class VaultDatabase:
         """)
         
         self.conn.commit()
-        print("✅ v12.15 全量資料庫地基建立成功！")
+        if _first_init:
+            print("✅ v12.15 全量資料庫地基建立成功！")
 
     # ============= 資料插入方法 =============
     

@@ -13,8 +13,11 @@ import json
 import re
 import os
 import sys
+import logging
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
 
 
 def clean_and_parse_json(text: str) -> Dict[str, Any]:
@@ -55,20 +58,16 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
     cleaned = cleaned.strip()
     
     # ============ 第三步：未閉合括號自動補全 ============
-    # 計算開放與關閉的大括號數量
-    open_braces = cleaned.count('{')
-    close_braces = cleaned.count('}')
-    
-    # 如果開放大括號過多，自動補全
-    if open_braces > close_braces:
-        cleaned += '}' * (open_braces - close_braces)
-    
-    # 計算方括號數量 (用於陣列)
+    # 【v15.10 修正】先補內層方括號，再補外層大括號（確保 `{"items":["x"` → `{"items":["x"]}`）
     open_brackets = cleaned.count('[')
     close_brackets = cleaned.count(']')
-    
     if open_brackets > close_brackets:
         cleaned += ']' * (open_brackets - close_brackets)
+
+    open_braces = cleaned.count('{')
+    close_braces = cleaned.count('}')
+    if open_braces > close_braces:
+        cleaned += '}' * (open_braces - close_braces)
     
     # ============ 第四步：安全 JSON 解析 ============
     try:
@@ -91,6 +90,70 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
         )
     
     return result
+
+
+def parse_llm_json_response(
+    response_text: str,
+    max_retries_on_decode_error: int = 0,
+    log_context: str = "",
+) -> dict:
+    """
+    【v15.10 統一入口】全產線 LLM JSON 解析唯一通道。
+    
+    功能：
+    1. 三重清洗（Markdown + 前置文字截斷 + 括號補全）
+    2. 失敗重試機制（呼叫方按需啟用）
+    3. 統一落地日誌
+    
+    參數：
+        response_text: LLM 回傳原始文字
+        max_retries_on_decode_error: JSON 解碼失敗時自動補全括號的重試次數（預設 0）
+        log_context: 日誌上下文標籤（如 "MiniMax", "Gemini", "Zhipu"）
+    
+    回傳：
+        dict: 清洗後的 JSON 字典
+    
+    異常：
+        ValueError: JSON 無法解析時拋出，含清晰診斷訊息
+    """
+    if not response_text or not isinstance(response_text, str):
+        raise ValueError("LLM 回應必須為非空字串")
+
+    result = None
+    last_error = None
+
+    for attempt in range(max_retries_on_decode_error + 1):
+        try:
+            # 步驟 1-3：委派給核心清洗函式
+            result = clean_and_parse_json(response_text)
+            break
+        except (ValueError, TypeError) as e:
+            last_error = e
+            if attempt < max_retries_on_decode_error:
+                # 嘗試更激進的清洗：移除所有控制字元後再試
+                import time, random
+                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
+                backoff = min(2 ** attempt, 5) + random.uniform(0, 0.5)
+                if log_context:
+                    logger.warning(
+                        "[%s] JSON 解析失敗 (attempt %d/%d)，%.1fs 後重試: %s",
+                        log_context, attempt + 1, max_retries_on_decode_error, backoff, str(e)[:120]
+                    )
+                time.sleep(backoff)
+            else:
+                if log_context:
+                    logger.error(
+                        "[%s] JSON 最終解析失敗 (%d attempts): %s",
+                        log_context, max_retries_on_decode_error + 1, str(e)[:200]
+                    )
+
+    if result is not None:
+        return result
+
+    raise ValueError(
+        f"LLM JSON 解析最終失敗 ({log_context}): {last_error}\n"
+        f"清洗後文本前 300 字元: {response_text[:300]}"
+    )
 
 
 def atomic_write_json(data: Dict[str, Any], file_path: str) -> None:

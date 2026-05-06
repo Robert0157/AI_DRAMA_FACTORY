@@ -4,6 +4,7 @@
 # 用法（在 repo 根或任意目錄）：
 #   .\scripts\streaming_steam\sync_queue_staging_to_mac.ps1
 #   .\scripts\streaming_steam\sync_queue_staging_to_mac.ps1 -MacHost "robert@192.168.1.111" -DryRun
+#   .\scripts\streaming_steam\sync_queue_staging_to_mac.ps1 -RunMacGatekeeper
 #
 # 工作排程器請見：scripts/streaming_steam/WINDOWS_TASK_SCHEDULER_queue_staging.md
 
@@ -12,7 +13,10 @@ param(
     [string]$RemoteStaging = "/Volumes/AI_Workspace/AI_Drama_Factory/Streaming/queue_staging",
     [string]$LocalStaging = "",
     [string]$RsyncExe = "",
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$RunMacGatekeeper,
+    [string]$MacStreamingRoot = "/Volumes/AI_Workspace/AI_Drama_Factory/Streaming",
+    [string]$MacGatekeeperScript = "/Volumes/AI_Workspace/AI_Drama_Factory/scripts/streaming_steam/normalize_to_staging.sh"
 )
 
 $ErrorActionPreference = "Stop"
@@ -81,9 +85,26 @@ Write-Host "  to:    $remoteDest"
 if ($DryRun) {
     Write-Host "  mode:  DRY RUN (-n)" -ForegroundColor Yellow
 }
+if ($RunMacGatekeeper) {
+    Write-Host "  gate:  Run Mac ingest gatekeeper after sync"
+}
 
 & $RsyncExe @rsyncArgs
 if ($LASTEXITCODE -ne 0) {
     throw "rsync 結束碼 $LASTEXITCODE"
 }
 Write-Host "OK: sync finished." -ForegroundColor Green
+
+if ($RunMacGatekeeper) {
+    if ($DryRun) {
+        Write-Host "SKIP gatekeeper: DryRun 模式不執行遠端正規化。" -ForegroundColor Yellow
+    } else {
+        Write-Host "== run mac ingest gatekeeper ==" -ForegroundColor Cyan
+        $remoteCmd = "export STREAMING_ROOT='$MacStreamingRoot'; bash '$MacGatekeeperScript'"
+        & ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 $MacHost $remoteCmd
+        if ($LASTEXITCODE -ne 0) {
+            throw "Mac Gatekeeper 結束碼 $LASTEXITCODE"
+        }
+        Write-Host "OK: mac gatekeeper finished." -ForegroundColor Green
+    }
+}

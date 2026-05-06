@@ -600,7 +600,7 @@ async def send_finished_artifacts(message, context: ContextTypes.DEFAULT_TYPE) -
     """
     【資產交付】發送生成的成品檔案給 CEO
     
-    - YouTube_CheatSheet_*.txt
+    - youtube_sheet_*.txt
     - *.mp4 影片（如果大小允許）
     """
     try:
@@ -609,8 +609,9 @@ async def send_finished_artifacts(message, context: ContextTypes.DEFAULT_TYPE) -
         if not final_exports.exists():
             return
         
-        # 發送 YouTube CheatSheet
-        cheatsheet_files = list(final_exports.glob("YouTube_CheatSheet_*.txt"))
+        # 發送 YouTube 上架文案（含頻道子目錄）
+        cheatsheet_candidates = set(final_exports.rglob("youtube_sheet_*.txt"))
+        cheatsheet_files = sorted(cheatsheet_candidates, key=lambda p: p.stat().st_mtime)
         if cheatsheet_files:
             cheatsheet_file = cheatsheet_files[-1]  # 最新的
             await message.reply_document(

@@ -1,3 +1,33 @@
+import os
+import sys
+import socket
+import subprocess
+
+# 強化自動尋找可用 port，遇到假閒置也能自動換 port
+def _find_and_launch_streamlit(start=8601, end=8699):
+    for port in range(start, end + 1):
+        # 先用 socket 檢查
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('localhost', port)) == 0:
+                continue  # 已被佔用
+        # 用 subprocess 啟動測試
+        env = os.environ.copy()
+        env["STREAMLIT_SERVER_PORT_AUTO"] = "1"
+        cmd = [sys.executable, "-m", "streamlit", "run", __file__, "--server.port", str(port)]
+        print(f"嘗試啟動 Streamlit 於 port {port} ...")
+        proc = subprocess.Popen(cmd, env=env)
+        try:
+            proc.wait(timeout=5)
+        except Exception:
+            pass
+        if proc.poll() is None:
+            # 啟動成功，主程序結束
+            sys.exit(0)
+        # 若失敗，繼續下一個 port
+    raise RuntimeError("No free port found in range.")
+
+if __name__ == "__main__" and os.environ.get("STREAMLIT_SERVER_PORT_AUTO") != "1":
+    _find_and_launch_streamlit()
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -179,6 +209,12 @@ if "_pending_bg_notify" in st.session_state:
     _lbl = _bg_done.get("label", "")
     if _bg_done["ok"]:
         st.success(f"背景任務完成 — {_lbl}\n{_bg_done['msg']}")
+        # 與 backend.start_full_pipeline 的 label「CEO 全自動產線 ({ch})」對齊。
+        # 使用遞增 nonce（非單一 bool）：Streamlit 每輪會跑完所有 tab 區塊，若在 Tab5 才 pop 會被「未切到 Tab5」時提前耗盡。
+        if _lbl.startswith("CEO 全自動產線"):
+            st.session_state["_pipeline_celebration_nonce"] = int(
+                st.session_state.get("_pipeline_celebration_nonce", 0)
+            ) + 1
     else:
         st.error(f"背景任務失敗 — {_lbl}\n{_bg_done['msg']}")
 
@@ -308,6 +344,38 @@ with tab2:
     else:
         st.write("（尚無檔案 — 執行供彈後會寫入此目錄）")
 
+# === Shorts 雙語標題彈藥庫生成區塊 ===
+    st.divider()
+    st.subheader("🎬 Shorts 雙語標題彈藥庫生成")
+    # 永遠顯示固定 log 路徑（logs/shorts_pool.log）
+    from pathlib import Path
+    _project_root = Path(__file__).resolve().parents[2]
+    _shorts_log_path = _project_root / "logs" / "shorts_pool.log"
+    st.caption(f"由 Windows 端 MiniMax 2.7 產生，直接寫入 queue_staging/shorts_meta_pool.json，供 Mac mini 自動消耗。\n\n**生成過程即時日誌已整合至頁首「📟 產線即時日誌」區塊，路徑: {_shorts_log_path.resolve()}。**")
+    shorts_batch_size = st.number_input("生成 Shorts 標題組數", min_value=5, max_value=100, value=30, step=5)
+    busy_shorts = st.session_state.backend.background_busy()
+    go_shorts = st.button(
+        "🚀 生成 Shorts 雙語標題彈藥庫（背景執行）",
+        type="primary",
+        disabled=busy_shorts,
+        help="生成過程即時日誌已整合至頁首「📟 產線即時日誌」區塊。"
+    )
+    if go_shorts:
+        ok, msg, log_path = st.session_state.backend.run_shorts_pool_with_log(int(shorts_batch_size))
+        if ok:
+            st.success(msg)
+        else:
+            st.error(msg)
+    # 強制分頁內 log 永遠顯示（不論 busy 狀態）
+    log_path = st.session_state.backend.get_active_log_path()
+    if log_path:
+        tail = st.session_state.backend.get_latest_log_lines(log_path, _PIPELINE_LOG_TAIL_LINES)
+        display = _format_pipeline_log_display(tail, _PIPELINE_LOG_TAIL_LINES)
+        st.markdown("#### 📟 Shorts 產線即時日誌（本分頁專屬）")
+        st.code(display, language="text", line_numbers=False)
+    else:
+        st.caption("（目前無執行中任務，請啟動生成以查看即時日誌）")
+
 with tab3:
     st.header("📦 批量母帶處理（僅 Phase 1+2）")
     st.caption(
@@ -362,6 +430,7 @@ with tab3:
             st.error(msg_m)
 
 with tab4:
+
     st.header("🎬 影音發行流水線：1 小時母帶 + 幻影輪播")
     col_a, col_b = st.columns(2)
 
@@ -401,8 +470,21 @@ with tab4:
                 )
                 st.success("✅ 輪播矩陣啟動！")
 
-# Tab5 — CEO 全自動產線（Phase 1–5）+ v15.9 閘門與 TTAPI
+
+# Tab5 — CEO 全自動產線（Phase 1–5）+ v15.9 閘門與 TTAPI + 審核發行
 with tab5:
+
+    # 產線完成自動高亮：nonce 與「Tab5 已展示過的 nonce」比對，避免 bool 在背景 rerun 時被未顯示的 Tab5 區塊誤清
+    _cele_nonce = st.session_state.get("_pipeline_celebration_nonce")
+    _seen_nonce = st.session_state.get("_tab5_seen_celebration_nonce")
+    highlight_review = _cele_nonce is not None and _cele_nonce != _seen_nonce
+    if highlight_review:
+        st.session_state["_tab5_seen_celebration_nonce"] = _cele_nonce
+        st.success("🎉 全自動產線已完成！請立即進行 CEO 審核與發行。")
+        if st.button("➡️ 前往審核與發行 (Tab4)", type="secondary", key="btn_goto_tab4_pipeline_done"):
+            st.session_state["_active_tab"] = 3
+            st.rerun()
+
     st.header("🚀 CEO 全自動產線 (Phase 1–5)")
     st.caption("架構說明書：strict 模式下新鮮度未達標時鎖定按鈕，除非啟用 TTAPI 自動補彈。")
 
@@ -443,8 +525,99 @@ with tab5:
         else:
             st.error(msg_fp)
 
+    st.divider()
+    st.subheader("📝 自動檢查與發行控制台")
+    if highlight_review:
+        st.markdown(
+            """
+<span style='background: #ffe066; color: #b30000; font-size:1.2rem; padding:0.5em 1em; border-radius:8px;'>
+🚨 產線已完成，請立即進行 CEO 審核與發行！
+</span>
+""",
+            unsafe_allow_html=True,
+        )
+        st.balloons()
+    st.markdown("""
+**【發行前自動檢查機制】** 系統將自動檢驗 4 大核心檔案是否齊全（metadata、DistroKid_Sheet、youtube_sheet、1 小時 MP4），並透過 SMB（邊車模式）將影片與 sidecar 傳送至 Mac mini（`Y:/Long_Queue`）。
+""")
+
+    check_res = st.session_state.backend.verify_export_files(channel=cur_ch)
+
+    if not check_res["all_passed"]:
+        miss = check_res["status"]["missing_list"]
+        st.warning("⚠️ 發行檔案尚未齊全，請確認產線是否已完整執行：")
+        for missing in miss:
+            st.error(f"缺漏: {missing}")
+    else:
+        st.success("✅ 產線檢查通過：4 大核心檔案皆已齊全！")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button(
+                "🚀 自動發行\n(傳送至 Mac mini 自動上傳)",
+                type="primary",
+                width="stretch",
+            ):
+                with st.spinner("透過 SMB 傳輸 1 小時影片與 Sidecar JSON 中，請勿關閉視窗..."):
+                    pub_res = st.session_state.backend.publish_final_exports(channel=cur_ch, mode="auto")
+                if pub_res["ok"]:
+                    st.success(pub_res["msg"])
+                    with st.expander("檢視去除 Shorts 標籤之 Metadata"):
+                        st.json(pub_res["cleaned_metadata"])
+                    if pub_res.get("log"):
+                        st.caption(pub_res["log"])
+                    if pub_res.get("mac_mini_upload_log"):
+                        st.info(
+                            "🚀 已將發行指令送往 Mac mini 待命中心。請前往 Mac mini 查看上傳日誌："
+                            f"`{pub_res['mac_mini_upload_log']}`。"
+                        )
+                    if pub_res.get("mac_mini_video_id_track"):
+                        st.caption(
+                            "Video ID 追蹤檔（Mac 端預期路徑，由上傳器寫入）："
+                            f"`{pub_res['mac_mini_video_id_track']}`"
+                        )
+                else:
+                    st.error(pub_res["msg"])
+
+        with col2:
+            if st.button(
+                "🙋‍♂️ 人工發行\n(傳送至 Mac mini，等待手動上傳)",
+                type="secondary",
+                width="stretch",
+            ):
+                with st.spinner("透過 SMB 傳輸 1 小時影片與 Sidecar JSON 中，請勿關閉視窗..."):
+                    pub_res = st.session_state.backend.publish_final_exports(channel=cur_ch, mode="manual")
+                if pub_res["ok"]:
+                    st.success(pub_res["msg"])
+                    with st.expander("檢視備用 YouTube CheatSheet (可點擊複製)"):
+                        st.text_area(
+                            "文案內容",
+                            pub_res["cheatsheet"] or "",
+                            height=300,
+                        )
+                    if pub_res.get("log"):
+                        st.caption(pub_res["log"])
+                    if pub_res.get("mac_mini_upload_log"):
+                        st.info(
+                            "🚀 已將發行指令送往 Mac mini 待命中心。請前往 Mac mini 查看上傳日誌："
+                            f"`{pub_res['mac_mini_upload_log']}`。"
+                        )
+                    if pub_res.get("mac_mini_video_id_track"):
+                        st.caption(
+                            "Video ID 追蹤檔（Mac 端預期路徑，由上傳器寫入）："
+                            f"`{pub_res['mac_mini_video_id_track']}`"
+                        )
+                else:
+                    st.error(pub_res["msg"])
+
+
+
+
+
+
 with tab6:
-    st.header("🛡️ 金庫維護與衍生歸零")
+    st.header("🛡️ 金庫維護與衍生歸零／歸檔清理")
     tgt = st.radio("重置目標", ["audio", "visual", "both"], horizontal=True)
     c1_rst = st.checkbox("我已確認備份重要資產", key="reset_c1")
     c2_rst = st.checkbox("明確授權將 derivation_count 歸零", key="reset_c2")
@@ -455,3 +628,20 @@ with tab6:
             st.rerun()
         else:
             st.error(msg)
+
+    st.divider()
+    st.subheader("🗑️ 歸檔音檔自動清理（超過30天壓縮備份並刪除）")
+    c3_rst = st.checkbox("我已再次確認歸檔音檔已備份且可安全刪除", key="cleanup_c3")
+    if st.button("🗃️ 一鍵清理歸檔音檔", disabled=not c3_rst, type="primary"):
+        import subprocess
+        try:
+            result = subprocess.run([
+                sys.executable,
+                str(Path(__file__).parents[1] / "maintenance" / "cleanup_old_archived_beats.py")
+            ], capture_output=True, text=True, timeout=600)
+            if result.returncode == 0:
+                st.success("清理完成！\n" + result.stdout)
+            else:
+                st.error(f"清理腳本執行失敗：{result.stderr}")
+        except Exception as e:
+            st.error(f"清理腳本執行異常：{e}")

@@ -59,7 +59,12 @@ LEARNING_LOG = PROJECT_ROOT / "project_learning.md"
 
 # 【CTO v12.0 Master Key Mode】TTAPI 官方 API 配置
 TT_BASE_URL        = os.getenv("TT_BASE_URL", "https://api.ttapi.io")
-TTAPI_KEY          = os.getenv("TTAPI_KEY", "")
+# v15.10 P3#11: 改由 secrets_manager 統一管理，避免直接 os.getenv 繞過審計
+try:
+    from scripts.common.secrets_manager import get_secrets as _get_secrets
+    TTAPI_KEY = _get_secrets().get("TTAPI_KEY") or ""
+except Exception:
+    TTAPI_KEY = os.getenv("TTAPI_KEY", "")  # 降級 fallback
 # 向後兼容：仍支持本地代理（若 TT_BASE_URL 設為 localhost）
 SUNO_BASE          = TT_BASE_URL  # 統一使用 TTAPI Base URL
 
@@ -77,10 +82,15 @@ DYNAMIC_POLL_MAX_ATTEMPTS = (MAX_WAIT_SEC - DEFAULT_WAIT_SEC) // DYNAMIC_POLL_IN
 
 TERMINAL_STATUSES  = {"streaming", "complete", "error"}
 
-# 【CTO 終極指令】TTAPI Job Status Mapping
-TTAPI_JOB_SUCCESS_STATUS = {"success", "completed", "done"}
-TTAPI_JOB_PENDING_STATUS = {"pending", "processing", "generating"}
-TTAPI_JOB_FAILED_STATUS  = {"failed", "error"}
+# 【v15.11 P1#6】TTAPI Job Status Mapping — 可透過 env var 覆寫（逗號分隔），以相容未來 API 版本
+def _parse_status_set(env_var: str, default_csv: str) -> frozenset:
+    """從環境變數讀取 TTAPI 狀態集合；格式：逗號分隔字串，空白自動略過。"""
+    raw = os.environ.get(env_var, default_csv)
+    return frozenset(s.strip() for s in raw.split(",") if s.strip())
+
+TTAPI_JOB_SUCCESS_STATUS = _parse_status_set("TTAPI_SUCCESS_STATUSES", "success,completed,done")
+TTAPI_JOB_PENDING_STATUS = _parse_status_set("TTAPI_PENDING_STATUSES", "pending,processing,generating")
+TTAPI_JOB_FAILED_STATUS  = _parse_status_set("TTAPI_FAILED_STATUSES",  "failed,error")
 
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -182,17 +192,11 @@ def _http_post(endpoint: str, payload: dict) -> dict:
         method="POST",
     )
     
-    # 【CTO 終極指令 診斷日誌】
+    # v15.10 P0#1: 診斷日誌安全化 — 金鑰遮蔽，payload 降至 DEBUG level
     log.info(f"[TTAPI-POST] URL: {url}")
-    log.info(f"[TTAPI-POST] TT-API-KEY: {TTAPI_KEY[:20]}..." if TTAPI_KEY else "[TTAPI-POST] TT-API-KEY: NOT SET")
-    # 【v12.18 強制 JSON 結構驗證】全量打印 payload，保留轉義符號（不截斷）
-    payload_debug = json.dumps(payload, ensure_ascii=False, indent=2)
-    log.info(f"【v12.18 Payload-Full-Debug】\n{payload_debug}")
-    log.info(f"【v12.18 Payload-Check】提示詞結尾驗證 (應見 \\n...\\n):")
-    if "prompt" in payload:
-        prompt_content = payload["prompt"]
-        last_50_chars = repr(prompt_content[-50:]) if len(prompt_content) > 50 else repr(prompt_content)
-        log.info(f"  最後 50 字元 (repr): {last_50_chars}")
+    log.debug(f"[TTAPI-POST] TT-API-KEY: ***{TTAPI_KEY[-4:]}" if TTAPI_KEY else "[TTAPI-POST] TT-API-KEY: NOT SET")
+    # payload 全量 dump 改為 DEBUG（避免 prompt 內容與部分金鑰殘留於生產 log）
+    log.debug(f"[TTAPI-POST] Payload keys: {list(payload.keys())}")
     
     try:
         with urllib.request.urlopen(req, timeout=120) as resp:

@@ -10,6 +10,7 @@
 !.env.template
 *.pem
 *.key
+env.md
 
 # --- Python ---
 __pycache__/
@@ -89,6 +90,7 @@ Desktop.ini
 .tmp/
 .tmp_debug/
 *.log
+logs/
 assets/.logs/
 **/.logs/
 AI_characters/

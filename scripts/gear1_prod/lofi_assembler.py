@@ -24,6 +24,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 from scripts.common.env_manager import config
+from scripts.common.freshness_counter import get_channel_freshness_config  # v15.11 P1#4 單一來源
 from scripts.gear2_rnd.vault_database import VaultDatabase
 import math
 import re
@@ -114,30 +115,8 @@ def _scan_vault(vault_dir: Path) -> list[Path]:
 # ─────────────────────────────────────────────
 #  建立播放清單（隨機選取 + 重複直到超過目標長度）
 # ─────────────────────────────────────────────
-def _build_playlist(
-    all_tracks: list[Path],
-    durations: dict[Path, float],
-    target_sec: int,
-) -> list[Path]:
-    """
-    隨機選取並重複拼接歌曲，直到考量 crossfade 重疊後的總長度 >= target_sec。
-    每跑完一輪就重新洗牌，避免曲目順序過於重複。
-    """
-    playlist: list[Path] = []
-    accumulated = 0.0
-    shuffled = all_tracks[:]
-    random.shuffle(shuffled)
-    cycle_idx = 0
-    while accumulated < target_sec:
-        track = shuffled[cycle_idx % len(shuffled)]
-        # 第一首全量累計；之後每首扣除 crossfade 重疊秒數
-        accumulated += durations[track] if not playlist else (durations[track] - CROSSFADE_SEC)
-        playlist.append(track)
-        cycle_idx += 1
-        # 每完整跑完一輪就重新洗牌
-        if cycle_idx % len(shuffled) == 0:
-            random.shuffle(shuffled)
-    return playlist
+# _build_playlist() — 已於 v15.11 P1#7 完全移除。
+# 請一律使用 VaultSelection.run()（含新鮮度鐵律硬閘門與衍生次數限制）。
 
 # ─────────────────────────────────────────────
 #  v9.5 智能選曲演算法：50/25/25 排播矩陣 + 同源排斥
@@ -167,18 +146,12 @@ class VaultSelection:
         self.used_roots = set()
         self.playlist = []
 
-        # 【v15.9】新鮮度配置：參數 > env config > 硬回退 0.5
+        # 【v15.11 P1#4】透過 freshness_counter 統一讀取（單一真實來源）
         if min_new_ratio is None:
-            try:
-                policy = getattr(config, "freshness_policy", {}) or {}
-                ch_cfg = (policy.get("channels") or {}).get(channel, {})
-                self.min_new_ratio = float(ch_cfg.get("min_new_ratio", 0.5))
-                self.freshness_enabled = bool(policy.get("enabled", True))
-                self.freshness_enforcement = str(policy.get("enforcement", "strict")).lower()
-            except Exception:
-                self.min_new_ratio = 0.5
-                self.freshness_enabled = True
-                self.freshness_enforcement = "strict"
+            _fc = get_channel_freshness_config(channel)
+            self.min_new_ratio = _fc["min_new_ratio"]
+            self.freshness_enabled = _fc["enabled"]
+            self.freshness_enforcement = _fc["enforcement"]
         else:
             self.min_new_ratio = float(min_new_ratio)
             self.freshness_enabled = True
@@ -295,7 +268,7 @@ class VaultSelection:
         print(f"\n[VAULT_V95] 庫存分佈：新歌={len(pool_new)}, Gen1={len(pool_gen1)}, Gen2={len(pool_gen2)}")
         
         # 第二步：計算配額
-        # 【v15.9 新鮮度鐵律】quota_new 由頻道 min_new_ratio 動態決定（不再硬編碼 0.50）
+        # 【v15.11 P1#4】使用 freshness_counter 統一計算，避免與 pipeline_runner 不同步
         quota_new = math.ceil(self.target_tracks * self.min_new_ratio)
         # Gen1/Gen2 均分剩餘配額
         remaining = self.target_tracks - quota_new
@@ -532,25 +505,38 @@ def _generate_tracklist(playlist: list[Path], durations: dict[Path, float]) -> s
         
         tracklist_lines.append(f"{timestamp} - {final_title}")
         
-        # 計算下一首歌的起始時間
+        # 計算下一首歌的起始時間（v15.11 P1#5 簡化：移除多餘 if idx==0 分支，兩者邏輯相同）
         if idx < len(playlist) - 1:
-            track_duration = durations[track]
-            if idx == 0:
-                current_time += track_duration - CROSSFADE_SEC
-            else:
-                current_time += track_duration - CROSSFADE_SEC
+            current_time += durations[track] - CROSSFADE_SEC
     
     return "\n".join(tracklist_lines)
 
 # ─────────────────────────────────────────────
+def _tracklist_run_suffix_from_mix_stem(stem: str) -> str | None:
+    """
+    由縫合輸出檔主檔名取得本次 run 之時間戳後綴，供 Tracklist 檔名與 WAV/MP4 對齊。
+    例：R&S_Echoes_light_music_1HrMix_20260502_171217 → 20260502_171217
+    """
+    m = re.search(r"1HrMix_(\d{8}_\d{4,6})$", stem, re.I)
+    return m.group(1) if m else None
+
+
+# ─────────────────────────────────────────────
 #  保存 Tracklist 到檔案（CTO v9.0）
 # ─────────────────────────────────────────────
-def _save_tracklist(tracklist_content: str, output_dir: Path) -> Path:
+def _save_tracklist(
+    tracklist_content: str, output_dir: Path, mix_output_stem: str | None = None
+) -> Path:
     """
-    將 Tracklist 保存為 Tracklist_[日期].txt。
+    將 Tracklist 保存為 Tracklist_{與母帶同次 run 的 YYYYMMDD_HHMM[SS]}.txt。
+
+    RCA：若用「寫入當下」的 datetime.now() 命名，縫合耗時數十分鐘後 Tracklist 檔名會與
+    assemble() 開頭決定的 output WAV stem 不一致，後續 pick_tracklist / SEO 全部錯配。
     """
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    tracklist_file = output_dir / f"Tracklist_{timestamp}.txt"
+    suffix = _tracklist_run_suffix_from_mix_stem(mix_output_stem) if mix_output_stem else None
+    if not suffix:
+        suffix = datetime.now().strftime("%Y%m%d_%H%M")
+    tracklist_file = output_dir / f"Tracklist_{suffix}.txt"
     
     try:
         with open(tracklist_file, "w", encoding="utf-8") as f:
@@ -1227,9 +1213,9 @@ def assemble(output_name: str | None = None, target_sec: int = TARGET_DURATION_S
         print(f"    背景 SFX：{Path(sfx_path).name}（循環，4% 音量）")
     print("=" * 80)
     
-    # 【CTO v9.0 時間軸任務】生成 Tracklist
+    # 【CTO v9.0 時間軸任務】生成 Tracklist（檔名時間戳與 output_path 同一 run）
     tracklist_content = _generate_tracklist(playlist, durations)
-    _save_tracklist(tracklist_content, output_dir)
+    _save_tracklist(tracklist_content, output_dir, mix_output_stem=output_path.stem)
     
     return output_path
 # ─────────────────────────────────────────────

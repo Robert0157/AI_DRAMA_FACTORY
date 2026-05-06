@@ -4,6 +4,8 @@
 【v15.9】UI 非同步後端引擎（新鮮度鐵律儀表與 pipeline_runner Phase 4.6 對齊）
 """
 import atexit
+import datetime
+import json
 import re
 import shutil
 import sqlite3
@@ -21,9 +23,413 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from scripts.common.env_manager import config
+from scripts.common.long_queue_sidecar_v1 import (
+    build_long_upload_sidecar_v1,
+    validate_long_upload_v1,
+)
+from scripts.common.youtube_longform_tags import merge_longform_tags
+from scripts.common.tracklist_pick import pick_tracklist_txt_for_mp4
+from scripts.common.youtube_cheatsheet_builder import generate_youtube_cheatsheet_file, glob_youtube_sheet_paths
+from scripts.gear1_prod.music_metadata_engine import (
+    compose_light_music_youtube_seo,
+    compose_lofi_youtube_seo,
+)
 from scripts.gear2_rnd.vault_database import VaultDatabase
+from scripts.common.ui_audit_logger import get_audit_logger  # v15.11 P3#13
+
+# Mac mini 端預期路徑（相對於 Mac 上 Streaming 專案根目錄，供 CEO／Mac 工程對齊）
+MAC_MINI_UPLOAD_LOG_REL = "Streaming/logs/long_video_upload.log"
+MAC_MINI_VIDEO_ID_TRACK_REL = "Streaming/logs/long_video_video_ids.json"
+
+
+def _merge_distrokid_with_stem_metadata(
+    metadata: Dict, export_dir: Path, mp4_stem: str
+) -> Dict:
+    """
+    以「與本次長片 MP4 同檔名 stem」之 *_metadata_distrokid.json 覆寫通用 metadata。
+
+    RCA：若僅讀 metadata_distrokid_{channel}.json，track_list / youtube_seo_description 常為
+    上一版企劃或 LLM 均分表；產線另寫入 R&S_Echoes_*_{run}_metadata_distrokid.json，內容才與該支
+    1hr 母帶／Tracklist 一致。發行投遞 Long_Queue 須以 stem 檔為準覆寫後再寫 SMB。
+    """
+    stem_path = export_dir / f"{mp4_stem}_metadata_distrokid.json"
+    if not stem_path.is_file():
+        return metadata
+    try:
+        with open(stem_path, "r", encoding="utf-8") as f:
+            stem = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return metadata
+    if not isinstance(stem, dict):
+        return metadata
+    out = dict(metadata)
+    out.update(stem)
+    return out
+
 
 class UIBackend:
+    def _run_shorts_audio_cleanup(self, channel: Optional[str] = None) -> Tuple[bool, str]:
+        """在發行前執行高使用次數歌曲整理（遷移/刪除）。"""
+        ch = str(channel or self.current_channel).strip().lower()
+        script_path = Path(self.config.workspace_root) / "scripts" / "gear1_prod" / "cloud_archiver.py"
+        if not script_path.exists():
+            return False, f"找不到整理腳本：{script_path}"
+        cmd = [
+            sys.executable,
+            str(script_path),
+            "--channel",
+            ch,
+            "--execute",
+            "--max-actions",
+            "20",
+            "--log-path",
+            str(Path(self.config.workspace_root) / "assets" / ".logs" / "shorts_audio_cleanup.log"),
+        ]
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1200)
+            if proc.returncode == 0:
+                return True, f"Shorts 音檔整理已執行（channel={ch}）"
+            err = (proc.stderr or proc.stdout or "").strip()
+            return False, f"Shorts 音檔整理失敗（Exit {proc.returncode}）：{err[:300]}"
+        except Exception as e:
+            return False, f"Shorts 音檔整理異常：{e}"
+
+    def _write_publish_status_json(
+        self, check_res: dict, channel: Optional[str] = None
+    ) -> None:
+        """將目前檢查結果即時寫入 publish_status.json（原子寫入）。"""
+        ch = str(channel or self.current_channel).strip().lower()
+        export_dir = self._export_dir_for_channel(ch)
+        status_path = export_dir / "publish_status.json"
+        data = {
+            "ok": bool(check_res.get("all_passed")),
+            "msg": (
+                "發行前檢查通過"
+                if check_res.get("all_passed")
+                else f"發行前檢查未通過：{', '.join(check_res.get('status', {}).get('missing_list', []))}"
+            ),
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "channel": ch,
+        }
+        try:
+            export_dir.mkdir(parents=True, exist_ok=True)
+            tmp_path = status_path.with_name(status_path.name + ".tmp")
+            tmp_path.write_text(
+                json.dumps(data, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            tmp_path.replace(status_path)
+        except Exception:
+            # 預檢本身不應因狀態檔寫入失敗而拋錯，避免 UI 被中斷。
+            pass
+
+    def _export_dir_for_channel(self, channel: Optional[str]) -> Path:
+        """與 get_channel_export_dir 相同規則，但可指定頻道（不變更 self.current_channel）。"""
+        ch = str(channel or self.current_channel).strip().lower()
+        primary = Path(self.config.workspace_root) / "assets" / "final_exports" / ch
+        if primary.exists():
+            return primary
+        return _PROJECT_ROOT / "assets" / "final_exports" / ch
+
+    def verify_export_files(self, channel: Optional[str] = None) -> dict:
+        """自動檢驗 4 大核心發行檔案是否齊全（metadata、DistroKid Sheet、youtube_sheet、長片 MP4）。"""
+        ch = str(channel or self.current_channel).strip().lower()
+        export_dir = self._export_dir_for_channel(ch)
+        status: Dict[str, List[str]] = {"missing_list": []}
+
+        if not export_dir.exists():
+            status["missing_list"].append(f"產出資料夾不存在: {export_dir.name}")
+            check_result = {"all_passed": False, "status": status}
+            self._write_publish_status_json(check_result, ch)
+            return check_result
+
+        if not (
+            list(export_dir.glob(f"metadata_distrokid_{ch}.json"))
+            or list(export_dir.glob("metadata_distrokid*.json"))
+        ):
+            status["missing_list"].append(f"metadata_distrokid_{ch}.json")
+
+        if not list(export_dir.glob("DistroKid_Sheet_*.txt")):
+            status["missing_list"].append("DistroKid_Sheet_*.txt")
+
+        if not glob_youtube_sheet_paths(export_dir):
+            status["missing_list"].append("youtube_sheet_*.txt")
+
+        if not list(export_dir.glob("*.mp4")):
+            status["missing_list"].append("*.mp4 (1小時長片)")
+
+        check_result = {"all_passed": len(status["missing_list"]) == 0, "status": status}
+        self._write_publish_status_json(check_result, ch)
+        return check_result
+
+    @staticmethod
+    def _check_smb_access(max_retries: int = 2) -> bool:
+        """v15.10: SMB 連線 + 寫入權限驗證，含指數退避重試"""
+        import time
+        for attempt in range(max_retries + 1):
+            try:
+                # v15.10 P3#15: 改用 config.smb_shorts_root 避免磁碟代號硬編碼
+                test_file = config.smb_shorts_root / ".smb_rw_test"
+                test_file.write_text("ok")
+                test_file.unlink()
+                return True
+            except Exception:
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+        return False
+
+    def publish_final_exports(self, channel: Optional[str] = None, mode: str = "auto") -> dict:
+        """
+        發行產出與 SMB 邊車傳輸 (Sidecar Pattern)
+        mode="auto"：Sidecar 標示 Mac 端可自動上傳
+        mode="manual"：Sidecar 標示僅備份／手動上傳
+        傳輸順序：先完整複製 MP4 → 原子寫入 `{stem}.json` 邊車（Mac 上傳觸發信號）。
+
+        `{stem}_metadata_distrokid.json` **僅保留於 Windows** `final_exports`（含 stem 覆寫後之企劃書），
+        **不**複製至 Y:/Long_Queue — Mac 端以上傳邊車內嵌之 title/description/tags 為準。
+        """
+        ch = str(channel or self.current_channel).strip().lower()
+        export_dir = self._export_dir_for_channel(ch)
+        result: Dict = {
+            "ok": False,
+            "msg": "",
+            "cleaned_metadata": None,
+            "cheatsheet": None,
+            "video_path": None,
+            "log": "",
+            "mac_mini_upload_log": None,
+            "mac_mini_video_id_track": None,
+        }
+
+        if mode not in ("auto", "manual"):
+            result["msg"] = f"未知 mode: {mode}（僅支援 auto / manual）"
+            return result
+
+        # v15.10: 驗證有效頻道
+        if ch not in ("lofi", "light_music"):
+            result["msg"] = f"無效頻道: {ch}"
+            return result
+
+        cleanup_ok, cleanup_msg = self._run_shorts_audio_cleanup(ch)
+        if not cleanup_ok:
+            result["msg"] = cleanup_msg
+            return result
+
+        check = self.verify_export_files(ch)
+        if not check["all_passed"]:
+            missing = "；".join(check["status"]["missing_list"])
+            result["msg"] = f"發行前檢查未通過：{missing}"
+            return result
+
+        mp4s = sorted(export_dir.glob("*.mp4"), key=lambda p: p.stat().st_mtime)
+        if not mp4s:
+            result["msg"] = "找不到 MP4 影片檔案進行傳輸"
+            return result
+        vid_src = mp4s[-1]
+
+        meta_path = export_dir / f"metadata_distrokid_{ch}.json"
+        if not meta_path.exists():
+            # v15.10: 優先頻道限定 glob，避免跨頻道混淆
+            fallback = list(export_dir.glob(f"metadata_distrokid_{ch}_*.json"))
+            if not fallback:
+                fallback = list(export_dir.glob(f"metadata_distrokid_{ch}*.json"))
+            if not fallback:
+                fallback = list(export_dir.glob("metadata_distrokid*.json"))
+            if fallback:
+                meta_path = sorted(fallback, key=lambda p: p.stat().st_mtime)[-1]
+            else:
+                result["msg"] = f"找不到 metadata_distrokid_{ch}.json"
+                return result
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+        except Exception as e:
+            result["msg"] = f"讀取 metadata 失敗: {e}"
+            return result
+
+        metadata = _merge_distrokid_with_stem_metadata(metadata, export_dir, vid_src.stem)
+
+        def remove_shorts_tags(tags):
+            if isinstance(tags, str):
+                raw = [t.strip() for t in re.split(r"[#,]", tags) if t.strip()]
+            elif isinstance(tags, list):
+                raw = [str(t).strip() for t in tags if str(t).strip()]
+            else:
+                raw = []
+            shorts_pattern = re.compile(r"shorts?", re.IGNORECASE)
+            return [t for t in raw if not shorts_pattern.search(t)]
+
+        for key in ("tags", "hashtags", "youtube_tags", "yt_tags"):
+            if key in metadata:
+                tags = metadata[key]
+                filtered = remove_shorts_tags(tags)
+                metadata[key] = filtered if isinstance(tags, list) else ", ".join(filtered)
+
+        cheatsheet = None
+        cs_files = glob_youtube_sheet_paths(export_dir)
+        if cs_files:
+            cheatsheet = cs_files[-1].read_text(encoding="utf-8")
+
+        video_path = str(vid_src)
+        master_tracklist_text: Optional[str] = None
+        tl_for_sidecar = pick_tracklist_txt_for_mp4(export_dir, vid_src)
+        if tl_for_sidecar and tl_for_sidecar.is_file():
+            try:
+                master_tracklist_text = tl_for_sidecar.read_text(encoding="utf-8")
+            except OSError:
+                master_tracklist_text = None
+
+        # v15.10: SMB 連線檢查含寫入權限驗證 + 重試
+        if not self._check_smb_access():
+            result["msg"] = "⚠️ SMB 連線中斷或無寫入權限：請確認已掛載 Mac mini 磁碟機為 Y 槽"
+            return result
+
+        smb_target_dir = self.config.smb_long_queue
+        try:
+            smb_target_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            if not self._check_smb_access():
+                result["msg"] = "⚠️ SMB 連線中斷：請確認已掛載 Mac mini 磁碟機為 Y 槽"
+            else:
+                result["msg"] = f"無法存取 Mac mini 彈藥庫 ({smb_target_dir})，請確認網路與 SMB 連線: {e}"
+            return result
+
+        vid_dst = smb_target_dir / vid_src.name
+
+        tags_list = merge_longform_tags(ch, metadata.get("tags", []))
+        tags_list = remove_shorts_tags(tags_list)
+
+        title_for_upload = (
+            metadata.get("title")
+            or metadata.get("album_title")
+            or f"R&S Echoes {ch.upper()} Mix"
+        )
+        # 長片 Sidecar：YouTube description 須為「上架 SEO 正文」（與 metadata_engine 之 compose_* 一致），
+        # 不可使用整份 youtube_sheet（含企劃書表頭／重複標題），以免與實際上線文案不符。
+        tl_for_desc = metadata.get("track_list") or []
+        if not isinstance(tl_for_desc, list):
+            tl_for_desc = []
+        album_for_desc = str(metadata.get("album_title", "") or "").strip()
+
+        stem_meta_path = export_dir / f"{vid_src.stem}_metadata_distrokid.json"
+        has_stem_meta = stem_meta_path.is_file()
+
+        if ch == "light_music":
+            # 優先採用「同 stem」metadata 內已對齊母帶的 youtube_seo_description（產線寫入之檔）。
+            pref = str(metadata.get("youtube_seo_description", "") or "").strip()
+            if has_stem_meta and pref and "【⏱️ TRACKLIST】" in pref:
+                desc_for_upload = pref
+            else:
+                desc_for_upload = compose_light_music_youtube_seo(
+                    album_for_desc or str(title_for_upload).strip(),
+                    [str(x).strip() for x in tl_for_desc if str(x).strip()],
+                    master_tracklist_file_text=master_tracklist_text,
+                )
+            metadata["youtube_seo_description"] = desc_for_upload
+        elif ch == "lofi":
+            pref = str(metadata.get("youtube_seo_description", "") or "").strip()
+            if has_stem_meta and pref and "【⏱️ TRACKLIST】" in pref:
+                desc_for_upload = pref
+            else:
+                desc_for_upload = compose_lofi_youtube_seo(
+                    album_for_desc or str(title_for_upload).strip(),
+                    [str(x).strip() for x in tl_for_desc if str(x).strip()],
+                    master_tracklist_file_text=master_tracklist_text,
+                )
+            metadata["youtube_seo_description"] = desc_for_upload
+        else:
+            desc_for_upload = cheatsheet if cheatsheet else metadata.get("description", "")
+        mode_auto = mode == "auto"
+        privacy = "public" if mode_auto else "unlisted"
+
+        yt_meta = build_long_upload_sidecar_v1(
+            mp4_filename=vid_src.name,
+            title=str(title_for_upload).strip(),
+            description=desc_for_upload if isinstance(desc_for_upload, str) else "",
+            tags=tags_list,
+            privacy=privacy,
+            category_id="10",
+            mode_auto=mode_auto,
+            # YouTube：變造／合成內容必須申報「是」；本專案一律為 true（不受 metadata 覆寫）
+            contains_synthetic_media=True,
+            # 非兒童導向（非「兒童專屬」影片）
+            self_declared_made_for_kids=False,
+            playlist_id=metadata.get("playlistId") or metadata.get("youtube_playlist_id"),
+        )
+
+        ok_sidecar, sidecar_err = validate_long_upload_v1(yt_meta, vid_src.name)
+        if not ok_sidecar:
+            result["msg"] = f"Sidecar preflight 失敗（已中止投遞，未寫入 Long_Queue）：{sidecar_err}"
+            return result
+
+        try:
+            shutil.copy2(vid_src, vid_dst)
+
+            sidecar_path = smb_target_dir / f"{vid_src.stem}.json"
+            tmp_path = sidecar_path.with_name(sidecar_path.name + ".tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(yt_meta, f, ensure_ascii=False, indent=2)
+            tmp_path.replace(sidecar_path)
+
+            # 與 Mac 端同源：在 Windows export 目錄保留一份邊車，避免僅 SMB 有 truth、本地檔過期。
+            local_sidecar = export_dir / f"{vid_src.stem}.json"
+            tmp_local = local_sidecar.with_name(local_sidecar.name + ".tmp")
+            with open(tmp_local, "w", encoding="utf-8") as f:
+                json.dump(yt_meta, f, ensure_ascii=False, indent=2)
+            tmp_local.replace(local_sidecar)
+        except Exception as e:
+            try:
+                if vid_dst.exists():
+                    vid_dst.unlink()
+            except OSError:
+                pass
+            if not Path("Y:/").exists():
+                result["msg"] = "⚠️ SMB 連線中斷：請確認已掛載 Mac mini 磁碟機為 Y 槽"
+            else:
+                result["msg"] = f"SMB 傳輸失敗: {e}"
+            return result
+
+        mode_text = "自動" if mode == "auto" else "人工"
+        result.update(
+            {
+                "ok": True,
+                "msg": (
+                    f"✅ {mode_text}發行指令已下達！已傳送 MP4 與上傳邊車（{vid_src.stem}.json）至 Mac mini (Y:/Long_Queue)。"
+                    f"（metadata 僅留在本機 final_exports，不投遞 *_metadata_distrokid.json。）"
+                ),
+                "cleaned_metadata": metadata,
+                "cheatsheet": cheatsheet,
+                "video_path": str(vid_dst),
+                "mac_long_queue_metadata_path": None,
+                "log": f"{cleanup_msg}；已成功推播 {vid_src.name} 與邊車至 Mac 暫存倉",
+                "mac_mini_upload_log": MAC_MINI_UPLOAD_LOG_REL,
+                "mac_mini_video_id_track": MAC_MINI_VIDEO_ID_TRACK_REL,
+            }
+        )
+        # v15.11 P3#13：審計日誌
+        get_audit_logger().log(
+            action="publish_final_exports",
+            channel=ch,
+            result="success",
+            params={"mode": mode, "video": vid_src.name},
+        )
+        return result
+    def run_shorts_pool_with_log(self, batch_size: int = 30) -> Tuple[bool, str, str]:
+        """
+        以即時 log 方式執行 generate_shorts_pool.py，供 UI 顯示產線日誌。
+        回傳 (ok, msg, log_path)
+        """
+        root = Path(self.config.workspace_root)
+        script_path = root / "scripts" / "marketing" / "generate_shorts_pool.py"
+        if not script_path.exists():
+            return False, f"找不到腳本：{script_path}", ""
+        cmd = [sys.executable, str(script_path), str(batch_size)]
+        returncode, log_path = self._run_with_log("shorts_pool", cmd)
+        tail = self.get_latest_log_lines(log_path, 30)
+        if returncode == 0:
+            return True, "Shorts 雙語標題彈藥庫生成完成", log_path
+        fatal = self._extract_fatal(tail)
+        return False, f"Shorts 彈藥庫生成失敗 (Exit {returncode})\n{fatal}", log_path
     def __init__(self):
         self.config = config
         self.current_channel = "lofi"
@@ -105,7 +511,10 @@ class UIBackend:
     # ─────────────────────────────────────────────────────────────
     def _get_log_dir(self) -> Path:
         d = Path(self.config.workspace_root) / "assets" / ".logs"
-        d.mkdir(parents=True, exist_ok=True)
+        try:
+            d.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise RuntimeError(f"建立 log 目錄失敗: {d}，錯誤: {e}")
         return d
 
     def get_latest_log_lines(self, log_path: str, n: int = 80) -> str:
@@ -220,11 +629,13 @@ class UIBackend:
         return "\n".join(lines[-20:])
 
     def run_mastering_only(self) -> Tuple[bool, str, str]:
-        """Tab3：僅執行 Phase 1+2（母帶壓制），跳過 assembler / metadata / backup。"""
+        """Tab3：僅執行 Phase 1+2（母帶壓制），跳過 assembler / metadata / backup / publish。"""
+        # v15.10: 加入 --skip-publish，因僅母帶模式無 MP4 產出
         return self.run_pipeline_with_log(
             "pipeline_runner.py",
             ["--channel", self.current_channel,
-             "--skip-assembler", "--skip-metadata", "--skip-backup"],
+             "--skip-assembler", "--skip-metadata", "--skip-backup",
+             "--skip-publish"],
         )
 
     def get_final_exports(self) -> Dict:
@@ -237,8 +648,8 @@ class UIBackend:
             "wav":          sorted([f.name for f in d.glob("*.wav")]),
             "mp4":          sorted([f.name for f in d.glob("*.mp4")]),
             "tracklist":    sorted([f.name for f in d.glob("Tracklist_*.txt")]),
-            "yt_cheatsheet": sorted([f.name for f in d.glob("YouTube_CheatSheet_*.txt")]),
-            "dk_cheatsheet": sorted([f.name for f in d.glob("DistroKid_CheatSheet_*.txt")]),
+            "yt_cheatsheet": sorted([p.name for p in glob_youtube_sheet_paths(d)]),
+            "dk_cheatsheet": sorted([f.name for f in d.glob("DistroKid_Sheet_*.txt")]),
             "metadata":     sorted([f.name for f in d.glob("metadata_distrokid*.json")]),
             "dir": str(d),
         }
@@ -317,7 +728,7 @@ class UIBackend:
     def generate_distrokid_docs(self, provider: str = "minimax") -> Tuple[bool, str, str]:
         """
         單獨補跑 music_metadata_engine.py：
-        產出 metadata_distrokid_{channel}.json + DistroKid_CheatSheet_{channel}.txt。
+        產出 metadata_distrokid_{channel}.json + DistroKid_Sheet_{datetime}.txt。
         WAV 母帶必須已存在於 final_exports/{channel}/，否則腳本會回報警告。
 
         Args:
@@ -468,115 +879,14 @@ class UIBackend:
 
     def generate_youtube_cheatsheet(self, channel: Optional[str] = None) -> Tuple[bool, str]:
         """
-        Phase 4.5 移植版：讀取 Tracklist + metadata JSON → 輸出 YouTube_CheatSheet_{ts}.txt。
+        Phase 4.5 移植版：讀取 Tracklist + metadata JSON → 輸出 youtube_sheet_{YYYYMMDD_HHMMSS}.txt。
         對應 pipeline_runner._finalize_youtube_cheatsheet()，供 run_phase4_sequence() 獨立呼叫。
         """
-        import datetime
-        import json as _json
         ch = (channel or self.current_channel).lower()
         export_dir = self.get_channel_export_dir()
-        export_dir.mkdir(parents=True, exist_ok=True)
-
-        # 1. 讀取最新 Tracklist
-        tracklist_files = sorted(export_dir.glob("Tracklist_*.txt"), key=lambda p: p.stat().st_mtime)
-        if tracklist_files:
-            tracklist_content = tracklist_files[-1].read_text(encoding="utf-8").strip()
-        else:
-            tracklist_content = "(Tracklist 未找到 — 請先執行「縫合長軌」步驟)"
-
-        # 2. 讀取 metadata JSON
-        meta_path = export_dir / f"metadata_distrokid_{ch}.json"
-        if not meta_path.exists():
-            fallbacks = sorted(export_dir.glob("metadata_distrokid*.json"))
-            meta_path = fallbacks[-1] if fallbacks else None
-        metadata: dict = {}
-        if meta_path and meta_path.exists():
-            try:
-                metadata = _json.loads(meta_path.read_text(encoding="utf-8"))
-            except Exception:
-                pass
-
-        album_title = metadata.get("album_title", "R&S Echoes - 1 Hour Mix")
-        spotify_subgenre = metadata.get("spotify_subgenre", "Lo-Fi Hip Hop")
-
-        # 3. 頻道意識文案
-        if ch == "light_music":
-            yt_suffix = "1 Hour Ambient Nature Mix 🌿 Relaxing Soundscape for Focus & Sleep"
-            brand_story = (
-                "We Create Immersive Nature Soundscapes for Your Soul.\n\n"
-                "R&S Echoes Nature 專注於打造沉浸式的大自然環境音與療癒音樂體驗。\n"
-                "✅ 大自然音景完整保真（鳥鳴、流水、森林環境音）\n"
-                "✅ 療癒頻率設計（528Hz、432Hz 冥想調式）\n"
-                "✅ -18 LUFS YouTube 標準音量"
-            )
-            hashtags = "#AmbientMusic #NatureSounds #SleepMusic #DeepFocus #RSEchoesNature #4KLandscape #Meditation"
-        else:
-            yt_suffix = "1 Hour Lofi Mix 🎵 Relaxing Beats for Study & Work"
-            brand_story = (
-                "We Create the Soundtrack for Your Dreams.\n\n"
-                "R&S Echoes 專注於打造沉浸式的 Lo-Fi、Ambient 與 Cinematic 音樂體驗。\n"
-                "✅ 錄音室純淨音質（無黑膠噪聲、無磁帶嘶聲）\n"
-                "✅ -16 LUFS YouTube 標準音量"
-            )
-            hashtags = "#LoFiHipHop #ChillVibes #StudyBeats #RSEchoes #RelaxingMusic #AmbientMusic #CinematicLoFi"
-
-        # 4. 組合內容
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-        year = datetime.datetime.now().year
-        content = f"""======================================================
-🎬 R&S Echoes - YouTube 上架企劃文案 ({ch.upper()})
-======================================================
-專輯：{album_title}
-生成時間：{today}
-
-======================================================
-【📺 YouTube 標題（複製貼上）】
-======================================================
-{album_title} | {yt_suffix}
-
-======================================================
-【📝 YouTube 描述文案】
-======================================================
-🎵 {album_title}
-Perfect for: 📚 Studying / 🎧 Relaxation / 😴 Sleep / 🎮 Gaming
-
----
-
-【⏱️ TRACKLIST】
-{tracklist_content}
-
----
-
-【🎨 R&S Echoes 品牌故事】
-{brand_story}
-✅ 無縫循環設計，適合長時間背景播放
-
----
-
-【💭 標籤】
-{hashtags}
-#NoVocals #StudyMusic #FocusMusic #BackgroundMusic
-
----
-
-【©️ 版權】
-© {year} R&S Echoes. All Rights Reserved.
-
-======================================================
-【🎬 上傳前檢查清單】
-======================================================
-☐ 隱私：公開（Public）
-☐ 分類：音樂（Music）
-☐ 音量確認：{'-18' if ch == 'light_music' else '-16'} LUFS ✓
-☐ 縮圖已上傳
-☐ 描述文案無錯別字
-☐ 上架！🎉
-======================================================
-"""
-        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_path = export_dir / f"YouTube_CheatSheet_{ts}.txt"
         try:
-            out_path.write_text(content, encoding="utf-8")
+            res = generate_youtube_cheatsheet_file(export_dir, ch)
+            out_path = res["output_path"]
             return True, f"YouTube CheatSheet 已生成：{out_path.name}"
         except Exception as e:
             return False, f"寫入 YouTube CheatSheet 失敗：{e}"
@@ -704,9 +1014,21 @@ Perfect for: 📚 Studying / 🎧 Relaxation / 😴 Sleep / 🎮 Gaming
                 "✅ DistroKid CheatSheet + Metadata JSON 已產出",
                 f"{'✅' if yt_ok else '⚠️ '} {yt_msg}",
             ]
+            # v15.11 P3#13：審計日誌
+            get_audit_logger().log(
+                action="run_phase4_sequence",
+                channel=ch,
+                result="success",
+                params={"max_audio_deriv": max_audio_deriv},
+            )
             return True, "\n".join(result_parts)
 
         except Exception as e:
+            get_audit_logger().log(
+                action="run_phase4_sequence",
+                channel=ch,
+                result=f"failed:{type(e).__name__}:{str(e)[:200]}",
+            )
             return False, f"Phase 4 發行鏈路異常: {e}"
 
     def reset_hearing_vault_derivations(self) -> tuple[bool, str]:
@@ -1131,7 +1453,10 @@ Perfect for: 📚 Studying / 🎧 Relaxation / 😴 Sleep / 🎮 Gaming
             return True, "無需封存（目標目錄為空或不存在）。"
         return True, f"已封存 {moved} 個檔案/目錄至 assets/audio/ceo_archived_beats/{ch}/"
 
+
 _instance = None
+
+
 def get_ui_backend():
     global _instance
     if _instance is None:

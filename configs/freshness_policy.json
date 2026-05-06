@@ -1,0 +1,60 @@
+{
+  "_schema": "v15.10",
+  "_description": "R&S Echoes 新鮮度配額策略配置 — 支援動態調整，無需重啟產線",
+
+  "freshness_policy": {
+    "enforcement": "strict",
+    "comment": "strict: 新歌不足拋 NewSongsInsufficientException; warn: 僅警告繼續",
+
+    "defaults": {
+      "target_tracks": 20,
+      "min_new_ratio": 0.50,
+      "gen1_ratio": 0.25,
+      "comment": "gen2_ratio = 1.0 - min_new_ratio - gen1_ratio"
+    },
+
+    "channels": {
+      "lofi": {
+        "min_new_ratio": 0.50,
+        "gen1_ratio": 0.25,
+        "target_tracks": 20,
+        "max_derivation_limit": 3,
+        "comment": "ZARA Minimal House / Retail BGM — BPM 110-120"
+      },
+      "light_music": {
+        "min_new_ratio": 0.40,
+        "gen1_ratio": 0.30,
+        "target_tracks": 20,
+        "max_derivation_limit": 3,
+        "comment": "Ambient / Nature Soundscape"
+      }
+    },
+
+    "quota_strategies": {
+      "comment": "可插拔配額演算法 — 日後可擴充 decay / hotness 等策略",
+      "available": ["uniform", "exponential_decay", "weighted_hotness"],
+      "active": "uniform",
+
+      "uniform": {
+        "description": "等比例分配：min_new_ratio / gen1_ratio / gen2_ratio",
+        "params": {}
+      },
+
+      "exponential_decay": {
+        "description": "時間衰減：越舊的曲目權重越低",
+        "params": {
+          "decay_days": 7,
+          "min_weight": 0.1
+        }
+      },
+
+      "weighted_hotness": {
+        "description": "熱度加權：根據歷史選用次數動態調整",
+        "params": {
+          "lookback_days": 30,
+          "hotness_threshold": 3
+        }
+      }
+    }
+  }
+}

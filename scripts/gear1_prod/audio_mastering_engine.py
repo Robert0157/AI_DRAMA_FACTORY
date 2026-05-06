@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import random
 import re
 import shutil
@@ -26,6 +27,8 @@ from scripts.common.path_sanitize import sanitize_filename
 
 DEFAULT_TIMEOUT_SEC = 600
 AUTHOR_NAME = "R&S Echoes"
+# v15.10 P1#3: MAC_SHORT_AUDIO_ROOT 常數已废止，統一由 config.mac_short_audio_root 派發
+REMIX_KEYWORDS = ("tempo_up", "tempo_down", "pitch_up", "pitch_down")
 
 
 @dataclass
@@ -141,6 +144,151 @@ def _run_command(cmd: list[str], timeout_sec: int, dry_run: bool = False) -> Non
         error_line = (result.stderr or "").strip().splitlines()
         reason = error_line[-1] if error_line else "unknown subprocess error"
         raise RuntimeError(reason)
+
+
+def _is_remix_name(name: str) -> bool:
+    lowered = str(name).lower()
+    return any(k in lowered for k in REMIX_KEYWORDS)
+
+
+def _shorts_publish_windows_hint(workspace_root: Path) -> dict:
+    """自 configs/shorts_publish_windows.json 讀取摘要，寫入 Shorts signal 供 Mac／營運對齊檔期。"""
+    p = workspace_root / "configs" / "shorts_publish_windows.json"
+    if not p.is_file():
+        return {}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        slots = data.get("slots") or []
+        return {
+            "timezone_label": data.get("timezone_label", ""),
+            "slot_times_local": [
+                s.get("local_time") for s in slots if isinstance(s, dict) and s.get("local_time")
+            ],
+            "config_ref": "configs/shorts_publish_windows.json",
+        }
+    except Exception:
+        return {}
+
+
+def _sync_new_masters_to_shorts_and_signal(
+    *,
+    channel: str,
+    mastered_paths: list[Path],
+) -> dict:
+    """
+    固定流程：每輪母帶完成後，增量同步非 remix 檔到 Y:/Shorts_audio/{channel} 並寫 signal。
+    """
+    shorts_dir = config.smb_shorts_root / channel.lower()
+    stats = {
+        "copied": 0,
+        "skipped_exists": 0,
+        "skipped_remix": 0,
+        "failed": 0,
+        "batch_selected": 0,
+        "available_in_target": 0,
+    }
+    selected: list[Path] = []
+    for p in mastered_paths:
+        if _is_remix_name(p.name):
+            stats["skipped_remix"] += 1
+            continue
+        selected.append(p)
+    stats["batch_selected"] = len(selected)
+
+    signal_path = shorts_dir / ".signal.json"
+    try:
+        shorts_dir.mkdir(parents=True, exist_ok=True)
+        for src in selected:
+            dst = shorts_dir / src.name
+            if dst.exists():
+                stats["skipped_exists"] += 1
+                continue
+            try:
+                shutil.copy2(str(src), str(dst))
+                stats["copied"] += 1
+            except Exception as e:
+                stats["failed"] += 1
+                print(f"[SHORTS_SYNC] copy_failed::{src.name}::{e}")
+
+        stats["available_in_target"] = len([p for p in selected if (shorts_dir / p.name).exists()])
+        now = datetime.now()
+        workspace_root = Path(config.workspace_root)
+        payload = {
+            "schema_version": "shorts-signal-v1",
+            "batch_id": now.strftime("%Y%m%d_%H%M%S"),
+            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+            "channel": channel.lower(),
+            "mode": "AUTO_MASTERING_SYNC",
+            "windows_path": str(shorts_dir),
+            "mac_mount_path": str(config.mac_short_audio_root / channel.lower()),  # v15.10 P1#3
+            "stats": stats,
+            "auto_sync_enabled": True,
+            "note": "Incremental sync after mastering completion.",
+            "publish_windows_hint": _shorts_publish_windows_hint(workspace_root),
+        }
+        atomic_write_json(signal_path, payload, indent=2)
+        print(f"[SHORTS_SYNC] signal: {signal_path}")
+    except Exception as e:
+        # v15.10: 不中斷母帶主流程，但記錄同步錯誤供診斷
+        print(f"[SHORTS_SYNC] ⚠️ sync/signal failed: {e}")
+        stats["sync_error"] = str(e)[:200]
+
+    # v15.10: 若 failed > 0 輸出警告
+    if stats.get("failed", 0) > 0:
+        print(f"[SHORTS_SYNC] ⚠️ {stats['failed']} 個檔案同步失敗，請檢查 SMB 連線與權限")
+        # v15.11 P3#14：寫入重試清單供後續補同步
+        _write_shorts_sync_retry(channel=channel, failed_sources=selected, stats=stats)
+
+    return {
+        "shorts_dir": str(shorts_dir),
+        "signal_path": str(signal_path),
+        "stats": stats,
+    }
+
+
+def _write_shorts_sync_retry(
+    *,
+    channel: str,
+    failed_sources: list[Path],
+    stats: dict,
+) -> None:
+    """
+    v15.11 P3#14 — 將 Shorts 同步失敗的檔案清單寫入 assets/data/shorts_sync_retry.json。
+
+    格式（合併而非覆寫，以保留跨批次失敗記錄）：
+        {
+            "channel": {
+                "pending": [
+                    {"src": "...", "name": "...", "batch_ts": "..."},
+                    ...
+                ]
+            }
+        }
+    """
+    retry_path = Path(config.workspace_root) / "assets" / "data" / "shorts_sync_retry.json"
+    try:
+        retry_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            existing: dict = json.loads(retry_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            existing = {}
+        ch_key = str(channel).lower()
+        ch_pending: list = existing.get(ch_key, {}).get("pending", [])
+        batch_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        for src in failed_sources:
+            dst_path = config.smb_shorts_root / ch_key / src.name
+            if not dst_path.exists():
+                ch_pending.append({
+                    "src": str(src),
+                    "name": src.name,
+                    "batch_ts": batch_ts,
+                })
+        existing[ch_key] = {"pending": ch_pending}
+        from scripts.common.atomic_io import atomic_write_json as _awj
+        _awj(retry_path, existing, indent=2)
+        print(f"[SHORTS_SYNC] 📋 重試清單已更新：{retry_path} ({len(ch_pending)} 筆)")
+    except Exception as e:
+        print(f"[SHORTS_SYNC] ⚠️ 重試清單寫入失敗: {e}")
 
 
 def _probe_duration_sec(ffprobe_bin: str, audio_path: Path, timeout_sec: int) -> float:
@@ -529,6 +677,7 @@ def main() -> None:
     success_count = 0
     failed_count = 0
     failed_tracks: list[str] = []
+    success_outputs: list[Path] = []
 
     # 【v12.9 LUFS 參數傳遞】使用 --lufs 參數或默認值
     print(f"【v12.9 LUFS 設定】正在應用 {args.lufs} LUFS 標準 (頻道: {args.channel})")
@@ -567,6 +716,7 @@ def main() -> None:
                 )
             )
             success_count += 1
+            success_outputs.append(sp_out)
             print(f"[MASTERING] done: {beat.name}")
         except Exception as exc:
             failed_count += 1
@@ -601,6 +751,21 @@ def main() -> None:
     }
     atomic_write_json(manifest_path, manifest_data, indent=2)
     print(f"[MASTERING] manifest: {manifest_path}")
+
+    # 固定流程：每輪母帶完成後自動增量同步到 Mac mini Shorts 倉並發送 signal
+    shorts_sync = _sync_new_masters_to_shorts_and_signal(
+        channel=args.channel,
+        mastered_paths=success_outputs,
+    )
+    print(
+        "[SHORTS_SYNC] "
+        f"copied={shorts_sync['stats']['copied']}, "
+        f"skipped_exists={shorts_sync['stats']['skipped_exists']}, "
+        f"skipped_remix={shorts_sync['stats']['skipped_remix']}, "
+        f"failed={shorts_sync['stats']['failed']}, "
+        f"batch_selected={shorts_sync['stats']['batch_selected']}, "
+        f"available_in_target={shorts_sync['stats']['available_in_target']}"
+    )
 
     if failed_tracks:
         error_entry = (

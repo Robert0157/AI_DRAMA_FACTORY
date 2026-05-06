@@ -37,13 +37,36 @@ function Read-YouTubeRtmpUrl {
     return $url
 }
 
+function Read-DotEnvValue {
+    param(
+        [string]$DotEnvPath,
+        [string]$Key
+    )
+    if (-not (Test-Path -LiteralPath $DotEnvPath)) { return $null }
+    foreach ($line in Get-Content -LiteralPath $DotEnvPath) {
+        $t = $line.Trim()
+        if ($t -eq "" -or $t.StartsWith("#")) { continue }
+        if ($t -notmatch "^(?:export\s+)?$([Regex]::Escape($Key))\s*=\s*(.+)$") { continue }
+        $val = $Matches[1].Trim()
+        if ($val.Length -ge 2 -and $val[0] -eq $val[-1] -and ($val[0] -eq "'" -or $val[0] -eq '"')) {
+            $val = $val.Substring(1, $val.Length - 2)
+        }
+        return $val
+    }
+    return $null
+}
+
 $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $StreamingRoot = if ($env:STREAMING_ROOT) { $env:STREAMING_ROOT } elseif ($env:STEAM_ROOT) { $env:STEAM_ROOT } else { Join-Path $RepoRoot "Streaming" }
+$DotEnvFile = Join-Path $RepoRoot ".env"
 
 $EnvFile = Join-Path $StreamingRoot "secrets\rtmp.env"
 $Playlist = Join-Path $StreamingRoot "config\concat_playlist.txt"
 $ConfigDir = Join-Path $StreamingRoot "config"
 $LogDir = Join-Path $StreamingRoot "logs"
+$targetFps = 30
+$keyintSec = 2
+$keyintFrames = $targetFps * $keyintSec
 
 if (-not (Test-Path -LiteralPath $Playlist)) {
     Write-Host "找不到 $Playlist — 請先執行 validate_local_round12.ps1 或 build_concat_playlist.sh" -ForegroundColor Red
@@ -57,8 +80,16 @@ if (-not [string]::IsNullOrWhiteSpace($env:YOUTUBE_RTMP_URL)) {
 } elseif (Test-Path -LiteralPath $EnvFile) {
     $rtmpUrl = Read-YouTubeRtmpUrl -EnvFilePath $EnvFile
 } else {
-    Write-Host "缺少 RTMP 位址：請設定 `$env:YOUTUBE_RTMP_URL`，或複製 rtmp.env.template 至`n  $EnvFile" -ForegroundColor Red
-    Write-Host "（YouTube 後台 → 直播 → 串流失效備援 → 顯示金鑰；建議先用「測試直播」）" -ForegroundColor DarkYellow
+    $rtmpUrl = Read-DotEnvValue -DotEnvPath $DotEnvFile -Key "YOUTUBE_RTMP_URL"
+    if ([string]::IsNullOrWhiteSpace($rtmpUrl)) {
+        $ytKey = Read-DotEnvValue -DotEnvPath $DotEnvFile -Key "YOUTUBE_KEY"
+        if (-not [string]::IsNullOrWhiteSpace($ytKey)) {
+            $rtmpUrl = "rtmp://a.rtmp.youtube.com/live2/$ytKey"
+        }
+    }
+}
+if ([string]::IsNullOrWhiteSpace($rtmpUrl)) {
+    Write-Host "缺少 RTMP 位址：請設定 `$env:YOUTUBE_RTMP_URL`、Streaming/secrets/rtmp.env，或 repo .env 內 YOUTUBE_RTMP_URL / YOUTUBE_KEY" -ForegroundColor Red
     exit 1
 }
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
@@ -68,8 +99,11 @@ Write-Host "Playlist：$Playlist" -ForegroundColor Cyan
 if ($Once) {
     Write-Host "模式：單次執行（-Once）" -ForegroundColor DarkYellow
 } else {
-    Write-Host "按 Ctrl+C 結束；ffmpeg 退出後 5 秒自動重試…" -ForegroundColor DarkYellow
+    Write-Host "按 Ctrl+C 結束；ffmpeg 退出後將依退避策略自動重試…" -ForegroundColor DarkYellow
 }
+
+$backoff = 5
+$maxBackoff = 300
 
 Push-Location $ConfigDir
 try {
@@ -81,9 +115,13 @@ try {
 
         $ffmpegArgs = @(
             "-hide_banner", "-loglevel", "info", "-nostdin",
-            "-re", "-f", "concat", "-safe", "0", "-stream_loop", "-1",
+            "-re", "-fflags", "+genpts", "-f", "concat", "-safe", "0", "-stream_loop", "-1",
             "-i", "concat_playlist.txt",
-            "-c:v", "copy", "-c:a", "copy",
+            "-c:v", "libx264", "-preset", "veryfast", "-tune", "zerolatency",
+            "-pix_fmt", "yuv420p", "-r", "$targetFps",
+            "-g", "$keyintFrames", "-keyint_min", "$keyintFrames", "-sc_threshold", "0",
+            "-b:v", "2500k", "-maxrate", "3000k", "-bufsize", "6000k",
+            "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
             "-f", "flv", $rtmpUrl
         )
         # ffmpeg 將日誌寫入 stderr，PowerShell 會包成 ErrorRecord；統一成字串再寫檔
@@ -104,7 +142,13 @@ try {
         Write-Host $endLine -ForegroundColor $(if ($code -eq 0) { "Green" } else { "Yellow" })
 
         if ($Once) { break }
-        Start-Sleep -Seconds 5
+        Write-Host "ℹ️  $backoff 秒後重試…" -ForegroundColor DarkYellow
+        Start-Sleep -Seconds $backoff
+        if ($code -eq 0) {
+            $backoff = 5
+        } elseif ($backoff -lt $maxBackoff) {
+            $backoff = [Math]::Min($maxBackoff, $backoff * 2)
+        }
     } while ($true)
 } finally {
     Pop-Location

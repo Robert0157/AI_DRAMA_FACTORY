@@ -12,6 +12,7 @@
 #   （相容：STEAM_ROOT）
 #   ./rotate_live_slot.sh my_new_hour.mp4
 #   ./rotate_live_slot.sh --dry-run my_new_hour.mp4
+#   ./rotate_live_slot.sh --retire-mode immediate my_new_hour.mp4
 #
 # 之後請執行 build_concat_playlist.sh，並視情況重啟 ffmpeg。
 
@@ -22,14 +23,24 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 STREAMING_ROOT="${STREAMING_ROOT:-${STEAM_ROOT:-${REPO_ROOT}/Streaming}}"
 PY="${SCRIPT_DIR}/rotate_live_manifest.py"
 
-DRY=()
+DRY_RUN=0
+RETIRE_MODE="deferred"
 if [[ "${1:-}" == "--dry-run" ]]; then
-  DRY=(--dry-run)
+  DRY_RUN=1
   shift
 fi
 
+if [[ "${1:-}" == "--retire-mode" ]]; then
+  RETIRE_MODE="${2:-}"
+  if [[ "${RETIRE_MODE}" != "deferred" && "${RETIRE_MODE}" != "immediate" ]]; then
+    echo "❌ --retire-mode 僅允許 deferred 或 immediate" >&2
+    exit 1
+  fi
+  shift 2
+fi
+
 if [[ -z "${1:-}" ]]; then
-  echo "用法: $0 [--dry-run] <staging 內新檔純檔名.mp4>" >&2
+  echo "用法: $0 [--dry-run] [--retire-mode deferred|immediate] <staging 內新檔純檔名.mp4>" >&2
   exit 1
 fi
 
@@ -38,5 +49,12 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-exec python3 "${PY}" --streaming-root "${STREAMING_ROOT}" "${DRY[@]}" --new-file "$1"
+CMD=(python3 "${PY}" --streaming-root "${STREAMING_ROOT}")
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+  CMD+=(--dry-run)
+fi
+CMD+=(--retire-mode "${RETIRE_MODE}")
+CMD+=(--new-file "$1")
+
+exec "${CMD[@]}"
 

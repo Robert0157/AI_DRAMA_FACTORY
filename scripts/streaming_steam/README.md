@@ -67,10 +67,11 @@ Streaming/
 ## `rotate_live_slot.sh` — 固定替換 **added_at 最小** 槽位
 
 - **規則**：在所有 `entries` 中找 **`added_at` 最小** 者；若同分則 **`slot` 較小** 者勝出。
-- **動作**（非 `--dry-run` 時）：
-  1. 將該槽目前 `queue/<舊檔>` **移入** `frozen_broadcast/`（若同名已存在則加 `_retired_UTC時間` 後綴）。
-  2. 將 `queue_staging/<新檔純檔名>` **移入** `queue/<新檔>`。
-  3. **原子寫回** `config/live_manifest.json`：該槽 `file` 改為新檔名、`added_at` 改為當下 UTC（`...Z`）。
+- **動作**（非 `--dry-run` 時，預設 `deferred`）：
+  1. 將 `queue_staging/<新檔純檔名>` **移入** `queue/<新檔>`。
+  2. **原子寫回** `config/live_manifest.json`：該槽 `file` 改為新檔名、`added_at` 改為當下 UTC（`...Z`）。
+  3. 舊檔預設先留在 `queue/`（避免熱抽換碰到 ffmpeg 讀檔）；後續由 `cleanup_retired_queue.py` 依檔齡清理。
+  4. 若在維護窗且接受風險，可加 `--retire-mode immediate` 立即搬舊檔到 `frozen_broadcast/`。
 - **前置**：每筆 `entries` 必須已有 **`added_at`**；新歌已在 **`queue_staging/`**；`queue/` 內舊檔存在；新檔名未被其他槽位占用。
 
 ```bash
@@ -79,6 +80,10 @@ export STREAMING_ROOT="/Volumes/AI_Workspace/AI_Drama_Factory/Streaming"
 cp ./MyNew1Hr.mp4 "$STREAMING_ROOT/queue_staging/MyNew1Hr.mp4"
 ./scripts/streaming_steam/rotate_live_slot.sh --dry-run MyNew1Hr.mp4   # 確認將替換哪一格
 ./scripts/streaming_steam/rotate_live_slot.sh MyNew1Hr.mp4
+# 可選：立即退役舊檔（維護窗使用）
+# ./scripts/streaming_steam/rotate_live_slot.sh --retire-mode immediate MyNew1Hr.mp4
+# deferred retire 清理（例如每日排程）
+python3 ./scripts/streaming_steam/cleanup_retired_queue.py --streaming-root "$STREAMING_ROOT" --min-age-hours 24
 ./scripts/streaming_steam/build_concat_playlist.sh
 # 維護視窗內視需要重啟 run_youtube_rtmp.sh
 ```
@@ -141,12 +146,14 @@ ssh robert@192.168.1.111 "ls -la /Volumes/AI_Workspace/AI_Drama_Factory/Streamin
 |------|------|
 | `build_concat_playlist.sh` | 產出 `Streaming/config/concat_playlist.txt`（manifest → order → 排序） |
 | `emit_concat_from_manifest.py` | 讀 manifest，驗證後印出 concat 行 |
-| `rotate_live_slot.sh` | 呼叫 `rotate_live_manifest.py`（`--dry-run` 可選） |
-| `rotate_live_manifest.py` | **added_at 最小**槽位：`mv` 舊檔→`frozen_broadcast/`、staging→`queue/`、原子寫 manifest |
+| `rotate_live_slot.sh` | 呼叫 `rotate_live_manifest.py`（`--dry-run` / `--retire-mode`） |
+| `rotate_live_manifest.py` | **added_at 最小**槽位：預設 deferred retire，staging→`queue/`、原子寫 manifest |
+| `cleanup_retired_queue.py` | 清理 queue 中已不在 manifest 的舊檔（按檔齡門檻移入 `frozen_broadcast/`） |
 | `live_manifest.example.json` | 24 槽 JSON 範本（含 `added_at`） |
 | `run_youtube_rtmp.sh` | 讀 `rtmp.env`，ffmpeg 推流（外層自動重啟；Mac／Linux） |
 | `run_youtube_rtmp.ps1` | 同上（第三輪；Windows PowerShell） |
-| `sync_queue_staging_to_mac.ps1` | Windows → Mac：`queue_staging` rsync（Git 內建 rsync） |
+| `normalize_to_staging.sh` | Ingest Gatekeeper：48k/簽名直通，否則音訊正規化（`-c:v copy -ar 48000`） |
+| `sync_queue_staging_to_mac.ps1` | Windows → Mac：`queue_staging` rsync（可加 `-RunMacGatekeeper` 落地即淨化） |
 | `WINDOWS_TASK_SCHEDULER_queue_staging.md` | 工作排程器 `schtasks` 複製貼上說明 |
 | `order.example.txt` | 無 manifest 時 order.txt 格式範例 |
 

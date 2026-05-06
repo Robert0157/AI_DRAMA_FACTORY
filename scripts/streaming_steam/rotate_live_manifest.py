@@ -13,6 +13,7 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -69,6 +70,64 @@ def atomic_write_json(path: Path, data: dict) -> None:
     os.replace(tmp, path)
 
 
+def _probe_av_signature(path: Path) -> tuple[str, str, str, str]:
+    ffprobe_bin = (
+        shutil.which("ffprobe")
+        or ("/opt/homebrew/bin/ffprobe" if Path("/opt/homebrew/bin/ffprobe").is_file() else None)
+        or ("/usr/local/bin/ffprobe" if Path("/usr/local/bin/ffprobe").is_file() else None)
+    )
+    if not ffprobe_bin:
+        _die("❌ 找不到 ffprobe（請先安裝 ffmpeg/ffprobe）")
+
+    cmd = [
+        ffprobe_bin,
+        "-v",
+        "error",
+        "-show_streams",
+        "-print_format",
+        "json",
+        str(path),
+    ]
+    try:
+        out = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=15)
+    except subprocess.CalledProcessError as ex:
+        _die(f"❌ ffprobe 失敗：{path}\n{ex.stderr.strip()}")
+    except subprocess.TimeoutExpired:
+        _die(f"❌ ffprobe 逾時：{path}")
+
+    try:
+        data = json.loads(out.stdout or "{}")
+    except json.JSONDecodeError as ex:
+        _die(f"❌ ffprobe 輸出非 JSON：{path} ({ex})")
+
+    streams = data.get("streams") or []
+    v = next((s for s in streams if s.get("codec_type") == "video"), None)
+    a = next((s for s in streams if s.get("codec_type") == "audio"), None)
+    if not v or not a:
+        _die(f"❌ 檔案必須同時包含視訊與音訊：{path}")
+
+    v_codec = str(v.get("codec_name") or "")
+    v_pix = str(v.get("pix_fmt") or "")
+    a_rate = str(a.get("sample_rate") or "")
+    a_ch = str(a.get("channels") or "")
+    if not all([v_codec, v_pix, a_rate, a_ch]):
+        _die(f"❌ ffprobe 取得關鍵欄位不足：{path}")
+    return (v_codec, v_pix, a_rate, a_ch)
+
+
+def _check_compatibility(new_file: Path, refs: list[Path]) -> None:
+    new_sig = _probe_av_signature(new_file)
+    for ref in refs:
+        ref_sig = _probe_av_signature(ref)
+        if ref_sig != new_sig:
+            _die(
+                "❌ ffprobe 相容性檢查失敗：\n"
+                f"   new={new_file.name} sig={new_sig}\n"
+                f"   ref={ref.name} sig={ref_sig}\n"
+                "   需一致欄位：video codec / pix_fmt / audio sample_rate / audio channels"
+            )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Rotate live slot: min added_at → mv old to frozen, new from staging")
     ap.add_argument(
@@ -82,6 +141,12 @@ def main() -> None:
     ap.add_argument("--manifest", type=Path, default=None, help="預設：Streaming/config/live_manifest.json")
     ap.add_argument("--new-file", type=str, required=True, help="queue_staging/ 內之新檔純檔名，例如 hour_new.mp4")
     ap.add_argument("--dry-run", action="store_true", help="只印出將替換哪一格，不搬檔、不寫 manifest")
+    ap.add_argument(
+        "--retire-mode",
+        choices=("deferred", "immediate"),
+        default="deferred",
+        help="deferred: 舊檔先留在 queue，交由後續清理；immediate: 立即搬到 frozen_broadcast",
+    )
     args = ap.parse_args()
 
     streaming_root = args.streaming_root.resolve()
@@ -129,6 +194,8 @@ def main() -> None:
     old_base = _safe_basename(str(victim_entry.get("file", "")))
     if not old_base:
         _die("❌ 被替換槽位 file 無效")
+    if new_base == old_base:
+        _die("❌ 新檔檔名不可與被替換槽位舊檔同名（請先更名 staging 檔）")
 
     for j, e in enumerate(entries):
         if j != victim_idx and isinstance(e.get("file"), str) and _safe_basename(e["file"]) == new_base:
@@ -137,6 +204,22 @@ def main() -> None:
     queue_old = (queue / old_base).resolve()
     if not queue_old.is_file():
         _die(f"❌ queue 內找不到現播檔（slot {victim_slot}）：{queue_old}")
+
+    # 輪換前相容性檢查：新檔需與其餘在播檔維持相同 AV 簽名
+    refs: list[Path] = []
+    for j, e in enumerate(entries):
+        if j == victim_idx:
+            continue
+        ref_base = _safe_basename(str(e.get("file", "")))
+        ref_path = (queue / ref_base).resolve()
+        if not ref_path.is_file():
+            _die(f"❌ 相容性參考檔不存在（slot {e.get('slot')}）：{ref_path}")
+        refs.append(ref_path)
+    if refs:
+        _check_compatibility(staging_file, refs)
+        print(f"✅ ffprobe 相容性檢查通過（對比 {len(refs)} 支在播檔）")
+    else:
+        print("ℹ️  僅單槽位或無參考檔，略過 ffprobe 相容性比對。")
 
     print(
         f"ℹ️  將替換 slot={victim_slot} added_at={victim_entry.get('added_at')!r} old_file={old_base!r} "
@@ -151,18 +234,23 @@ def main() -> None:
     frozen_dest = _unique_frozen_path(frozen_dir, old_base)
     queue_new = (queue / new_base).resolve()
 
-    if queue_new.exists() and queue_new != queue_old:
-        _die(f"❌ queue 已存在同名檔（且非本槽舊檔）：{new_base}")
+    if queue_new.exists():
+        _die(f"❌ queue 已存在同名檔：{new_base}")
 
-    shutil.move(str(queue_old), str(frozen_dest))
     shutil.move(str(staging_file), str(queue_new))
+    retired_msg = ""
+    if args.retire_mode == "immediate":
+        shutil.move(str(queue_old), str(frozen_dest))
+        retired_msg = f"✅ 已將舊檔移至 {frozen_dest}"
+    else:
+        retired_msg = f"ℹ️  deferred retire：舊檔暫留 queue（待清理）：{queue_old.name}"
 
     victim_entry["file"] = new_base
     victim_entry["added_at"] = _utc_now_iso()
 
     atomic_write_json(manifest_path, data)
-    print(f"✅ 已將舊檔移至 {frozen_dest}")
     print(f"✅ 已將新歌移入 {queue_new}")
+    print(retired_msg)
     print(f"✅ 已更新 {manifest_path}（slot {victim_slot}）")
 
 

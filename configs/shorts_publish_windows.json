@@ -1,0 +1,33 @@
+{
+  "schema_version": "shorts-publish-windows-v1",
+  "timezone_label": "Asia/Taipei",
+  "comment": "顧問建議之固定三檔；僅供文案生成與 signal 提示，實際上傳排程仍由 Mac/YouTube 執行。",
+  "slots": [
+    {
+      "local_time": "08:00",
+      "label": "早晨通勤與開機",
+      "mood": "喚醒、生機、輕快",
+      "content_hint": "晨鳥、流水、清新自然、開啟一天的背景白噪音，節奏可略亮",
+      "overseas_note": "台灣 20:00 約等美東 08:00，可與此時段敘事呼應跨時區聽眾"
+    },
+    {
+      "local_time": "14:00",
+      "label": "午後專注與舒壓",
+      "mood": "專注、隔絕干擾、防午睡低谷",
+      "content_hint": "低頻和緩、辦公室／讀書背景、隔絕環境雜音，少突兀轉折",
+      "overseas_note": ""
+    },
+    {
+      "local_time": "20:00",
+      "label": "晚間放鬆與沉澱",
+      "mood": "療癒高峰、放鬆、助眠導向",
+      "content_hint": "和緩、低動態、雨聲／環境音、完播與迴圈友好，避免刺激起幅",
+      "overseas_note": "亞洲晚間 + 部分歐美早晨，敘事可帶入全球同聽療癒"
+    }
+  ],
+  "production_reminders": [
+    "Shorts 會自動迴圈：母帶／影片剪輯盡量首尾無縫銜接，利於觀看時長與演算法。",
+    "前 3 秒以高畫質、慢動作自然畫面定錨，再讓聽覺接棒。",
+    "維持每日三檔節律上傳，利於帳號活躍權重（與本 repo 實際排程由營運／Mac 設定一致）。"
+  ]
+}

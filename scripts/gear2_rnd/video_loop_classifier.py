@@ -1,14 +1,19 @@
 """
 video_loop_classifier.py
 ========================
-v15.7 Loop 策略分類器 — 檔名即策略（CEO 命名制）
+v15.9 Loop 策略分類器 — Sidecar 優先 + 檔名向下相容
 
-設計原則（v15.7 起正式採用）：
+設計原則（v15.9）：
+  1) 優先讀取 sidecar（同名 .json / .loop.json）中的 loop_strategy
+  2) 若無 sidecar，回退到 v15.7 的檔名前綴（ping_/ford_）
+  3) 若都無，預設使用 forward（對鏡頭位移素材較安全）
+
+向下相容（v15.7）：
   CEO 在取得每支影片時，依判斷直接在檔名加上前綴：
     ping_原名.mp4  → Ping-Pong 策略（振盪/自然景觀，無人物）
     ford_原名.mp4  → Forward 策略（有人物，或 CEO 指定的循環播放）
 
-  本模組僅負責讀取檔名前綴並返回策略，無任何 CV 或 ML 運算。
+  本模組不做 CV / ML 推理，只做規則判定，確保可預期與可追蹤。
 
 使用方法：
   from scripts.gear2_rnd.video_loop_classifier import get_loop_strategy
@@ -23,13 +28,48 @@ v15.7 Loop 策略分類器 — 檔名即策略（CEO 命名制）
   未加前綴的檔案會觸發 WARNING 並預設為 pingpong。
 """
 
-from pathlib import Path
 import logging
+import json
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
 PREFIX_PINGPONG = "ping_"
 PREFIX_FORWARD  = "ford_"
+VALID_STRATEGIES = {"pingpong", "forward"}
+
+
+def _read_strategy_from_sidecar(video_path: Path) -> str | None:
+    """
+    Sidecar 格式（任一檔名皆可）：
+      1) <video>.json        (ex: clip.mp4.json)
+      2) <video_stem>.json   (ex: clip.json)
+      3) <video_stem>.loop.json
+
+    JSON 範例：
+      {"loop_strategy": "pingpong"}
+    """
+    candidates = [
+        Path(str(video_path) + ".json"),
+        video_path.with_suffix(".json"),
+        video_path.with_name(video_path.stem + ".loop.json"),
+    ]
+    for meta in candidates:
+        if not meta.exists():
+            continue
+        try:
+            data = json.loads(meta.read_text(encoding="utf-8"))
+            strategy = str(data.get("loop_strategy", "")).strip().lower()
+            if strategy in VALID_STRATEGIES:
+                log.info(f"[LoopClassifier] 🧭 Sidecar strategy={strategy}: {meta.name}")
+                return strategy
+            log.warning(
+                f"[LoopClassifier] ⚠️ Sidecar loop_strategy 非法（{meta.name}）：{strategy}，"
+                "可用值: pingpong|forward。"
+            )
+        except Exception as e:
+            log.warning(f"[LoopClassifier] ⚠️ Sidecar 讀取失敗（{meta.name}）：{e}")
+    return None
 
 
 def get_loop_strategy(video_path: Path) -> str:
@@ -43,8 +83,12 @@ def get_loop_strategy(video_path: Path) -> str:
     Examples:
         ping_ocean01.mp4          → "pingpong"
         ford_RS_lofi_gril_03.mp4  → "forward"
-        unnamed_video.mp4         → "pingpong" (預設，含 WARNING)
+        unnamed_video.mp4         → "forward" (預設，含 WARNING)
     """
+    sidecar_strategy = _read_strategy_from_sidecar(video_path)
+    if sidecar_strategy:
+        return sidecar_strategy
+
     name = video_path.name  # 含副檔名
 
     if name.startswith(PREFIX_PINGPONG):
@@ -54,9 +98,9 @@ def get_loop_strategy(video_path: Path) -> str:
     else:
         log.warning(
             f"[LoopClassifier] ⚠️ 檔名無 ping_/ford_ 前綴：{video_path.name}，"
-            f"預設使用 pingpong。請 CEO 依命名規範重命名後重新入庫。"
+            f"預設使用 forward（v15.9 安全預設，避免鏡頭位移素材倒放違和）。"
         )
-        return "pingpong"
+        return "forward"
 
 
 def get_base_name(video_path: Path) -> str:

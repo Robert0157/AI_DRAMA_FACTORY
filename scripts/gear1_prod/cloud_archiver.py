@@ -8,88 +8,272 @@
 - 90% 閘門 → CEO 授權 FIFO 清理
 """
 
-import os, sys, shutil, json
+import os, sys, shutil, json, argparse
 from datetime import datetime
 from pathlib import Path
 
 # 【跨平台防線】以腳本位置動態推導專案根目錄，禁止硬編碼磁碟機代號
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
-WORKSPACE_ROOT = os.getenv("WORKSPACE_ROOT", str(_PROJECT_ROOT))
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+from scripts.common.env_manager import config
+WORKSPACE_ROOT = str(config.workspace_root)  # v15.10: 改由 config 派發
 MAX_VAULT_CAPACITY = 100
 VAULT_WARNING_THRESHOLD = 0.9  # 90%
+MAC_SHORT_AUDIO_ROOT = str(config.mac_short_audio_root)  # v15.10: 改由 config 派發
 
 # 動態導入 VaultDatabase
 sys.path.insert(0, os.path.join(WORKSPACE_ROOT, "scripts", "gear2_rnd"))
 from vault_database import VaultDatabase
 
 
-def archive_with_selective_filter():
+def _purge_track(vault: VaultDatabase, track_id: str) -> None:
+    """向後相容 purge_track：若 VaultDatabase 無此方法，退回 SQL 刪除。"""
+    if hasattr(vault, "purge_track"):
+        vault.purge_track(track_id)
+        return
+    cursor = vault.conn.cursor()
+    cursor.execute("DELETE FROM audio_assets WHERE track_id = ?", (track_id,))
+    vault.conn.commit()
+
+
+def _archive_track(vault: VaultDatabase, track_id: str) -> None:
+    """向後相容 archive_track：若無方法，改以 is_archived=1 標記。"""
+    if hasattr(vault, "archive_track"):
+        vault.archive_track(track_id)
+        return
+    cursor = vault.conn.cursor()
+    cursor.execute(
+        """
+        UPDATE audio_assets
+        SET is_archived = 1, archived_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+        WHERE track_id = ?
+        """,
+        (track_id,),
+    )
+    vault.conn.commit()
+
+
+def _run_logger(log_path: Path):
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _log(msg: str) -> None:
+        line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
+        print(msg)
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+    return _log
+
+
+def _write_shorts_signal(
+    *,
+    shorts_root: Path,
+    channel: str,
+    mode: str,
+    stats: dict,
+    max_actions: int,
+) -> Path:
     """
-    選擇性封存邏輯：
-    - 原生歌曲 → ceo_archived_beats/ 並保留 DB 記錄
-    - 衍生歌曲 → 物理刪除 + DB 標記已清理
+    寫入 Shorts sidecar signal（原子寫入）：
+    Windows 端: Y:\\Shorts_audio\\{channel}\\.signal.json
+    Mac 端對應: /Volumes/AI_Workspace/AI_Drama_Factory/Short_audio/{channel}/.signal.json
+    """
+    now = datetime.now()
+    signal_path = shorts_root / channel / ".signal.json"
+    payload = {
+        "schema_version": "shorts-signal-v1",
+        "batch_id": now.strftime("%Y%m%d_%H%M%S"),
+        "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "channel": channel,
+        "mode": mode,
+        "windows_path": str(shorts_root / channel),
+        "mac_mount_path": f"{MAC_SHORT_AUDIO_ROOT}/{channel}",
+        "stats": stats,
+        "max_actions": max_actions,
+        "auto_sync_enabled": True,
+    }
+    signal_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = signal_path.with_name(signal_path.name + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(signal_path)
+    return signal_path
+
+
+def archive_with_selective_filter(
+    target_channel: str = "all",
+    *,
+    execute: bool = False,
+    max_actions: int = 0,
+    log_path: Path | None = None,
+):
+    """
+    高使用次數清理邏輯（CTO 規則）：
+    - derivation_count >= 3 且非 remix：搬移到 Y:/Shorts_audio/{channel}
+    - derivation_count >= 3 且 remix：物理刪除 + DB 清理
     """
     vault = VaultDatabase()
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # 建立封存目錄
-    archive_dir = Path(WORKSPACE_ROOT) / "ceo_archived_beats"
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    
-    print(f"🔍 掃描退役軌道 (derivation_count >= 3)...")
+    shorts_root = config.smb_shorts_root  # v15.10 P3#10: 已從硬編碼 Y:/Shorts_audio 改用 config.smb_shorts_root
+    shorts_dirs = {
+        "light_music": shorts_root / "light_music",
+        "lofi": shorts_root / "lofi",
+    }
+    if target_channel in shorts_dirs:
+        channels = [target_channel]
+    else:
+        channels = ["light_music", "lofi"]
+    channels_sql = ",".join(f"'{c}'" for c in channels)
+    for d in shorts_dirs.values():
+        d.mkdir(parents=True, exist_ok=True)
+
+    log = _run_logger(log_path) if log_path else print
+    mode = "EXECUTE" if execute else "DRY-RUN"
+    log(
+        f"🔍 掃描高使用次數軌道 (derivation_count >= 3, 依 channel={channels}，不看 status)..."
+        f" mode={mode}, max_actions={max_actions if max_actions > 0 else 'unlimited'}"
+    )
     
     cursor = vault.conn.cursor()
     
     # 查詢所有退役軌道
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT * FROM audio_assets 
-        WHERE derivation_count >= 3 AND status = 'active'
-        ORDER BY derivation_count DESC
+        WHERE derivation_count >= 3
+          AND channel IN ({channels_sql})
+          AND is_archived = 0
+        ORDER BY channel, derivation_count DESC
     """)
     retired_tracks = cursor.fetchall()
-    
-    original_count = 0
-    derivative_count = 0
+
+    moved_count = 0
+    deleted_count = 0
+    missing_count = 0
+    failed_count = 0
+    skipped_count = 0
+    dryrun_count = 0
+    action_count = 0
+    channel_stats = {
+        ch: {"moved": 0, "deleted": 0, "missing": 0, "failed": 0, "dryrun": 0}
+        for ch in channels
+    }
+
+    def _is_remix_track(track: dict) -> bool:
+        # 依 CTO 指令：僅使用 track_id/檔名關鍵字判斷，不使用 is_derivative。
+        name = f"{track.get('track_id', '')} {Path(track.get('original_path', '')).name}".lower()
+        remix_keywords = (
+            "tempo_down",
+            "tempo_up",
+            "pitch_up",
+            "pitch_down",
+            "remix",
+            "[remix",
+            "(remix",
+            "vol.",
+            "vol ",
+            "mix",
+            "edit",
+        )
+        return any(k in name for k in remix_keywords)
     
     for track_row in retired_tracks:
+        if max_actions > 0 and action_count >= max_actions:
+            log(f"⏹️ 達到安全上限 max_actions={max_actions}，停止本輪整理。")
+            break
+
         track = dict(track_row)
         track_id = track["track_id"]
         original_path = track["original_path"]
-        is_derivative = track["is_derivative"]
+        channel = str(track.get("channel") or "lofi").strip().lower()
+        channel = channel if channel in shorts_dirs else "lofi"
         
         if not Path(original_path).exists():
-            print(f"⚠️ 檔案已遺失: {original_path}")
-            vault.purge_track(track_id)
+            if execute:
+                log(f"⚠️ 檔案已遺失: {original_path}")
+                _purge_track(vault, track_id)
+                missing_count += 1
+                channel_stats[channel]["missing"] += 1
+            else:
+                log(f"[DRYRUN][MISSING] {track_id} :: {original_path} (將 purge DB)")
+                dryrun_count += 1
+                channel_stats[channel]["dryrun"] += 1
+            action_count += 1
             continue
-            
-        if is_derivative:
-            # ====== 衍生歌曲：直接物理刪除 ======
-            try:
-                os.remove(original_path)
-                vault.purge_track(track_id)
-                print(f"🗑️ 【衍生刪除】 {track_id}")
-                derivative_count += 1
-            except Exception as e:
-                print(f"❌ 刪除失敗: {original_path} - {e}")
-                
+
+        if _is_remix_track(track):
+            # ====== remix：直接物理刪除 ======
+            if not execute:
+                log(f"[DRYRUN][DELETE] {track_id} -> {original_path}")
+                dryrun_count += 1
+                channel_stats[channel]["dryrun"] += 1
+            else:
+                try:
+                    os.remove(original_path)
+                    _purge_track(vault, track_id)
+                    log(f"🗑️ 【REMIX刪除】 {track_id}")
+                    deleted_count += 1
+                    channel_stats[channel]["deleted"] += 1
+                except Exception as e:
+                    log(f"❌ 刪除失敗: {original_path} - {e}")
+                    failed_count += 1
+                    channel_stats[channel]["failed"] += 1
+            action_count += 1
         else:
-            # ====== 原生歌曲：封存到 ceo_archived_beats/ ======
-            try:
-                # 複製到封存目錄
-                filename = Path(original_path).name
-                archive_path = archive_dir / f"{track_id}_{filename}"
-                shutil.copy2(original_path, archive_path)
-                
-                # 標記為已封存
-                vault.archive_track(track_id)
-                print(f"📦 【原生封存】 {track_id} → {archive_path.name}")
-                original_count += 1
-            except Exception as e:
-                print(f"❌ 封存失敗: {original_path} - {e}")
-    
-    print(f"\n✅ 退役完成: {original_count} 個原生歌曲已封存, {derivative_count} 個衍生歌曲已刪除")
-    
-    return original_count + derivative_count
+            # ====== 非 remix：遷移到 Shorts_audio/{channel}（move，非 copy）======
+            filename = Path(original_path).name
+            src = Path(original_path)
+            src_norm = str(src).replace("\\", "/").lower()
+            dst_root_norm = str(shorts_dirs[channel]).replace("\\", "/").lower()
+            if src_norm.startswith(dst_root_norm + "/"):
+                log(f"⏭️ 已在目標資料夾，略過: {track_id} -> {original_path}")
+                skipped_count += 1
+                action_count += 1
+                continue
+            dst = shorts_dirs[channel] / filename
+            if dst.exists():
+                dst = shorts_dirs[channel] / f"{Path(filename).stem}__dup_{track_id}{Path(filename).suffix}"
+            if not execute:
+                log(f"[DRYRUN][MOVE] {track_id} : {original_path} -> {dst}")
+                dryrun_count += 1
+                channel_stats[channel]["dryrun"] += 1
+            else:
+                try:
+                    shutil.move(original_path, str(dst))
+                    cursor.execute(
+                        """
+                        UPDATE audio_assets
+                        SET original_path = ?, updated_at = CURRENT_TIMESTAMP
+                        WHERE track_id = ?
+                        """,
+                        (str(dst), track_id),
+                    )
+                    vault.conn.commit()
+                    log(f"📦 【遷移至Shorts】 {track_id} → {dst}")
+                    moved_count += 1
+                    channel_stats[channel]["moved"] += 1
+                except Exception as e:
+                    log(f"❌ 遷移失敗: {original_path} - {e}")
+                    failed_count += 1
+                    channel_stats[channel]["failed"] += 1
+            action_count += 1
+
+    if execute:
+        for ch in channels:
+            sig = _write_shorts_signal(
+                shorts_root=shorts_root,
+                channel=ch,
+                mode=mode,
+                stats=channel_stats[ch],
+                max_actions=max_actions,
+            )
+            log(f"📡 Shorts Signal 已寫入: {sig}")
+
+    log(
+        f"\n✅ 完成: 遷移 {moved_count} 首, 刪除(remix) {deleted_count} 首, "
+        f"遺失清理 {missing_count} 首, 略過(已在目標) {skipped_count} 首, 失敗 {failed_count} 首, "
+        f"dryrun預計動作 {dryrun_count} 首"
+    )
+
+    return moved_count + deleted_count + missing_count
 
 
 def check_vault_capacity_and_notify():
@@ -100,7 +284,14 @@ def check_vault_capacity_and_notify():
         (current_capacity, should_trigger_cleanup_button)
     """
     vault = VaultDatabase()
-    current = vault.get_vault_capacity()
+    if hasattr(vault, "get_vault_capacity"):
+        current = vault.get_vault_capacity()
+    else:
+        # 向後相容：新版 VaultDatabase 無 get_vault_capacity 時，以活躍軌道數估算容量。
+        cursor = vault.conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM audio_assets WHERE is_archived = 0")
+        row = cursor.fetchone()
+        current = int(row[0] if row else 0)
     threshold = int(MAX_VAULT_CAPACITY * VAULT_WARNING_THRESHOLD)
     
     print(f"📊 冷庫容量: {current}/{MAX_VAULT_CAPACITY} ({current/MAX_VAULT_CAPACITY*100:.1f}%)")
@@ -148,7 +339,10 @@ def trigger_fifo_cleanup(cleanup_count: int = None):
     # 執行刪除
     deleted_tracks = []
     space_freed_mb = 0.0
-    archive_path = Path(WORKSPACE_ROOT) / "ceo_archived_beats"
+    archive_path = Path(WORKSPACE_ROOT) / "assets" / "audio" / "ceo_archived_beats"
+    # v15.10: ceo_archived_beats 已於 LOFI 清除中刪除，若不存在則跳過封存清理
+    if not archive_path.exists():
+        print(f"  ℹ️ ceo_archived_beats/ 不存在，跳過封存清理")
     
     for track in to_delete:
         track_id = track["track_id"]
@@ -177,7 +371,7 @@ def trigger_fifo_cleanup(cleanup_count: int = None):
                 print(f"  ⚠️ 無法刪除封存: {e}")
         
         # 更新DB
-        vault.purge_track(track_id)
+        _purge_track(vault, track_id)
         deleted_tracks.append({
             'track_id': track_id,
             'genetic_score': genetic_score,
@@ -291,12 +485,44 @@ def generate_purge_audit_report(audit_data: dict) -> str:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="高使用次數音檔整理器")
+    parser.add_argument(
+        "--channel",
+        choices=["all", "light_music", "lofi"],
+        default="all",
+        help="只整理指定頻道（預設 all）",
+    )
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="實際執行遷移/刪除（未帶此參數時僅 dry-run）",
+    )
+    parser.add_argument(
+        "--max-actions",
+        type=int,
+        default=0,
+        help="本輪最多處理幾首（0 代表不限制）",
+    )
+    parser.add_argument(
+        "--log-path",
+        type=str,
+        default="",
+        help="指定固定日誌檔路徑（每輪 append）",
+    )
+    args = parser.parse_args()
+
     print("=" * 60)
     print("【冷儲存管理系統】")
     print("=" * 60)
     
     # Step 1：執行選擇性封存
-    archived = archive_with_selective_filter()
+    _log_path = Path(args.log_path) if str(args.log_path).strip() else None
+    archived = archive_with_selective_filter(
+        target_channel=args.channel,
+        execute=args.execute,
+        max_actions=max(0, int(args.max_actions)),
+        log_path=_log_path,
+    )
     
     # Step 2：檢查容量並決定是否通知 CEO
     current, should_notify = check_vault_capacity_and_notify()

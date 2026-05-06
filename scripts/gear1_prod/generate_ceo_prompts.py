@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CEO 審批提示詞生成系統 - v15.3 Gemini 2.5 Flash Unified Edition
+CEO 審批提示詞生成系統 - v15.10 llm_client 統一路由版
 
-【v15.3 API 統一化升級】：
-✅ 100% 純 Gemini 2.5 Flash 生成（全面汰除 GLM-4）
+【v15.10 更新】：
+✅ 透過 llm_client 統一路由（預設 MiniMax M2.7，支援 --provider gemini/zhipu）
 ✅ ZERO SILENT FAILURES：API 失敗 → sys.exit(1) + 紅色警告
 ✅ 源頭防呆驗證：嚴格檢查 Tags + Prompt 結構
 ✅ 允許部分結果：不足 20 組也可存儲，但絕不偽造

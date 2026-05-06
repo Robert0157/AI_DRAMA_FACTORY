@@ -284,3 +284,7 @@ FRESHNESS_VIOLATION: 【v15.9 新鮮度鐵律】頻道 [light_music] 新歌（dc
 ### [2026-04-18 20:29:56] pipeline_runner.py: METADATA_GENERATION_FAILED
 - Cause: ❌ [FATAL ERROR] LLM Generation 失敗: 缺少 openai 套件，請執行: pip install openai
 - Action: Pipeline halted.
+
+### [2026-04-26 17:53:56] pipeline_runner.py: METADATA_GENERATION_FAILED
+- Cause: ❌ [FATAL ERROR] LLM Generation 失敗: MiniMax API 最終失敗: Connection error.
+- Action: Pipeline halted.

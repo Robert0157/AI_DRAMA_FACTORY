@@ -16,9 +16,11 @@ Encode-Once-Repeat + Pre-baked Fade 廣播級極速產線
 ✅ v15.6 雙重保險：loop_list duration 直接清點 base_mid.ts 實際幀數，幀級吻合零空洞
 ✅ v15.7 智能 Ping-Pong：ping_ 前綴素材自動正反交替循環，ford_ 前綴維持正向播放，零拼接閃爍
 ✅ v15.8 雙軌編碼 Profile：Windows H.264 CRF29/slow/192k；Mac M4 HEVC VideoToolbox q:v 55/hvc1/192k（由 env_manager 動態載入）
+✅ v15.10 首尾 Loop 接縫檢查：成片音訊頭尾窗 MAE（長片 >600s 自動跳過；AI_DRAMA_LOOP_SEAM_STRICT 可升級為硬失敗）
 """
 
 import sys
+import os
 import json
 import re
 import subprocess
@@ -85,8 +87,46 @@ class MultiSceneProcessor:
         # 臨時目錄
         self.temp_dir = self.config.workspace_root / ".temp" / "multi_scene"
         self.temp_dir.mkdir(parents=True, exist_ok=True)
+
+        # 浮水印（CEO 指令：小字、半透明、右下角）
+        self.watermark_text = "R&S Echoes Nature | Healing & Relaxation!"
+        self.watermark_fontsize = 20
+        self.watermark_color = "white@0.35"
+        self.watermark_margin_x = 24
+        self.watermark_margin_y = 18
         
         log.info("✅ Multi Scene Processor 初始化完成")
+
+    @staticmethod
+    def _escape_drawtext_text(text: str) -> str:
+        """轉義 FFmpeg drawtext 的文字內容。"""
+        return (
+            str(text)
+            .replace("\\", r"\\")
+            .replace(":", r"\:")
+            .replace("'", r"\'")
+            .replace("%", r"\%")
+        )
+
+    def _watermark_filter(self) -> str:
+        txt = self._escape_drawtext_text(self.watermark_text)
+        return (
+            f"drawtext=text='{txt}':"
+            f"fontcolor={self.watermark_color}:"
+            f"fontsize={self.watermark_fontsize}:"
+            f"x=w-tw-{self.watermark_margin_x}:"
+            f"y=h-th-{self.watermark_margin_y}"
+        )
+
+    def _append_watermark_filter_complex(
+        self, filter_complex: str, in_label: str = "v_out", out_label: str = "v_out_wm"
+    ) -> tuple[str, str]:
+        """
+        在既有 filter_complex 後追加浮水印，避免改動原先拼接邏輯。
+        回傳 (新 filter_complex, 新輸出 label)。
+        """
+        wm = self._watermark_filter()
+        return f"{filter_complex};[{in_label}]{wm}[{out_label}]", out_label
     
     def calculate_chunks(self, target_duration: int = 3600, scene_dwell_time: int = 300) -> int:
         """動態計算所需區塊數
@@ -371,6 +411,9 @@ class MultiSceneProcessor:
         """
         try:
             log.info(f"🎬 開始 FFmpeg 合成: {output_path.name}")
+            final_filter_complex, final_v_label = self._append_watermark_filter_complex(
+                filter_complex
+            )
             
             # 構建 FFmpeg 命令
             cmd = ["ffmpeg", "-v", "info"]
@@ -386,8 +429,8 @@ class MultiSceneProcessor:
             
             # 【v14.3 強制編碼參數】
             cmd.extend([
-                "-filter_complex", filter_complex,
-                "-map", "[v_out]",
+                "-filter_complex", final_filter_complex,
+                "-map", f"[{final_v_label}]",
                 "-c:v", "libx264",
                 "-crf", "28",                  # 品質控制
                 "-preset", "medium",           # 編碼密度
@@ -1035,6 +1078,30 @@ class MultiSceneProcessor:
                 log.error("❌ [Stage 2] FFmpeg 合成失敗")
                 return None
         
+        # 【v15.10】首尾 Loop 接縫檢查（YouTube Shorts 類短片較有意義；長片自動跳過避免誤判）
+        if final_output_path.exists():
+            try:
+                from scripts.gear2_rnd.loop_seam_checker import check_loop_seam_media
+
+                rep = check_loop_seam_media(final_output_path, skip_if_longer_than_sec=600.0)
+                if rep.skipped:
+                    log.info(f"🔁 [LoopSeam] 已跳過：{rep.reason}")
+                elif rep.ok:
+                    log.info(
+                        f"🔁 [LoopSeam] 通過 MAE={rep.mae:.4f} ≤ {rep.threshold}（窗={rep.window_sec}s）"
+                    )
+                else:
+                    msg = (
+                        f"🔁 [LoopSeam] 未達無縫循環建議值 MAE={rep.mae:.4f} > {rep.threshold}（{rep.reason}）"
+                    )
+                    strict = os.environ.get("AI_DRAMA_LOOP_SEAM_STRICT", "").strip().lower()
+                    if strict in ("1", "true", "yes"):
+                        log.error(msg + " — AI_DRAMA_LOOP_SEAM_STRICT 啟用，產線標記失敗")
+                        return None
+                    log.warning(msg)
+            except Exception as e:
+                log.warning(f"🔁 [LoopSeam] 檢查異常（不阻斷產線）：{e}")
+        
         # ==========================================
         # Stage 3：視覺金庫延遲扣款（母帶回收模式跳過）
         # ==========================================
@@ -1068,6 +1135,9 @@ class MultiSceneProcessor:
         """
         try:
             log.info(f"🎬 【階段二】開始最終合成: {output_path.name}")
+            stage2_filter_complex, stage2_v_label = self._append_watermark_filter_complex(
+                "[0:v]fps=30[v_out]"
+            )
             
             # 構建 FFmpeg 命令
             cmd = ["ffmpeg", "-v", "info"]
@@ -1084,8 +1154,8 @@ class MultiSceneProcessor:
             
             # 簡單濾鏘：直通視頻
             cmd.extend([
-                "-filter_complex", "[0:v]fps=30[v_out]",
-                "-map", "[v_out]",
+                "-filter_complex", stage2_filter_complex,
+                "-map", f"[{stage2_v_label}]",
                 "-c:v", "libx264",
                 "-crf", "28",
                 "-preset", "medium",

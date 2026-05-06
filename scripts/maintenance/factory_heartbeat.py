@@ -119,23 +119,28 @@ class FactoryHeartbeat:
         """每日 03:00 - 深度垃圾回收"""
         try:
             print("\n[HEARTBEAT] 執行 SYS_Garbage_Collection (每日 03:00)")
-            # 清理 Lofi 頻道
-            result_lofi = subprocess.run(
-                [sys.executable, "scripts/maintenance/workspace_sweeper.py", "--channel", "lofi"],
-                capture_output=True,
-                text=True,
-                timeout=300,
-                cwd=str(_PROJECT_ROOT)
-            )
-            
-            # 清理 Light Music 頻道
-            result_light = subprocess.run(
-                [sys.executable, "scripts/maintenance/workspace_sweeper.py", "--channel", "light_music"],
-                capture_output=True,
-                text=True,
-                timeout=300,
-                cwd=str(_PROJECT_ROOT)
-            )
+            # v15.10 P3#14: 加入 PYTHONUNBUFFERED + 日誌輸出，避免 capture_output 盲盒化錯誤
+            _env = {**os.environ, "PYTHONUNBUFFERED": "1"}
+            _log_dir = _PROJECT_ROOT / "logs"
+            _log_dir.mkdir(exist_ok=True)
+            _log_path = _log_dir / "workspace_sweeper.log"
+            with open(_log_path, "a", encoding="utf-8") as _lf:
+                # 清理 Lofi 頻道
+                result_lofi = subprocess.run(
+                    [sys.executable, "scripts/maintenance/workspace_sweeper.py", "--channel", "lofi"],
+                    stdout=_lf, stderr=_lf,
+                    timeout=300,
+                    cwd=str(_PROJECT_ROOT),
+                    env=_env,
+                )
+                # 清理 Light Music 頻道
+                result_light = subprocess.run(
+                    [sys.executable, "scripts/maintenance/workspace_sweeper.py", "--channel", "light_music"],
+                    stdout=_lf, stderr=_lf,
+                    timeout=300,
+                    cwd=str(_PROJECT_ROOT),
+                    env=_env,
+                )
             
             if result_lofi.returncode == 0 and result_light.returncode == 0:
                 self.log_event("Garbage_Collection", "success", "✅ 兩個頻道已清理完畢")

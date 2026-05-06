@@ -1,0 +1,279 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LOFI]
+生成時間: 2026-05-05 21:24:05
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\lofi\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: Velvet Nocturne
+[[[SUNO_TAGS_START]]]
+minimal house, deep house, smooth analog synth, warm Rhodes piano, clean bassline, punchy kick drum, subtle hi-hats, modern retail space acoustics, pristine studio sound, instrumental only, NO vocals, NO extreme EDM drops, NO orchestral strings, NO background noise, minimal house, chic retail vibe, NO vinyl crackle, NO tape hiss
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Warm Rhodes electric piano, very subtle synth pad, no kick drum yet, gentle 115 BPM pulse, creating a peaceful atmosphere of quiet depth)
+
+...
+...
+
+[Verse 1] (Smooth analog synth chords enter quietly, Rhodes piano continues its warm meditation, relaxed urban groove builds gradually)
+
+...
+...
+
+[Groove Build-up] (Punchy 115 BPM kick drum enters with clean bassline, subtle hi-hats add rhythm, Rhodes piano deepens the mood, sophisticated retail vibe emerges)
+
+...
+...
+
+[Minimal Drop] (Four-on-the-floor beat solidifies, warm piano chords layer with deep synth pads, bassline becomes more prominent, confident and stylish atmosphere)
+
+...
+...
+
+[Deep Bass Verse] (Clean bassline drives the rhythm, Rhodes electric piano fills the space with warm tones, minimal glitchy percussion adds texture, hypnotic loop flow)
+
+...
+...
+
+[Synth Breakdown] (Analog synth takes center stage, Rhodes piano creates peaceful interlude, bassline continues steady, focused energy persists)
+
+...
+...
+
+[Rhythmic Flow] (Full groove returns, punchy kick drum and clean bassline work together, warm synth chords float above, sophisticated urban vibe at its finest)
+
+...
+...
+
+[Outro] (Fade to silence, stripping away drums first, leaving only smooth synth pads and subtle Rhodes piano, peaceful resolution, low-profile elegance)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: Sax & The After Hours
+[[[SUNO_TAGS_START]]]
+Deep House, Mellow Tenor Saxophone, Melancholy, Atmospheric Keys, Lofi Hip Hop, Chill Hop, mellow sax solo, warm analog keys, late night ambience, contemplative mood, steady hip hop beat, nostalgic undertone, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise, NO nature sounds, NO orchestral
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Warm Rhodes electric piano chords, gentle and melancholic, very subtle ambient texture, no beat yet)
+
+...
+...
+
+[Verse 1] (Mellow tenor saxophone enters with a soulful, introspective melody over soft lofi hip hop keys, smooth and contemplative)
+
+...
+...
+
+[Chorus] (Chill hop beat drops in — steady kick, dusty snare, loose hi-hats — saxophone soars above the mix with emotional phrasing, deep and expressive)
+
+...
+...
+
+[Break] (Beat strips back, leaving only saxophone solo and atmospheric pads, raw and vulnerable, melancholic atmosphere thickens)
+
+...
+...
+
+[Verse 2] (Rhythm returns, saxophone weaves between the hip hop groove, warmer chord progressions, nostalgic and reflective tone)
+
+...
+...
+
+[Bridge] (Keys take the lead momentarily, saxophone fades to background whispers, building emotional tension and release)
+
+...
+...
+
+[Final Chorus] (Full chill hop ensemble returns — punchy kick, mellow sax melodies intertwining, seamless flow and hypnotic groove)
+
+...
+...
+
+[Outro] (Beat fades slowly, saxophone lingers on a final melancholic phrase, keys decay into silence)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: Sacred Echoes
+[[[SUNO_TAGS_START]]]
+sacred ambient, minimalist house, ethereal synth pads, reverb-drenched textures, warm analog warmth, contemplative mood, meditative flow, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise, minimal house, chic retail vibe
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Gentle ambient swells, ethereal synth pads, no beat yet, creating sacred contemplative space)
+
+...
+...
+
+[Sacred Build] (Subtle hi-hats enter slowly, warm analog chords, establishing reverent atmosphere, 110 BPM gentle flow)
+
+...
+...
+
+[Deep Verse] (Smooth bassline emerges, Rhodes electric piano plays soft sustained chords, meditative quality throughout)
+
+...
+...
+
+[Chant Bridge] (Layers of warm synth textures building, subtle percussion adds gentle pulse, spiritual resonance grows)
+
+...
+...
+
+[Minimal Drop] (Punchy kick drum anchors the rhythm, clean bassline locks in, contemplative yet driving groove at 110 BPM)
+
+...
+...
+
+[Reflection Section] (Drums fade back gently, leaving ethereal pads, contemplative and spacious, sacred atmosphere returns)
+
+...
+...
+
+[Outro] (Fade to silence, stripping away drums first, leaving only smooth ambient synth pads and subtle warmth)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: Celestial Reverie
+[[[SUNO_TAGS_START]]]
+lofi chillhop, ambient synth, ethereal pad, sacred atmosphere, slow 70 BPM, warm lofi beat, dreamy lo-fi production, contemplative mood, meditative flow, soft lo-fi hip hop, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Soft ambient synth pad, ethereal and expansive, no beat yet, setting sacred contemplative space)
+
+...
+...
+
+[Verse 1] (Introducing slow lo-fi beat at 70 BPM, warm dusty kick drum, soft hi-hat shuffle, ambient synth swells building beyond horizon)
+
+...
+...
+
+[Chorus] (Full ethereal pad layering, lo-fi texture woven into smooth synth frequencies, clean bass support, transcendent sacred atmosphere, all elements breathing in sacred unity)
+
+...
+...
+
+[Breakdown] (Ambient synth takes center stage, reverb-drenched and spacious, lo-fi drums stripped to minimal pulse, contemplative space widening beyond distance)
+
+...
+...
+
+[Verse 2] (Lo-fi beat returns with added warmth, floating ambient synth melodies cascading, sacred reverence in every harmonic layer)
+
+...
+...
+
+[Bridge] (Stripped-down moment, only ethereal ambient synth and distant low-fi textures, profound stillness, cosmic presence emerging from beyond horizon)
+
+...
+...
+
+[Outro] (Lo-fi drums gently fading first, ambient synth pad dissolving slowly into sacred silence, leaving only the echo of transcendent space)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: Velvet Dusk
+[[[SUNO_TAGS_START]]]
+chill house, smooth rhodes piano, warm analog synth, elegant retail soundscape, sophisticated lounge atmosphere, confident urban groove, pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise, minimal house, chic retail vibe
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Soft Rhodes electric piano chords, warm analog synth pads, no percussion yet, establishing ethereal lounge atmosphere, very smooth and inviting)
+
+...
+...
+
+[Verse 1] (Subtle drum machine enters with soft kick, smooth hi-hats gently introduced, Rhodes piano carries the melody, clean bassline foundation, 105 BPM steady groove, confident and stylish)
+
+...
+...
+
+[Chorus] (Rhodes electric piano arpeggios layered with warm synth chords, kick drum adds gentle punch, lush atmospheric pads fill the space, sophisticated urban groove elevates the texture, hypnotic loop flow)
+
+...
+...
+
+[Breakdown] (Rhodes piano solo takes the lead, bassline deepens, synth pads create an ethereal ambient wash, all rhythm elements stripped back for introspective moment, smooth and meditative)
+
+...
+...
+
+[Build-up] (Rhythm section gradually returns, hi-hats become more prominent, warm analog synth swells build anticipation, clean bassline intensifies, driving but relaxed energy)
+
+...
+...
+
+[Final Section] (Rhodes electric piano returns with graceful phrasing, kick drum and bassline provide steady foundation, warm synth textures wrap around the groove, elegant and poised atmosphere)
+
+...
+...
+
+[Outro] (Fade to silence, stripping away drums first, leaving only warm Rhodes electric piano and smooth synth pads, ethereal lounge ambiance dissolves gently)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+

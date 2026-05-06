@@ -49,6 +49,7 @@ def validate_and_emit(*, streaming_root: Path, manifest: dict, out_lines: list[s
         _die(f"❌ 找不到 queue 目錄：{queue}")
 
     slots_seen: set[int] = set()
+    files_seen: set[str] = set()  # v15.10 P3#12: 防止同一檔案被分配到多個 slot
     rows: list[tuple[int, str]] = []
 
     for i, raw in enumerate(entries):
@@ -66,6 +67,10 @@ def validate_and_emit(*, streaming_root: Path, manifest: dict, out_lines: list[s
         if slot in slots_seen:
             _die(f"❌ 重複的 slot：{slot}")
         slots_seen.add(slot)
+        # v15.10 P3#12: 重複 file 防護
+        if base in files_seen:
+            _die(f"❌ 重複的 file：{base}（出現在多個 slot）")
+        files_seen.add(base)
 
         abs_file = (queue / base).resolve()
         if not abs_file.is_file():

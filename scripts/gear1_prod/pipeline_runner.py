@@ -28,6 +28,8 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from scripts.common.env_manager import config
+from scripts.common.youtube_cheatsheet_builder import generate_youtube_cheatsheet_file, glob_youtube_sheet_paths
+from scripts.common.pipeline_state_machine import preflight_dual_vault  # v15.10 P2-#6
 
 # 【Protocol L】導入金庫與衍生引擎
 try:
@@ -233,6 +235,7 @@ def _run_audio_mastering(source_mp3s: List[Path], channel: str = "lofi") -> bool
     try:
         env = os.environ.copy()
         env["PIPELINE_RUNNER_AUTHORIZED"] = "1"
+        env["PYTHONUNBUFFERED"] = "1"  # v15.10: 即時日誌輸出
         
         result = subprocess.run(
             [sys.executable, str(mastering_script), "--channel", channel, "--lufs", str(mastering_lufs)],
@@ -252,7 +255,7 @@ def _run_audio_mastering(source_mp3s: List[Path], channel: str = "lofi") -> bool
         # 其他非零退出碼 = 真實錯誤（FFmpeg 轉換失敗等）
         if result.returncode != 0:
             _log_info(f"⚠️  母帶引擎回傳錯誤（Exit Code: {result.returncode}），但繼續進行")
-            _log_info(f"📝 詳細日誌:\n{result.stdout}\n{result.stderr[-500:]}")
+            _log_info(f"📝 詳細日誌:\n{result.stdout}\n{result.stderr[-2000:]}")  # v15.10: 擴大截斷
             # 【CTO 指示】不中斷產線，繼續到 Phase 4，讓庫存盤點決定是否進行
             return True
         
@@ -457,68 +460,26 @@ def _log_inventory_dashboard(channel: str = "lofi") -> None:
 # ────────────────────────────────────────────────────────────────
 
 def _archive_ceo_approved_beats(channel: str = "lofi") -> None:
-    """
-    【CTO 嚴厲指令】安全封存 CEO 原始素材，禁止直接刪除！
-    【v11.5 物理分區】根據 channel 參數精準清理對應子目錄
-    
-    工作流：
-    1. 建立 assets/audio/ceo_archived_beats/ 封存目錄
-    2. 使用 shutil.move() 移動已處理的檔案到封存目錄
-    3. 防止隔日重複封裝
-    4. 保留全部歷史紀錄供日後查證
-    
-    【ZERO DATA LOSS】未來只有當硬碟空間真的不足時，
-    特定的日誌清理排程才會考慮清理 > 30 天的封存。
+    """v15.10 BUG2: CEO 決策 — 母帶完成後直接刪除原始素材，不再封存至 ceo_archived_beats/
+    舊版封存邏輯已廢棄（會重建 CEO 已手動刪除的目錄）。
     """
     ceo_approved_dir = get_channel_audio_dir(channel, "approved_beats")
     if not ceo_approved_dir.exists():
         return
-    
-    try:
-        files_to_archive = list(ceo_approved_dir.glob("*"))
-        if not files_to_archive:
-            _log_info(f"📁 CEO 審批目錄已空，無需封存")
-            return
-        
-        # 建立封存目錄
-        ARCHIVED_BEATS_DIR = Path(config.workspace_root) / "assets" / "audio" / "ceo_archived_beats"
-        ARCHIVED_BEATS_DIR.mkdir(parents=True, exist_ok=True)
-        
-        _log_info(f"📦 安全封存 CEO 原始素材: {len(files_to_archive)} 個檔案")
-        archived_count = 0
-        
-        for file_path in files_to_archive:
-            try:
-                if file_path.is_file():
-                    arc_dest = ARCHIVED_BEATS_DIR / file_path.name
-                    # 若同名檔案存在，添加時間戳後綴以避免覆蓋
-                    if arc_dest.exists():
-                        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                        arc_dest = ARCHIVED_BEATS_DIR / f"{file_path.stem}_{timestamp}{file_path.suffix}"
-                    
-                    shutil.move(str(file_path), str(arc_dest))
-                    _log_info(f"  ✓ 已封存: {file_path.name} → {ARCHIVED_BEATS_DIR.name}/")
-                    archived_count += 1
-                elif file_path.is_dir():
-                    arc_dest = ARCHIVED_BEATS_DIR / file_path.name
-                    if arc_dest.exists():
-                        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                        arc_dest = ARCHIVED_BEATS_DIR / f"{file_path.name}_{timestamp}"
-                    
-                    shutil.move(str(file_path), str(arc_dest))
-                    _log_info(f"  ✓ 已封存目錄: {file_path.name} → {ARCHIVED_BEATS_DIR.name}/")
-                    archived_count += 1
-            except Exception as move_exc:
-                _log_info(f"  ⚠️  封存失敗 {file_path.name}: {move_exc}")
-                continue
-        
-        if archived_count > 0:
-            _log_info(f"✅ 安全封存完成: {archived_count} 個檔案已移至 ceo_archived_beats/")
-            _log_info(f"   【DATA PROTECTION】所有原始素材已保留，絕無遺失！")
-        else:
-            _log_info(f"ℹ️  無檔案需要封存")
-    except Exception as exc:
-        _log_fatal("ARCHIVE_ERROR", f"安全封存 ceo_approved_beats/ 失敗: {exc}")
+    files = list(ceo_approved_dir.glob("*.mp3")) + list(ceo_approved_dir.glob("*.wav"))
+    if not files:
+        _log_info(f"📁 CEO 審批目錄已空，無需清理")
+        return
+    deleted_count = 0
+    for f in files:
+        try:
+            f.unlink()
+            _log_info(f"  🗑️ 已刪除原始素材: {f.name}")
+            deleted_count += 1
+        except Exception as e:
+            _log_warn(f"  ⚠️  刪除失敗 {f.name}: {e}")
+    _log_info(f"✅ 原始素材清理完成: {deleted_count} 個檔案已刪除")
+
 
 
 # ────────────────────────────────────────────────────────────────
@@ -584,8 +545,13 @@ def _sync_mastered_to_vault(channel: str = "lofi") -> bool:
                             # 從檔名提取 track_id (支援多種格式)
                             track_id = src_file.stem  # 去除 .wav 副檔名
                             
-                            # 檢查是否已存在於資料庫
-                            if not vault.track_exists(track_id):
+                            # v15.10: 安全檢查 track_exists（防範方法不存在）
+                            try:
+                                already_exists = vault.track_exists(track_id)
+                            except (AttributeError, Exception):
+                                already_exists = False
+                            
+                            if not already_exists:
                                 vault.add_track(
                                     track_id=track_id,
                                     original_path=str(dst_file),
@@ -719,7 +685,8 @@ def _run_music_metadata_engine(volume: int = 1, channel: str = "lofi") -> bool:
              "--provider", "minimax"],  # v15.3 預設 MiniMax M2.7 (NVIDIA NIM)
             capture_output=True,
             text=True,
-            timeout=600  # 10 分鐘上限
+            timeout=600,  # 10 分鐘上限
+            env={**os.environ, "PYTHONUNBUFFERED": "1"}  # v15.10: 即時日誌
         )
         
         if result.returncode != 0:
@@ -796,7 +763,7 @@ def _run_lofi_assembler(sfx: str | None = None, sfx_mode: str = "global", channe
             capture_output=True,
             text=True,
             timeout=3600,  # 1 小時上限
-            env={**os.environ, "PIPELINE_RUNNER_AUTHORIZED": "1"}
+            env={**os.environ, "PIPELINE_RUNNER_AUTHORIZED": "1", "PYTHONUNBUFFERED": "1"}  # v15.10
         )
         
         # CTO 修正：即使 returncode=0，也要檢查是否是「庫存為 0 被跳過」
@@ -860,203 +827,31 @@ def _finalize_youtube_cheatsheet(channel: str = "lofi") -> bool:
     1. 讀取最新的 Tracklist_*.txt（由 lofi_assembler.py 生成）
     2. 讀取 metadata_distrokid.json 取得 album_title、spotify_subgenre 等資訊
     3. 根據 channel 參數動態生成適配型文案
-    4. 直接保存為 YouTube_CheatSheet_[時間戳].txt（無中間草稿）
+    4. 直接保存為 youtube_sheet_[YYYYMMDD_HHMMSS].txt（無中間草稿）
     """
-    # 【CTO 頻道隔離】根據 channel 動態指向輸出目錄
     channel_lower = channel.lower()
     export_dir = Path(config.workspace_root) / "assets" / "final_exports" / channel_lower
-    
+
     try:
-        import json
-        import datetime as dt
-        
-        # 1. 讀取最新的 Tracklist 檔案
-        tracklist_files = list(export_dir.glob("Tracklist_*.txt"))
-        tracklist_content = ""
-        if not tracklist_files:
-            _log_info("⚠️  Phase 4.5: 未找到 Tracklist 檔案，將以佔位文案替代")
-            tracklist_content = "(母帶回收模式 — 曲目時間軸請參考原始母帶 Tracklist 或重新執行全自動產線產生)"
+        result = generate_youtube_cheatsheet_file(export_dir, channel_lower)
+        if result["used_default_tracklist"]:
+            _log_info("⚠️  Phase 4.5: Tracklist 缺失或非縫合產物，上架文案內時間軸可能為提示文字")
         else:
-            # ✅ CTO 修復 1：依照修改時間排序，確保抓到最新產出的
-            tracklist_files.sort(key=lambda p: p.stat().st_mtime)
-            latest_tracklist = tracklist_files[-1]
-            _log_info(f"📋 讀取 Tracklist: {latest_tracklist.name}")
-            
-            with open(latest_tracklist, "r", encoding="utf-8") as f:
-                tracklist_content = f.read().strip()
-        
-        # 2. 讀取 metadata_distrokid.json
-        # 【CTO 頻道隔離 + Fallback 淬火邏輯】優先讀取頻道專屬的 metadata，否則尋找最新的
-        metadata_path = export_dir / f"metadata_distrokid_{channel_lower}.json"
-        metadata = {}
-        if not metadata_path.exists():
-            # Fallback：尋找任何 metadata 檔案（相容舊版本或其他頻道緩存）
-            fallback_files = list(export_dir.glob("metadata_distrokid*.json"))
-            if fallback_files:
-                metadata_path = fallback_files[-1]
-                _log_info(f"⚠️  未找到專屬 metadata_{channel_lower}.json，使用 Fallback: {metadata_path.name}")
-            else:
-                _log_info("⚠️  Phase 4.5: 未找到 metadata_distrokid.json，將使用預設值繼續")
-                metadata_path = None
-        
-        if metadata_path and metadata_path.exists():
-            _log_info(f"📊 讀取中繼資料: {metadata_path.name}")
-            with open(metadata_path, "r", encoding="utf-8") as f:
-                metadata = json.load(f)
+            _log_info(f"📋 讀取 Tracklist: {result['tracklist_path'].name}")
+            if result.get("paired_master_wav"):
+                _log_info(f"🔗 對齊 1hr 母帶: {result['paired_master_wav'].name}")
+
+        if result["used_default_metadata"]:
+            _log_info("⚠️  Phase 4.5: 未找到 metadata_distrokid.json，將使用預設值繼續")
         else:
-            _log_info("📊 使用預設中繼資料（metadata 檔案不存在）")
-        
-        album_title = metadata.get("album_title", "R&S Echoes - 1 Hour Mix")
-        spotify_subgenre = metadata.get("spotify_subgenre", "Lo-Fi Hip Hop")
-        
-        # 【CTO 頻道意識文案】根據 channel 參數動態注入不同的品牌敘事
-        if channel_lower == "light_music":
-            yt_title_suffix = "1 Hour Ambient Nature Mix 🌿 Relaxing Soundscape for Focus & Sleep"
-            brand_story = """We Create Immersive Nature Soundscapes for Your Soul.
+            _log_info(f"📊 讀取中繼資料: {result['metadata_path'].name}")
 
-R&S Echoes Nature 專注於打造沉浸式的大自然環境音與療癒音樂體驗。
-我們為渴望放鬆壓力、尋找內心平靜的靈魂提供專屬的數位避風港。
-
-每一首曲都經過精心製作，確保：
-✅ 大自然音景完整保真（鳥鳴、流水、森林環境音）
-✅ 療癒頻率設計（528Hz、432Hz 冥想調式）
-✅ -16 LUFS YouTube 標準音量"""
-            hashtags = "#AmbientMusic #NatureSounds #SleepMusic #DeepFocus #Relaxation #RSEchoesNature #4KLandscape #Meditation #HealingFrequency"
-        else:  # default lofi
-            yt_title_suffix = "1 Hour Lofi Mix 🎵 Relaxing Beats for Study & Work"
-            brand_story = """We Create the Soundtrack for Your Dreams.
-
-R&S Echoes 專注於打造沉浸式的 Lo-Fi、Ambient 與 Cinematic 音樂體驗。
-我們為遠程工作者、學生與創意工作者提供靈感與專注的伴奏。
-
-每一首曲都經過精心製作，確保：
-✅ 錄音室純淨音質（無黑膠噪聲、無磁帶嘶聲、無背景雜音）
-✅ -16 LUFS YouTube 標準音量"""
-            hashtags = "#LoFiHipHop #ChillVibes #StudyBeats #RSEchoes #StayFocused #RelaxingMusic #AmbientMusic #BackgroundMusic #CinematicLoFi"
-        
-        # 3. 動態組合 YouTube CheatSheet 內容（一站式內聯，廢除草稿）
-        today = dt.datetime.now().strftime("%Y-%m-%d")
-        
-        cheatsheet_content = f"""======================================================
-🎬 R&S Echoes - YouTube 上架企劃文案
-======================================================
-專輯：{album_title}
-生成時間：{today}
-版本：Official Release (v10 - No Draft)
-
-======================================================
-【📺 YouTube 長片標題】
-======================================================
-
-✏️ 建議標題（複製貼上）：
-{album_title} | {yt_title_suffix}
-
-或選項 2（風格變體）:
-{album_title} | 60 Min Chill {spotify_subgenre} Mix 🎧 Study / Relax / Sleep
-
-======================================================
-【📝 YouTube 長片描述文案】
-======================================================
-
-🎵 {album_title} - {yt_title_suffix.split('🎵')[0].strip() if '🎵' in yt_title_suffix else yt_title_suffix}
-
-Perfect for:
-✨ Studying & Focus
-🎧 Relaxation & Meditation
-😴 Sleep & Background Music
-🎮 Gaming & Streaming
-
----
-
-【⏱️ TRACKLIST】
-{tracklist_content}
-
----
-
-【🎨 R&S Echoes 品牌故事】
-
-{brand_story}
-✅ 無縫循環設計，適合長時間背景播放
-
-
----
-
-【💭 關鍵搜尋詞 & 標籤】
-{hashtags}
-#NoVocals #StudyMusic #SleepMusic #FocusMusic #ProductiveVibes
-#CreativeWork #RemoteWork #MentalHealth #MindfulMusic
-
----
-
-若喜歡此音樂，請幫忙：
-✓ 訂閱我們的頻道（新上架通知）
-✓ 讚好此視頻（推薦演算法支持）
-✓ 分享給需要的朋友（❤️）
-
----
-
-【©️ 版權 & 授權宣告】
-
-© {dt.datetime.now().year} R&S Echoes. All Rights Reserved.
-
-本音軌由 R&S Echoes 獨家製作。
-適用 Creative Commons 授權（需註明出處）。
-
-音樂授權適用於：
-✓ 個人項目和 YouTube 視頻（需附加信用）
-✓ Twitch 直播和內容創作  
-✓ 學習、放鬆和冥想播放列表
-✓ 商業專案（需聯繫授權）
-
-Content ID 註冊：此音樂已在 YouTube Content ID 系統中註冊。
-若您使用此音樂創作，我們會根據授權收取相應分潤。
-
-感謝您的支持！ ❤️
-
----
-
-【🎬 上傳前檢查清單】
-
-在按下發佈前，請確保以下項目已完成：
-
-影片設定：
-☐ 隱私設定：公開（Public）
-☐ 許可：允許嵌入（Allow embedding）
-☐ 分類：音樂（Music）
-☐ 內容：包含音樂 ✓
-
-字幕 & 時間軸：
-☐ 啟用自動字幕（英文）
-☐ 上方時間軸已包含完整 Tracklist
-
-SEO & 探索：
-☐ 確認片長為 ~60 分鐘
-☐ 音量檢查：-16 LUFS ✓（已在製作階段確保）
-☐ 連結已設定（Spotify、官網等）
-
-發佈前最後檢查：
-☐ 標籤無誤
-☐ 縮圖已上傳（高清截圖推薦）
-☐ 描述文案完整且無錯別字
-
-準備好了？點擊【發佈】按鈕！🎉
-
-======================================================
-"""
-        
-        # 4. 直接保存為最終的 YouTube CheatSheet（無中間草稿）
-        timestamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-        final_path = export_dir / f"YouTube_CheatSheet_{timestamp}.txt"
-        
-        with open(final_path, "w", encoding="utf-8") as f:
-            f.write(cheatsheet_content)
-        
+        final_path = result["output_path"]
         _log_info(f"✅ YouTube CheatSheet 已直接生成（無草稿）: {final_path.name}")
         _log_info(f"   CEO 可直接複製至 YouTube 頻道描述欄位")
         _log_info(f"   【廢除草稿】純淨一站式合體完成 ✨")
-        
         return True
-        
+
     except Exception as exc:
         _log_warn(f"Phase 4.5 輕度出錯（非致命）: {exc}")
         return False
@@ -1282,7 +1077,7 @@ def _run_suno_backup(target_count: int = 5, channel: str = "lofi",
         
         try:
             # 【動態供彈】呼叫 GLM-4 生成 N 個提示詞組
-            env = os.environ.copy()
+            env = {**os.environ, "PYTHONUNBUFFERED": "1"}  # v15.10
             cmd = [
                 sys.executable,
                 str(generate_prompts_script),
@@ -1461,8 +1256,7 @@ def _run_suno_backup(target_count: int = 5, channel: str = "lofi",
         _log_info(f"  Prompt: {prompt[:80]}...")
         
         try:
-            env = os.environ.copy()
-            env["PIPELINE_RUNNER_AUTHORIZED"] = "1"
+            env = {**os.environ, "PIPELINE_RUNNER_AUTHORIZED": "1", "PYTHONUNBUFFERED": "1"}  # v15.10
             
             # 【真實呼叫】直接呼叫 suno_api_engine.py
             # 【v11.8】傳遞頻道專屬輸出目錄，確保精準著陸
@@ -1540,7 +1334,7 @@ def _run_suno_backup(target_count: int = 5, channel: str = "lofi",
 # 主工作流
 # ────────────────────────────────────────────────────────────────
 
-def _run_pipeline_workflow(skip_mastering: bool = False, skip_cleanup: bool = False, skip_metadata: bool = False, skip_assembler: bool = False, bg_video: str | None = None, bg_videos: list[str] | None = None, auto_visual: bool = False, sfx: str | None = None, sfx_mode: str = "global", channel: str = "lofi", ttapi_fill_fresh: bool = False) -> None:
+def _run_pipeline_workflow(skip_mastering: bool = False, skip_cleanup: bool = False, skip_metadata: bool = False, skip_assembler: bool = False, bg_video: str | None = None, bg_videos: list[str] | None = None, auto_visual: bool = False, sfx: str | None = None, sfx_mode: str = "global", channel: str = "lofi", ttapi_fill_fresh: bool = False, skip_publish: bool = False) -> None:
     """
     完整工作流：確保組織正確的依賴順序 + CTO 第三級搶修 (Data Loss 防護)
     
@@ -1576,7 +1370,7 @@ def _run_pipeline_workflow(skip_mastering: bool = False, skip_cleanup: bool = Fa
         try:
             export_dir = Path(config.workspace_root) / "assets" / "final_exports"
             existing_files = list(export_dir.glob("R&S_1HrMix_WithVideo_*.mp4")) + \
-                           list(export_dir.glob("YouTube_CheatSheet_*.txt"))
+                           list(export_dir.glob("youtube_sheet_*.txt"))
             volume = max(5, len(existing_files) + 1)
             _log_info(f"【自動卷號】掃描結果: 已存在 {len(existing_files)} 份匯出檔，計算卷號 = {volume}")
             return volume
@@ -1719,14 +1513,14 @@ def _run_pipeline_workflow(skip_mastering: bool = False, skip_cleanup: bool = Fa
     _log_info("\n【📋 CEO 發行準備清單】\n")
     _log_info("✅ 所有成品已準備就緒（位於 assets/final_exports/）：")
     _log_info(f"   📊 中繼資料文件：    metadata_distrokid_{{channel}}.json")
-    _log_info(f"   📋 DistroKid 作弊卡： DistroKid_CheatSheet_{{channel}}.txt")
+    _log_info("   📋 DistroKid 上架單： DistroKid_Sheet_*.txt")
     _log_info("   📝 Tracklist 時間軸： Tracklist_*.txt (自動生成的曲目時間戳)")
-    _log_info("   🎬 YouTube CheatSheet： YouTube_CheatSheet_*.txt (含完整企劃文案+ Tracklist)")
+    _log_info("   🎬 YouTube 上架文案： youtube_sheet_*.txt")
     _log_info("   🎵 母帶音檔集：      *_YT_-16LUFS.wav (所有曲目)")
     _log_info("   🎬 1小時混音長片：   R&S_Echoes_1HrMix_Vol.*.wav")
     _log_info("   🖼️  專輯封面圖檔：   (若已生成)")
     _log_info("\n【🚀 CEO 下一步行動】\n")
-    _log_info("1️⃣  打開 DistroKid_CheatSheet_*.txt")
+    _log_info("1️⃣  打開 DistroKid_Sheet_*.txt")
     _log_info("2️⃣  複製對應欄位，粘貼到 https://distrokid.com/new")
     _log_info("3️⃣  上傳音軌、封面與 YouTube 描述")
     _log_info("4️⃣  確認所有平台（Spotify, Apple Music 等）的發行設定")
@@ -1741,6 +1535,84 @@ def _run_pipeline_workflow(skip_mastering: bool = False, skip_cleanup: bool = Fa
     _log_info(f"✅ 最終庫存確認: {current_inventory} 首有效母帶")
     _log_info("\n祝您發行順利！🎵✨")
     _log_info("\n" + "=" * 80)
+
+    # ──────────────── 整合：高使用次數歌曲整理（遷移/刪除） ────────────────
+    try:
+        archiver_script = Path(config.workspace_root) / "scripts" / "gear1_prod" / "cloud_archiver.py"
+        if archiver_script.exists():
+            _log_info("\n[音檔整理] 啟動 cloud_archiver（derivation_count>=3 + channel + remix 刪除）...")
+            p = subprocess.run(
+                [
+                    sys.executable,
+                    str(archiver_script),
+                    "--channel",
+                    channel,
+                    "--execute",
+                    "--max-actions",
+                    "20",
+                    "--log-path",
+                    str(Path(config.workspace_root) / "assets" / ".logs" / "shorts_audio_cleanup.log"),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=1200,
+                env={**os.environ, "PYTHONUNBUFFERED": "1"},  # v15.10
+            )
+            if p.returncode == 0:
+                _log_info("[音檔整理] 完成。")
+            else:
+                err = (p.stderr or p.stdout or "").strip().splitlines()
+                _log_info(f"[音檔整理] 失敗 (Exit {p.returncode})：{(err[-1] if err else 'unknown')}")
+        else:
+            _log_info(f"[音檔整理] 跳過：找不到 {archiver_script}")
+    except Exception as e:
+        _log_info(f"[音檔整理] 異常：{e}")
+
+    # ──────────────── 自動串接 CEO 發行流程 ────────────────
+    if skip_publish:
+        _log_info("\n[自動發行] 已略過 (--skip-publish / --local-only)：未呼叫 SMB 發行流程。")
+        return
+    try:
+        from scripts.ui.backend import get_ui_backend
+        import json
+        backend = get_ui_backend()
+        backend.set_channel(channel)
+        _log_info("\n[自動發行] 產線完工，啟動 CEO 發行流程 (publish_final_exports, mode=auto)...")
+        result = backend.publish_final_exports(mode="auto")
+        # 發行結果摘要
+        _log_info(f"[自動發行] 發行訊息: {result.get('msg')}")
+        # 寫入 publish_status.json 供 UI 輪詢
+        exp_dir = backend.get_channel_export_dir()
+        status_path = exp_dir / "publish_status.json"
+        try:
+            with open(status_path, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+            _log_info(f"[自動發行] 發行狀態已寫入: {status_path}")
+        except Exception as e:
+            _log_info(f"[自動發行] 寫入 publish_status.json 失敗: {e}")
+        # 發行前完整性檢查（metadata/影片/音訊/cheatsheet）
+        missing = []
+        if not (exp_dir / f"metadata_distrokid_{channel}.json").exists():
+            missing.append(f"metadata_distrokid_{channel}.json")
+        if not list(exp_dir.glob("DistroKid_Sheet_*.txt")):
+            missing.append("DistroKid_Sheet_*.txt")
+        if not list(exp_dir.glob("*.mp4")):
+            missing.append("*.mp4")
+        if not glob_youtube_sheet_paths(exp_dir):
+            missing.append("youtube_sheet_*.txt")
+        if missing:
+            _log_info(f"[自動發行] 發行後檔案缺失: {missing}")
+        else:
+            _log_info("[自動發行] 所有發行檔案完整無缺。")
+        # ── Telegram 通知 CEO ──
+        try:
+            from scripts.common import telegram_bot_manager
+            msg = f"🎉 產線自動發行完成！\n頻道: {channel}\n{result.get('msg')}\n\n發行檔案: {exp_dir}"
+            telegram_bot_manager._log(msg, level="INFO")
+        except Exception as e:
+            _log_info(f"[自動發行] 發送 Telegram 通知失敗: {e}")
+    except Exception as e:
+        _log_info(f"[自動發行] 發行流程異常: {e}")
 
 
 # ────────────────────────────────────────────────────────────────
@@ -1799,7 +1671,7 @@ def main() -> None:
         "--sfx",
         type=str,
         default=None,
-        help="環境音檔案路徑 (WAV/MP3)，將以 2% 音量疊加到混音中"
+        help="環境音檔案路徑 (WAV/MP3)，將以 2%% 音量疊加到混音中"
     )
     parser.add_argument(
         "--sfx-mode",
@@ -1820,9 +1692,29 @@ def main() -> None:
         action="store_true",
         help="【v15.9 新鮮度鐵律】dc=0 新歌不足時，自動呼叫 TTAPI Suno 生成缺口（會產生費用）。預設關閉：不足時中止產線並要求 CEO 手動上傳。"
     )
+    parser.add_argument(
+        "--skip-publish",
+        "--local-only",
+        dest="skip_publish",
+        action="store_true",
+        help="產線結尾不執行 SMB 推播至 Mac mini（本機測試用）。未指定時維持完工後自動 publish_final_exports。",
+    )
     args = parser.parse_args()
     
     try:
+        # 【v15.10 P2-#6】Phase 1 雙庫同步預檢 — 提前發現資源不足
+        _log_info(f"\n🔍 [Preflight] {args.channel.upper()} 雙庫預檢...")
+        preflight_report = preflight_dual_vault(args.channel)
+        if not preflight_report.passed and not args.skip_assembler:
+            _log_fatal(
+                "PREFLIGHT_VAULT_FAILED",
+                f"雙庫預檢未通過 (bottleneck={preflight_report.bottleneck})。\n"
+                f"建議：(1) 上傳新曲/影片素材\n"
+                f"      (2) 使用 --ttapi-fill-fresh 補彈\n"
+                f"      (3) 使用 --skip-assembler 跳過合成，僅做母帶"
+            )
+            sys.exit(5)
+
         _run_pipeline_workflow(
             skip_mastering=args.skip_mastering,
             skip_cleanup=args.skip_cleanup,
@@ -1835,6 +1727,7 @@ def main() -> None:
             sfx_mode=args.sfx_mode,
             channel=args.channel,
             ttapi_fill_fresh=args.ttapi_fill_fresh,
+            skip_publish=args.skip_publish,
         )
     except SystemExit:
         raise

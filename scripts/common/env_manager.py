@@ -8,6 +8,20 @@ load_dotenv()
 
 class EnvConfig:
     def __init__(self):
+        # ===================================================================
+        # 【v15.11 P2#10】環境變數回退優先級速查表（單一真實來源）
+        # ───────────────────────────────────────────────────────────────────
+        # 屬性名稱              優先讀取               回退
+        # ───────────────────────────────────────────────────────────────────
+        # workspace_root        WORKSPACE_ROOT         os 自動感知（Mac/Win）
+        # video_codec           VIDEO_CODEC_PROFILE    os 自動感知
+        # mj_api_key            MJ_API_KEY             MIDJOURNEY_API_KEY
+        # mj_base_url           MJ_BASE_URL            MIDJOURNEY_API_BASE_URL
+        # kling_sk              KLING_SK               KLING_API_KEY
+        # nvidia_base_url       NVIDIA_BASE_URL        https://integrate.api.nvidia.com/v1
+        # freshness_policy      freshness_policy.json  硬回退 {enabled:True, 0.5}
+        # ───────────────────────────────────────────────────────────────────
+        # ===================================================================
         # 1. 偵測作業系統 (Windows 或 Darwin/macOS)
         self.os_name = platform.system()
         self.target_env = os.getenv("TARGET_ENV", self.os_name).upper()
@@ -178,6 +192,25 @@ class EnvConfig:
         # 掛載相容別名
         self.CEO_APPROVED_BEATS_DIR = self.ceo_approved_beats_dir
         self.LIGHT_MUSIC_VAULT_DIR = self.light_music_vault_dir
+
+        # 【v15.10 新增】11. SMB / Mac mini 傳輸路徑集中管理（取代各模組硬編碼 Y:/）
+        #    所有跨平台傳輸路徑統一由此派發，SMB 掛載點變更時僅需改此處或 .env
+        _smb_drive = os.getenv("SMB_DRIVE_LETTER", "Y:")
+        self.smb_shorts_root = Path(os.getenv("SMB_SHORTS_ROOT", f"{_smb_drive}/Shorts_audio"))
+        self.smb_long_queue = Path(os.getenv("SMB_LONG_QUEUE", f"{_smb_drive}/Long_Queue"))
+        self.smb_queue_staging = Path(os.getenv("SMB_QUEUE_STAGING", f"{_smb_drive}/Streaming/queue_staging"))
+        self.mac_short_audio_root = Path(os.getenv(
+            "MAC_SHORT_AUDIO_ROOT",
+            "/Volumes/AI_Workspace/AI_Drama_Factory/Short_audio"
+        ))
+        self.mac_streaming_root = Path(os.getenv(
+            "MAC_STREAMING_ROOT",
+            "/Volumes/AI_Workspace/AI_Drama_Factory/Streaming"
+        ))
+        # 相容別名
+        self.SMB_SHORTS_ROOT = self.smb_shorts_root
+        self.SMB_LONG_QUEUE = self.smb_long_queue
+        self.MAC_SHORT_AUDIO_ROOT = self.mac_short_audio_root
 
         # 【v15.9 新增】12. 新鮮度鐵律（Freshness Policy）—— 50% 新歌強制門檻
         #    規則：Phase 4 選曲時 dc=0 新歌必須達到 target_tracks * min_new_ratio
