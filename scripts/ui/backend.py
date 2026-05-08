@@ -443,6 +443,7 @@ class UIBackend:
         self._proc_lock   = threading.Lock()
         self._active_procs: List[subprocess.Popen] = []
         self._active_log_path: Optional[str] = None
+        self._last_completed_log_path: Optional[str] = None  # 任務完成後持久保留，供 Tab2 顯示完整結果
         atexit.register(self._cleanup_procs)
 
     def set_channel(self, channel: str):
@@ -575,6 +576,7 @@ class UIBackend:
                         if proc in self._active_procs:
                             self._active_procs.remove(proc)
                         if not self._active_procs:
+                            self._last_completed_log_path = str(log_path)  # 完成後先記錄再清空
                             self._active_log_path = None
             return returncode, str(log_path)
         except Exception:
@@ -602,6 +604,13 @@ class UIBackend:
         """
         with self._proc_lock:
             return self._active_log_path
+
+    def get_last_completed_log_path(self) -> Optional[str]:
+        """回傳最後一次完成任務的日誌路徑（任務結束後仍保留）。
+        供 Tab2 供彈區塊在任務完成後顯示完整結果 log。
+        """
+        with self._proc_lock:
+            return self._last_completed_log_path
 
     def run_pipeline_with_log(self, script_name: str, args: List[str] = None) -> Tuple[bool, str, str]:
         """Popen 版（白皮書規範）：stdout/stderr 即時寫入日誌，回傳 (ok, msg, log_path)。"""

@@ -1,0 +1,209 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LOFI]
+生成時間: 2026-05-07 11:06:45
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\lofi\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: DeepLounge_MidnightVelvet
+[[[SUNO_TAGS_START]]]
+Deep House, Lounge Electronic, 110 BPM, Velvety synth pads, deep sub-bass, Sidechain Compression, chic retail vibe, instrumental ONLY, NO vocals, NO human voice, NO orchestral, pristine studio sound
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Ambient Intro] (Softly materializing warm synth pads, distant chord shimmer, room treated with subtle reverb, setting a late-night luxury lounge atmosphere from the first second)
+
+...
+...
+
+[Rhodes Piano Entry] (Velvety electric Rhodes piano playing soulful voicings, gentle filter envelope opens gradually, groove locks in at half-time feel while kick remains absent, building suspense)
+
+...
+...
+
+[First Drop - Deep Groove] (Punchy four-to-the-floor kick enters with deep sub-bass reinforcement, sidechain compression on all synth layers creates that breathing, liquid groove, warm clap on beat 2 and 4, hi-hats roll softly to maintain flow)
+
+...
+...
+
+[Breakdown - Filter Sweep] (Kick drops out entirely, synth pads pitch-shift downward, low-pass filter closes slowly, minimal percussion only — creating a spacious, cinematic pocket before the tension returns)
+
+...
+...
+
+[Second Drop - Full Lift] (Kick and sub-bass return with increased energy, bright analog synth stabs layered over the original pads, filter sweep opens wide to unleash full harmonic content, elevated groove carries into the finale)
+
+...
+...
+
+[Fade to Silence] (All drums pulled back one by one, synth pads sustain and gently decay, reverb tails bloom into emptiness, track concludes at exactly 180 seconds with zero abrupt cuts)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: TechHouse_UrbanGrid
+[[[SUNO_TAGS_START]]]
+Tech House, Minimal House, 120 BPM, punchy kick drum, analog synth plucks, Sidechain Compression, chic retail vibe, instrumental ONLY, NO vocals, NO human voice, NO orchestral, pristine studio sound
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[0s]
+
+...
+...
+
+Synth pad drone enters with soft white noise shimmer and low-pass filtered atmosphere, establishing a cold, urban night mood in a minimalist void.[16s]
+
+...
+...
+
+Punchy kick drum drops with full force on the downbeat. Sub-bass groove anchors the rhythm. Analog synth plucks play a tight mechanical riff in sync with the kick. Aggressive sidechain compression pumps every element in lockstep with the kick.[48s]
+
+...
+...
+
+Hi-hats switch to a crisp 16th-note pattern. Syncopated claps layer in on the off-beats. The analog plucks shift to a higher register, adding brightness and urgency to the mechanical groove.[80s]
+
+...
+...
+
+A short breakdown: kick and bass pull back to half-energy. Filtered hi-hats fade in/out staccato. A single warm analog lead synth chord sustains, providing brief emotional contrast.[104s]
+
+...
+...
+
+The kick returns with doubled clap layering. The filter on the bass synth sweeps open wide, unleashing sub-bass texture. Hi-hats accelerate to rapid 32nd-note bursts, driving intensity to the second peak.[136s]
+
+...
+...
+
+Full rhythmic complexity: layered percussion, staccato synth stabs, and a subtle riser filter on the master bus building anticipation for the final movement.[160s]All percussion elements cut simultaneously. A warm analog pad slowly decays with long reverb tail. Filter closes gently. Fade to silence — 178 seconds total.
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: OrganicHouse_SolarisBreeze
+[[[SUNO_TAGS_START]]]
+Organic House, Downtempo, 115 BPM, subtle acoustic guitar fragments, warm analog synth, Sidechain Compression, chic retail vibe, instrumental ONLY, NO vocals, NO human voice, NO orchestral, pristine studio sound
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro – Atmospheric Open] (Warm analog pads shimmer in the distance, delicate shaker patterns and subtle wind textures gently float in, creating a serene sunrise-over-cliff atmosphere. No kick yet, pure breathing space.)
+
+...
+...
+
+[Build – Organic Foundation] (A soft kick pulse enters slowly, organic percussion (tambourine, soft bongos)
+
+...
+...
+
+weave through the mix, acoustic guitar fragments pluck a loose, melodic pattern. Warm analog bass sits underneath, sidechain breathing softly to the pads.)[First Drop – Full Groove] (The kick locks in at full strength with a punchy 115 BPM drive. Filtered guitar stabs ride atop the groove, lush synth layers rise for a euphoric mid-section lift. Chic retail energy radiates with every bar.)
+
+...
+...
+
+[Breakdown – Stripped Back] (Kick pulls away, leaving only organic percussion, shimmering pads, and a clean melodic hook. Space opens up. The listener breathes. Minimal and intentional.)
+
+...
+...
+
+[Second Drop – Climactic Return] (Everything returns stronger: full kick, punchy analog bass, layered acoustic textures, and bright synth stabs. The groove reaches its highest energy point before the final countdown. Momentum peaks at 160 seconds.)
+
+...
+...
+
+[Outro – Fade to Silence] (Kick and bass gradually pull forward and fade. Warm pads linger, organic shakers dissolve into the room tone. The track ends cleanly at the 180-second mark.)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: NuDisco_VelvetRunway
+[[[SUNO_TAGS_START]]]
+Nu-Disco, Deep House, 118 BPM, Funky bassline, Bright synth stabs, Sidechain Compression, chic retail vibe, instrumental ONLY, NO vocals, NO human voice, NO orchestral, pristine studio sound
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Warm atmospheric synth pads] (Smooth chord progression with subtle filter sweep, establishing a confident runway-ready atmosphere before the kick drops)
+
+...
+...
+
+[Full groove entry] (Kick drum enters on the downbeat with four-on-the-floor pulse, syncopated 909 hi-hats weaving in and out, funky bassline locks into groove, all elements sidechained to the kick for that polished studio pump)
+
+...
+...
+
+[First drop with bright synth stabs] (Energetic chord stabs layer over the driving bassline, crisp snare hits on backbeat, dynamic filter automation creates rolling peaks, maintaining the chic retail energy throughout)
+
+...
+...
+
+[Filtered breakdown] (Kick pulls back to half-time, hats and claps carry the pulse, synth stabs sweep in and out through resonant low-pass filter, tension builds organically before the drop returns)
+
+...
+...
+
+[Second drop with extended stabs] (Full energy returns, snare and clap on backbeat, layered synth stabs with longer release tails, bassline takes a more melodic turn, maximum dancefloor tension at the 120-second mark)
+
+...
+...
+
+[Fade to silence] (Hi-hats and claps gradually reduce over 8 bars, bassline descends chromatically, kick fades last, final bright synth chords linger and dissolve into silence at exactly 180 seconds)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: DeepLounge_MidnightVelvet
+[[[SUNO_TAGS_START]]]
+Deep House, Lounge Electronic, 110 BPM, velvety synth pads, deep sub-bass, Sidechain Compression, chic retail vibe, instrumental ONLY, NO vocals, NO human voice, NO orchestral, pristine studio sound
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Ambient Intro] (Velvety synth pad washes expand slowly with generous stereo width, gentle reverb tails creating a nocturnal lounge atmosphere that immediately establishes warmth and depth)
+
+...
+...
+
+[Rhythm Foundation] (Deep sub-bass pulses enter with smooth sidechain compression, velvety Rhodes piano chords drift underneath adding soulful warmth, establishing the groove without overwhelming the space)
+
+...
+...
+
+[First Drop] (Punchy deep kick anchors the groove with authority, warm analog bassline locks in tight, subtle hi-hats add sparkle while lush synth pads swell to fill the mix with luxury)
+
+...
+...
+
+[Breakdown] (Main kick drops out momentarily, filtered synth pads shimmer with resonance and movement, creating anticipation through space before the return)
+
+...
+...
+
+[Second Drop] (Full rhythm returns with renewed energy, warm piano stabs inject movement, groove intensifies with layered synth textures building toward the finale)
+
+...
+...
+
+[Outro Fade] (Gradual high-frequency filter closure on pads, kick and sub-bass fade gently into silence, leaving warm Rhodes piano decay ringing out for a polished conclusion)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+

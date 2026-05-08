@@ -13,12 +13,14 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import datetime
 import json
 import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Optional, List
@@ -77,6 +79,29 @@ VAULT_READY_FOR_MIX_DIR = Path(config.workspace_root) / "assets" / "audio" / "va
 
 # 母帶處理目標
 LUFS_TARGET = -16  # YouTube 標準
+
+# 【v15.11 §11.3 殭屍行程防護】模組級追蹤 + atexit 清理
+_active_procs: list[subprocess.Popen] = []
+_proc_lock = threading.Lock()
+
+
+def _cleanup_procs() -> None:
+    """atexit 保險機制：強制終止所有仍在執行的子程序。"""
+    with _proc_lock:
+        for proc in list(_active_procs):
+            try:
+                if proc.poll() is None:
+                    proc.terminate()
+                    proc.wait(timeout=3)
+            except Exception:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+        _active_procs.clear()
+
+
+atexit.register(_cleanup_procs)
 
 
 # ────────────────────────────────────────────────────────────────
@@ -236,35 +261,59 @@ def _run_audio_mastering(source_mp3s: List[Path], channel: str = "lofi") -> bool
         env = os.environ.copy()
         env["PIPELINE_RUNNER_AUTHORIZED"] = "1"
         env["PYTHONUNBUFFERED"] = "1"  # v15.10: 即時日誌輸出
-        
-        result = subprocess.run(
-            [sys.executable, str(mastering_script), "--channel", channel, "--lufs", str(mastering_lufs)],
-            capture_output=True,
+
+        # v15.11 §11.2 修正：廢除 capture_output，改用 Popen 即時串流 stdout
+        # 讓 audio_mastering_engine 的 [SHORTS_SYNC] 等輸出即時出現在 UI log 面板
+        import io as _io
+        cmd = [sys.executable, str(mastering_script), "--channel", channel, "--lufs", str(mastering_lufs)]
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            timeout=3600,
             cwd=str(Path(config.workspace_root)),
-            env=env
+            env=env,
+            bufsize=1,  # 行緩衝：每行立即 flush
         )
-        
+        _active_procs.append(proc)  # §11.3 殭屍防護
+
+        # 即時讀取 + 累積（保留「無新檔案」檢測能力）
+        accumulated: list[str] = []
+        try:
+            assert proc.stdout is not None
+            for line in proc.stdout:
+                line_stripped = line.rstrip("\n\r")
+                print(line_stripped, flush=True)  # → 上游 backend._run_with_log 的 log 檔
+                accumulated.append(line)
+            proc.wait(timeout=3600)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            _log_fatal("MASTERING_TIMEOUT", "母帶處理超時 (1 小時)")
+        finally:
+            with _proc_lock:
+                if proc in _active_procs:
+                    _active_procs.remove(proc)
+
+        full_stdout = "".join(accumulated)
+        returncode = proc.returncode
+
         # 【CTO v8.9.1 修復】檢查是否是「無新檔案」的安全退出
-        if "[MASTERING] skip: no new files" in result.stdout:
+        if "[MASTERING] skip: no new files" in full_stdout:
             _log_info("ℹ️  無新檔案待處理（安全跳過）")
-            _log_info(f"📝 詳細日誌:\n{result.stdout}")
             return True  # ✅ 不視為失敗，繼續進行
-        
+
         # 其他非零退出碼 = 真實錯誤（FFmpeg 轉換失敗等）
-        if result.returncode != 0:
-            _log_info(f"⚠️  母帶引擎回傳錯誤（Exit Code: {result.returncode}），但繼續進行")
-            _log_info(f"📝 詳細日誌:\n{result.stdout}\n{result.stderr[-2000:]}")  # v15.10: 擴大截斷
+        if returncode != 0:
+            tail = "\n".join(accumulated[-20:]) if accumulated else "(無輸出)"
+            _log_info(f"⚠️  母帶引擎回傳錯誤（Exit Code: {returncode}），但繼續進行")
+            _log_info(f"📝 最後 20 行:\n{tail}")
             # 【CTO 指示】不中斷產線，繼續到 Phase 4，讓庫存盤點決定是否進行
             return True
-        
+
         _log_info(f"✅ 母帶處理完成 (LUFS: {mastering_lufs})")
-        _log_info(f"📝 詳細日誌:\n{result.stdout}")
         return True
-    
-    except subprocess.TimeoutExpired:
-        _log_fatal("MASTERING_TIMEOUT", "母帶處理超時 (1 小時)")
+
     except Exception as exc:
         _log_fatal("MASTERING_ERROR", str(exc))
 

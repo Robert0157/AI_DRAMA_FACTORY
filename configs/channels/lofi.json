@@ -21,12 +21,13 @@
     "listening to music alone"
   ],
   "time_dilation_enabled": true,
+  "music_style_desc": "Fashion Lounge House Music (ZARA Style)",
   "suno_tags_required": [
-    "pristine studio sound",
+    "instrumental ONLY",
     "NO vocals",
-    "NO vinyl crackle",
-    "NO tape hiss",
-    "NO background noise"
+    "NO human voice",
+    "NO orchestral",
+    "pristine studio sound"
   ],
   "mastering_lufs": -16.0,
   "music_gene_pool": ".openclaw/GL_4M_Suno_prompt.md"

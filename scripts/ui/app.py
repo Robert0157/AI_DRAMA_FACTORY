@@ -330,9 +330,32 @@ with tab2:
             st.error(msg)
 
     if busy and st.session_state.backend.get_active_log_path():
-        st.caption("💡 即時內容已整合至頁首「📟 產線即時日誌」，避免與本頁重複顯示。")
-    elif not busy:
-        st.caption("最後一次執行的完整日誌見 `assets/.logs/`（與頁首區塊相同來源）。")
+        st.caption("💡 供彈執行中 — 即時日誌見**頁面上方**「📟 產線即時日誌」區塊（約每 1.25 秒自動刷新）。")
+
+    # 任務完成後：在 Tab2 直接顯示完整結果 log（不再要求 CEO 去查 assets/.logs/ 或頁首）
+    _last_log = st.session_state.backend.get_last_completed_log_path()
+    if _last_log and not busy:
+        st.markdown("#### 📋 供彈完整執行日誌")
+        _last_tail = st.session_state.backend.get_latest_log_lines(_last_log, _PIPELINE_LOG_TAIL_LINES)
+        _last_display = _format_pipeline_log_display(_last_tail, _PIPELINE_LOG_TAIL_LINES)
+        st.code(_last_display, language="text", line_numbers=False)
+        from pathlib import Path as _Path
+        _lp = _Path(_last_log)
+        _dc1, _dc2 = st.columns([3, 2])
+        with _dc1:
+            st.caption(f"📂 `{_lp.name}`")
+        with _dc2:
+            try:
+                if _lp.is_file():
+                    st.download_button(
+                        label="⬇️ 下載完整 .log",
+                        data=_lp.read_bytes(),
+                        file_name=_lp.name,
+                        mime="text/plain; charset=utf-8",
+                        key="dl_ceo_prompts_log",
+                    )
+            except OSError:
+                pass
 
     cep_dir = st.session_state.backend.get_ceo_prompts_dir()
     recent = st.session_state.backend.list_ceo_prompt_files(limit=10)

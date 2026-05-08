@@ -53,10 +53,17 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
     cleaned = re.sub(r'^```.*?```$', '', cleaned, flags=re.MULTILINE | re.DOTALL)
     cleaned = re.sub(r'`{1,2}', '', cleaned)
     cleaned = re.sub(r'~~', '', cleaned)
-    
+
     # ============ 第二步：去除行首行尾空白 ============
     cleaned = cleaned.strip()
-    
+
+    # ============ 第二步 bis：定位首個 '{' 截斷 LLM 前置說明文字 ============
+    # 【v15.10/11 RCA 修正】應對 MiniMax/Gemini 回傳 "Sure! Here is the JSON:..." 前綴
+    # 舊版 _clean_json_response 有此步驟，新版 clean_and_parse_json 遺漏導致頻繁 JSONDecodeError
+    brace_start = cleaned.find('{')
+    if brace_start > 0:
+        cleaned = cleaned[brace_start:]
+
     # ============ 第三步：未閉合括號自動補全 ============
     # 【v15.10 修正】先補內層方括號，再補外層大括號（確保 `{"items":["x"` → `{"items":["x"]}`）
     open_brackets = cleaned.count('[')
@@ -70,17 +77,24 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
         cleaned += '}' * (open_braces - close_braces)
     
     # ============ 第四步：安全 JSON 解析 ============
+    # 【v15.10/11 RCA 修正】兩階段解析：
+    #   Phase A — 標準嚴格模式（strict=True）
+    #   Phase B — 容錯模式（strict=False）：應對 LLM 在字串值中插入 literal newline/tab
+    #             MiniMax/Gemini 多行 prompt 欄位常見此問題，strict=False 允許控制字元存在字串值內
     try:
         result = json.loads(cleaned)
-    except json.JSONDecodeError as e:
-        # 捕捉 JSON 解析錯誤，提供清晰的診斷訊息
-        error_msg = (
-            f"JSON 解析失敗\n"
-            f"  錯誤型態：{type(e).__name__}\n"
-            f"  錯誤訊息：{str(e)}\n"
-            f"  清洗後文本（前 200 字元）：{cleaned[:200]}\n"
-        )
-        raise ValueError(error_msg)
+    except json.JSONDecodeError:
+        try:
+            result = json.JSONDecoder(strict=False).decode(cleaned)
+        except json.JSONDecodeError as e:
+            # 兩階段均失敗，提供清晰的診斷訊息
+            error_msg = (
+                f"JSON 解析失敗\n"
+                f"  錯誤型態：{type(e).__name__}\n"
+                f"  錯誤訊息：{str(e)}\n"
+                f"  清洗後文本（前 200 字元）：{cleaned[:200]}\n"
+            )
+            raise ValueError(error_msg)
     
     # ============ 第五步：型態驗證 ============
     if not isinstance(result, dict):

@@ -1,0 +1,359 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LOFI]
+生成時間: 2026-05-06 23:11:27
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\lofi\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: Ethereal Noir
+[[[SUNO_TAGS_START]]]
+minimal house, chill house, sidechain compression, 115 bpm, fashion runway, subtractive arrangement, avant-garde luxury, cinematic strings, deep ambient, pristine studio sound, instrumental only, NO vocals, NO vocal chops, NO human samples, NO extreme EDM drops, NO orchestral strings, chic retail vibe
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Warm analog synth pads, delicate high-frequency shimmer, low-pass filter sealed, no kick, building atmospheric tension like distant ceremony)
+
+...
+...
+
+[Groove 1] (Punchy 115 BPM kick drum enters, smooth sidechain bassline pulses, subtle shaker texture, luxury retail elegance emerging)
+
+...
+...
+
+[Breakdown 1] (Kick drops out gracefully, synth pads swell in spacious stereo field, atmospheric depth deepens, ceremonial stillness)
+
+...
+...
+
+[Build-up] (Low-pass filter sweep opening gradually, adding crisp hi-hats layer by layer, tension building toward theatrical moment, confident energy rising)
+
+...
+...
+
+[Minimal Drop 1] (Kick returns with heavy sidechain dynamics, deep analog bass and synth chordsONLY, sudden silence of pads, ultra-stylish minimal approach, sophisticated cool)
+
+...
+...
+
+[Deep Verse] (Stripping away hi-hats, keeping steady kick and warm bassline, Rhodes-like synth chords fade back in, introspective groove forming)
+
+...
+...
+
+[Breakdown 2] (All drums suddenly vanish, leaving ONLY atmospheric synth pads in beatless void, sacred emptiness, meditative pause)
+
+...
+...
+
+[Build-up 2] (Kick re-enters subtly, filter opening again, layering warm string-like synth textures, dramatic tension returning, avant-garde theatrical energy building)
+
+...
+...
+
+[Main Drop 2] (Full sidechain compression kicks back in, rich analog bassline, layered synth pads creating grandeur, luxurious depth without actual cello, cinematic minimalism)
+
+...
+...
+
+[Outro Bridge] (Gradually removing kick drum elements, leaving only smooth pads and bass, elegant wind-down, low-profile elegance)
+
+...
+...
+
+[Beatless Outro] (Fade to silence, stripping away all drums first, leaving only smooth synth pads and low-pass filter closing, ethereal void, pristine studio sound)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: Sacred Ivory Chambers
+[[[SUNO_TAGS_START]]]
+Minimal House, Chill House, Sidechain Compression, 115 BPM, Fashion Runway, Subtractive Arrangement, String Quartet, Sacred Atmosphere, Cinematic Chamber, Analog Synth Pads, High-fashion Retail, pristine studio sound, instrumental only, NO vocals, NO vocal chops, NO human samples, NO extreme EDM drops, NO orchestral strings, chic retail vibe
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (String quartet enters with soft sustained violins and viola, cello bass drone beneath, low-pass filter closed, no kick drum yet, sacred hush atmosphere)
+
+...
+...
+
+[Groove 1] (Adding steady 115 BPM kick drum with delicate string ostinato, smooth analog synth pads swell behind the quartet, refined retail atmosphere)
+
+...
+...
+
+[Breakdown 1] (Kick drum drops out, string quartet carries alone with slow harmonic movement, warm Rhodes electric piano joins softly, cathedral-like spacious reverb, contemplative silence)
+
+...
+...
+
+[Build-up] (Sidechain compression gently pulses on string chords, adding crisp hi-hats, violin section increases intensity, filter opening gradually on analog synth)
+
+...
+...
+
+[Minimal Drop 1] (Punchy kick returns with deep sidechain bassline, string quartet switches to rhythmic pizzicato pattern, minimal arrangement, highly sophisticated and chic)
+
+...
+...
+
+[Deep Verse] (Stripping back hi-hats, string quartet transitions to legato arco phrasing over deep bass, sacred melodic motif emerges, hypnotic loop flow, subdued elegance)
+
+...
+...
+
+[Breakdown 2] (Cello solo introduces low mournful phrasing, Rhodes piano enters with gentle chord voicings, all drums muted, reverent and celestial atmosphere, high-fashion boutique stillness)
+
+...
+...
+
+[Main Drop 2] (Full string quartet with punchy kick and heavy sidechain bass return, soaring violin leads over warm synth pads, driving but relaxed 115 BPM groove, majestic yet restrained)
+
+...
+...
+
+[Bridge] (Gradual subtraction: kick drum fades first, string quartet reduces to solo violin over pure analog pad, meditative and beatless, sacred sanctuary mood)
+
+...
+...
+
+[Beatless Outro] (Fade to silence, stripping away drums and bass, leaving only smooth synth pads and solo cello with low-pass filter closing, serene ivory chamber atmosphere)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: Celestial Threshold
+[[[SUNO_TAGS_START]]]
+Ambient Synth, Minimal House, Chill House, Sidechain Compression, 115 BPM, Fashion Runway, Subtractive Arrangement, Sacred Atmosphere, Ethereal Pads, Deep Atmospheric Synth
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Infinite reverb on ambient synth pads, cathedral-like spatial depth, ethereal glow expanding beyond perception, low-pass filter slowly opening on distant crystalline tones, no percussion yet)
+
+...
+...
+
+[Groove 1] (Subtle 115 BPM four-on-the-floor kick emerging through the atmospheric haze, sidechain compression gently pulsing the synth pads in sacred reverence, warm ambient synth chord swells rolling like distant incense smoke)
+
+...
+...
+
+[Breakdown 1] (All drums fade into silence, ambient synth space expands to infinite depth, high-frequency ethereal shimmer rises like dawn light through stained glass, profound stillness and sacred contemplation emerging)
+
+...
+...
+
+[Build-up] (Adding pristine hi-hats with ethereal decay, analog synth textures weaving through the atmosphere, filter sweep revealing layered harmonic content, spiritual energy accumulating with restrained elegance)
+
+...
+...
+
+[Minimal Drop 1] (Punchy kick drum with deep sidechain bass returns, ambient synth pads shift to sacred harmonic progressions, sophisticated cool rhythm section grounding the transcendence, highly atmospheric and contemplative)
+
+...
+...
+
+[Deep Verse] (Stripping away hi-hats, maintaining only ambient synth foundation and sidechain pulse, vast sonic space between notes, profound sacred emptiness creating inner stillness, all elements breathing with ceremonial patience)
+
+...
+...
+
+[Breakdown 2] (Ambient synth takes center stage with expanded harmonic palette, ethereal textures cascading through the soundscape, reverent silence between phrases, transcendent beauty emerging from minimal means)
+
+...
+...
+
+[Main Drop 2] (Full rhythmic presence returns with premium sidechain dynamics, ambient synth interwoven with deep bass undertones, sacred and glamorous coexisting in perfect balance, luxury theatrical restraint)
+
+...
+...
+
+[Ambient Bridge] (Gradual removal of kick drum, floating ambient synth architecture dominating, infinite reverb trails dissolving into sacred space, celestial atmosphere fully realized without earthly constraints)
+
+...
+...
+
+[Beatless Outro] (Fade to silence, all percussion stripped away first, leaving only ethereal ambient synth pads fading into transcendent void, sacred contemplation lingering beyond the final note)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: Velvet Dusk
+[[[SUNO_TAGS_START]]]
+Minimal House, Chill House, Sidechain Compression, 115 BPM, Fashion Runway, Subtractive Arrangement, Mellow Tenor Saxophone, Lush Ambient Pads, Smooth Analog Synth, Deep House Groove, Warm Rhodes Electric Piano, Chic Retail Atmosphere, Peaceful Energy, sophisticated cool, pristine studio sound, instrumental only, NO vocals, NO vocal chops, NO human samples, NO extreme EDM drops, NO orchestral strings, chic retail vibe
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Warm Rhodes electric piano, lush ambient pads, no drums yet, mellow tenor saxophone entering with soft reverb, very peaceful and spacious atmosphere, low-pass filter gradually opening)
+
+...
+...
+
+[Groove 1] (Adding steady 115 BPM kick drum, smooth analog synth chords underneath, mellow tenor saxophone melody takes the lead, soft sidechain pumping, crisp hi-hats enter subtly, chill house groove establishing)
+
+...
+...
+
+[Breakdown 1] (Kick drum gently drops out, only saxophone phrases remaining with warm reverb tail, ambient pads swell in, minimal house subtractive movement, peaceful and deep)
+
+...
+...
+
+[Build-up] (Filter opening sweep, reintroducing the kick drum with sidechain compression, adding shimmering shakers, saxophone plays higher register phrase, energy slowly rising, smooth transition)
+
+...
+...
+
+[Minimal Drop 1] (Punchy 115 BPM kick drum returns with heavy sidechain bassline, mellow tenor saxophone delivers rich legato melody over driving rhythm, crisp hi-hats crisp and rhythmic, lush synth chords underpinning, sophisticated and luxurious)
+
+...
+...
+
+[Deep Verse] (Saxophone solo section, warmer and more expressive, stripping back hi-hats to keep a calm groove, deep bass line with subtle sidechain, peaceful and flowing, minimal house subtractive arrangement maintaining depth)
+
+...
+...
+
+[Breakdown 2] (All drums drop suddenly, saxophone phrase echoes over sparse synth pad, very clean and spacious, smooth analog synth fades back in softly, low-pass filter closing slowly, tranquil energy sustained)
+
+...
+...
+
+[Main Drop 2] (Full beat returns with punchy kick, steady bass groove, mellow tenor saxophone returns with doubled melodic line, warm Rhodes chord stabs, high-energy but relaxed, 115 BPM driving groove with sidechain dynamics)
+
+...
+...
+
+[Atmospheric Bridge] (Saxophone enters with slow, soulful improvisation, kick softens, everything breathes more, lush reverb tail on every sax note, minimal house elements stripped down to bass and pad, ultimate peaceful presence)
+
+...
+...
+
+[Final Build-up] (Crisp hi-hats accelerate, filter opens wide, sidechain pumping intensifies, saxophone sustains long lyrical notes, building tension toward finale, sophisticated and poised)
+
+...
+...
+
+[Beatless Outro] (Fade to silence, stripping away all drums first, mellow tenor saxophone with heavy reverb lingers over smooth synth pads and warm ambient textures, low-pass filter closing gracefully, leaving only the peaceful saxophone voice floating into silence)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: Still Water at Dusk
+[[[SUNO_TAGS_START]]]
+Minimal House, Chill House, Sidechain Compression, 115 BPM, Fashion Runway, Subtractive Arrangement, acoustic guitar core, serenity mood, sophisticated lounge, ambient retail space, pristine studio sound, instrumental only, NO vocals, NO vocal chops, NO human samples, NO extreme EDM drops, NO orchestral strings, chic retail vibe
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Intro] (Delicate fingerpicked acoustic guitar arpeggios, very subtle nylon string warmth, low-pass filter closed, no kick drum yet, pure serenity atmosphere)
+
+...
+...
+
+[Groove 1] (Adding steady 115 BPM kick drum, soft fingerpicked guitar continues over gentle four-on-the-floor beat, warm Rhodes electric piano enters with soft chords, sophisticated boutique space opens up)
+
+...
+...
+
+[Breakdown 1] (Kick drum drops out smoothly, only acoustic guitar remains with gentle reverb tail, serene and contemplative pause, subtle synth pad fades in beneath the guitar warmth)
+
+...
+...
+
+[Build-up] (Filter opening gradually on smooth analog synth, introducing crisp hi-hats and soft shakers, acoustic guitar melody becomes more pronounced, energy builds quietly and confidently)
+
+...
+...
+
+[Minimal Drop 1] (Punchy kick returns with heavy sidechain bassline, acoustic guitar fingerpicking loops underneath, sidechain compression creates breathing groove, crisp hi-hats add texture, highly sophisticated and stylish)
+
+...
+...
+
+[Deep Verse] (Stripping back hi-hats slowly, acoustic guitar takes center stage again with gentle melodic phrases, deep bass and steady kick remain, creating intimate luxury retail space atmosphere, focus on organic warmth within electronic framework)
+
+...
+...
+
+[Breakdown 2] (Removing kick drum entirely, only acoustic guitar and warm Rhodes electric piano remain, sidechain effect creates subtle pumping on synth pads, maximum serenity, pure elegance)
+
+...
+...
+
+[Main Drop 2] (Full return of punchy kick with sidechain bassline, acoustic guitar fragments weave through the groove, sophisticated urban vibe, hypnotic loop flow, refined energy)
+
+...
+...
+
+[Guitar Solo Section] (Acoustic guitar takes lead with expressive melodic passages over steady minimal house groove, warm analog synth provides gentle harmonic bed, confidence and style radiate, fashion runway moment)
+
+...
+...
+
+[Outro Build] (Gradual subtraction: removing hi-hats first, then bassline, keeping acoustic guitar with low-pass filter closing, sophisticated fade begins)
+
+...
+...
+
+[Beatless Outro] (Fade to silence, stripping away all drums first, leaving only smooth acoustic guitar with gentle reverb, soft synth pads slowly dissolving, low-pass filter closing gracefully on the serenity)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+[[[VIDEO_PROMPT_START]]]
+【Image Prompt】
+Lofi art style illustration. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable, intimate setting. Detailed background with cozy elements. High quality, digital art, aesthetic illustration.
+
+【Video Prompt】
+Lofi animation style video. A peaceful scene with studying with warm tea. Warm color palette, soft lighting, gentle shadows. Human character in a comfortable setting with subtle motion. Cinematic still shot, locked perspective, zero camera movement. Gentle character movements, ambient details shifting slowly. Detailed background, cozy elements. Smooth animation, aesthetic lofi vibe, 30 second duration. Negative: panning, zooming, drone, walking, motion blur, tracking, dolly.
+[[[VIDEO_PROMPT_END]]]
+
+--------------------------------------------------------------------------------
+

@@ -97,18 +97,65 @@ def _fatal_exit(error_code: str, details: str) -> None:
     sys.exit(1)
 
 
-def _read_gene_pool(channel: str = "lofi") -> str:
+def _parse_gene_pool_tags(content: str) -> list | None:
     """
-    【v12.2 基因隔離 + 警報強化】根據頻道讀取對應的音樂基因庫。
-    如果 light_music 回落至 Lofi 基因，拋出顯眼的紅色警告。
+    【v15.11 動態 Tags — 防護字串行解析】
+    直接從 gene pool 提示詞內容中的「防護字串：」行提取 tags，無需額外標記。
+
+    解析目標格式（新版 gene pool .md 防護字串行）：
+        ⚠️ 結尾必須永遠固定包含這句防護字串：, tag1, tag2, tag3, ...
+
+    CEO 換風格時只需修改防護字串行，tags 護城河自動更新，不必維護任何其他地方。
+    若未找到防護字串行，回傳 None（呼叫方降級至 channel config 或 REQUIRED_TAGS）。
+    """
+    import re
+    match = re.search(r'防護字串[：:]\s*,?\s*(.+)', content)
+    if match:
+        tags_raw = match.group(1).strip()
+        tags = [t.strip() for t in tags_raw.split(',') if t.strip()]
+        return tags if tags else None
+    return None
+
+
+def _read_gene_pool(channel: str = "lofi", override_path: str | None = None) -> tuple:
+    """
+    【v15.11 動態 Tags】根據頻道讀取對應的音樂基因庫，並解析內嵌的防護字串行。
     
     Args:
         channel: 頻道名稱 (lofi 或 light_music)
+        override_path: 執行期覆寫路徑（空頻道動態注入模式）
+            例: `.openclaw/music_genes_JESS_music.md`
+            若提供，完全跳過 lofi.json 的 music_gene_pool 設定。
+            該檔案必須含有 防護字串： 行，否則立即 fatal exit。
         
     Returns:
-        音樂基因庫內容
+        tuple (gene_pool_content: str, dynamic_tags: list | None)
+        dynamic_tags 為 None 時表示 gene pool 檔案未設定，呼叫方應 fallback 至 channel config。
     """
     try:
+        # 【空頻道動態注入模式】CLI --gene-pool 覆寫，完全跳過 channel config JSON
+        if override_path:
+            override_full = Path(config.workspace_root) / override_path
+            if not override_full.exists():
+                _fatal_exit(
+                    "GENE_POOL_OVERRIDE_MISSING",
+                    f"--gene-pool 覆寫路徑不存在: {override_full}\n"
+                    f"  確認檔案名稱拼寫正確後重新執行。"
+                )
+            with open(override_full, "r", encoding="utf-8") as fh:
+                content = fh.read()
+            dynamic_tags = _parse_gene_pool_tags(content)
+            if not dynamic_tags:
+                _fatal_exit(
+                    "GENE_POOL_OVERRIDE_NO_MOAT",
+                    f"--gene-pool 覆寫的基因庫缺少 防護字串： 行: {override_full}\n"
+                    f"  動態注入模式下，tags 護城河必須直接嵌入基因庫文件，不得回落 lofi.json。\n"
+                    f"  解法：在 {override_path} 添加一行：『⚠️ 結尾必須永遠固定包含這句防護字串：, tag1, tag2, ...』"
+                )
+            print(f"  {YELLOW}📌 空頻道動態注入: {override_path}{RESET}")
+            print(f"  {YELLOW}🏷️  防護字串 Tags（{len(dynamic_tags)} 個）: {', '.join(dynamic_tags)}{RESET}")
+            return content, dynamic_tags
+
         # 嘗試從配置 JSON 讀取 music_gene_pool 路徑
         config_file = Path(config.workspace_root) / "configs" / "channels" / f"{channel.lower()}.json"
         
@@ -125,8 +172,14 @@ def _read_gene_pool(channel: str = "lofi") -> str:
                         gene_pool_path = Path(config.workspace_root) / music_gene_pool
                         if gene_pool_path.exists():
                             with open(gene_pool_path, "r", encoding="utf-8") as fh:
+                                content = fh.read()
+                            dynamic_tags = _parse_gene_pool_tags(content)
+                            if dynamic_tags:
                                 print(f"  {YELLOW}📚 {channel} 頻道: 使用 {music_gene_pool}{RESET}")
-                                return fh.read()
+                                print(f"  {YELLOW}🏷️  動態 Tags 已從基因庫解析（{len(dynamic_tags)} 個標籤）{RESET}")
+                            else:
+                                print(f"  {YELLOW}📚 {channel} 頻道: 使用 {music_gene_pool}（無動態 Tags 標記，將使用 config fallback）{RESET}")
+                            return content, dynamic_tags
                         else:
                             print(f"  {YELLOW}⚠️  {music_gene_pool} 路徑不存在，回落至預設{RESET}")
                             fallback_used = True
@@ -146,46 +199,49 @@ def _read_gene_pool(channel: str = "lofi") -> str:
                 f"GL_4M_Suno_prompt.md not found: {PROMPT_MD_PATH}"
             )
         
-        # 【v12.2 紅色警告】如果是 light_music 頻道且使用了 fallback，發出警告
+        # 【v15.11 基因隔離鐵律】light_music 頻道若 fallback 到 Lofi 基因庫 → 立即中止
+        # 警告 → fatal_exit：防止基因污染導致 light_music 輸出 lofi 風格提示詞
         if fallback_used and channel == "light_music":
-            error_msg = (
-                f"\n{RED}{'='*80}{RESET}"
-                f"\n{RED}🚨 【基因污染警報】 {RESET}"
-                f"\n{RED}Light Music 基因庫加載失敗，系統回落到 Lofi 基因庫。{RESET}"
-                f"\n{RED}當前生成的提示詞可能不適合 Light Music 頻道！{RESET}"
-                f"\n{RED}  • 檢查: configs/channels/light_music.json 是否存在且有效{RESET}"
-                f"\n{RED}  • 檢查: 指定的 music_gene_pool 文件是否存在{RESET}"
-                f"\n{RED}  狀態：【非純淨模式】 本次生成不符合 Light Music 純淨要求{RESET}"
-                f"\n{RED}{'='*80}{RESET}\n"
+            _fatal_exit(
+                "GENE_POOL_CONTAMINATION",
+                "light_music 基因庫載入失敗，拒絕以 Lofi 基因庫替代以防止基因污染。\n"
+                "  • 確認 configs/channels/light_music.json 存在且含有效 music_gene_pool 欄位\n"
+                f"  • 確認 .openclaw/music_genes_light_music.md 存在\n"
+                "  解法：修復基因庫路徑後重新執行。"
             )
-            print(error_msg)
-        
+
         with open(PROMPT_MD_PATH, "r", encoding="utf-8") as fh:
-            return fh.read()
+            content = fh.read()
+        dynamic_tags = _parse_gene_pool_tags(content)
+        return content, dynamic_tags
             
     except Exception as exc:
         _fatal_exit("GENE_POOL_READ_ERROR", str(exc))
 
 
-def _validate_tags(tags_str: str) -> bool:
+def _validate_tags(tags_str: str, required_tags=None) -> bool:
     """
     源頭防呆：驗證 Tags 是否包含所有必要標籤。
+    required_tags: 可傳入頻道專屬標籤集合，預設使用全域 REQUIRED_TAGS。
     """
     tags_lower = tags_str.lower()
-    for required in REQUIRED_TAGS:
+    check_set = required_tags if required_tags is not None else REQUIRED_TAGS
+    for required in check_set:
         if required.lower() not in tags_lower:
             return False
     return True
 
 
-def _auto_fix_tags(tags_str: str) -> str:
+def _auto_fix_tags(tags_str: str, required_tags=None) -> str:
     """
     【v15.3 Gemini 適配】自動補齊缺失的必要標籤。
     Gemini 2.5 Flash 不像 GLM-4 會機械式複製全部要求標籤，
     偶爾會漏掉 1-2 個。改為自動補齊而非驗退重試。
+    required_tags: 可傳入頻道專屬標籤集合，預設使用全域 REQUIRED_TAGS。
     """
+    check_set = required_tags if required_tags is not None else REQUIRED_TAGS
     tags_lower = tags_str.lower()
-    missing = [t for t in REQUIRED_TAGS if t.lower() not in tags_lower]
+    missing = [t for t in check_set if t.lower() not in tags_lower]
     if missing:
         tags_str = tags_str.rstrip().rstrip(",") + ", " + ", ".join(missing)
     return tags_str
@@ -194,16 +250,13 @@ def _auto_fix_tags(tags_str: str) -> str:
 def _validate_prompt_structure(prompt_str: str) -> bool:
     """
     源頭防呆：驗證 Prompt 是否具備必要結構。
+    v15.11 Shorts 格式：段落數 5-7 個，結尾標籤形式自由（無強制 Outro）。
     """
     import re
     
-    # 檢查分段標籤數量
+    # 檢查分段標籤數量（Shorts 格式：5 至 7 個段落）
     section_count = len(re.findall(r"\[.*?\]", prompt_str))
-    if section_count < 6:
-        return False
-    
-    # 檢查是否以 [Outro] 結尾
-    if not re.search(r"\[Outro\].*$", prompt_str, re.DOTALL):
+    if section_count < 5:
         return False
     
     return True
@@ -308,7 +361,8 @@ def _generate_prompts_batch_from_glm4(
     batch_size: int = 20,
     max_retries: int = 3,
     channel: str = "lofi",
-    provider: str = "minimax"
+    provider: str = "minimax",
+    gene_pool_tags: list | None = None
 ) -> Optional[List[Dict[str, str]]]:
     """
     【v8.8 單發連發 (Iterative Generation) 模式】
@@ -325,29 +379,27 @@ def _generate_prompts_batch_from_glm4(
     """
     validated_prompts = []
     
-    # 【v12.7 多樣性熵池】強制多樣化種子注入
-    instrument_pool = [
-        "Piano (鋼琴核心，溫暖深邃)",
-        "Saxophone (Mellow Tenor Saxophone，醇厚溫暖)" if channel == "lofi" else "Saxophone (Ethereal Soprano Saxophone，如風如歌)",
-        "Cello (大提琴核心，蒼涼深沉)",
-        "Acoustic Guitar (木吉他核心，溫和朴實)",
-        "Ambient Synth (氛圍電子合成器，超越距離)",
-        "String Quartet (弦樂四重奏，典雅莊重)",
-        "Violin (小提琴核心，高遠遼闊)"
-    ]
-    
-    mood_pool = [
-        "Serenity (寧靜致遠)",
-        "Melancholy (淡淡憂傷)",
-        "Introspection (內在深思)",
-        "Sacred (聖潔寄託)",
-        "Profound (眾妙之門)",
-        "Ethereal (飄然若思)",
-        "Peaceful (靜水深流)"
-    ]
-    
-    # 追蹤已使用的樂器，確保同批不重複
-    used_instruments_in_batch = set()
+    # 【v15.11 四大風格輪詢】按組號依序提示風格 A→B→C→D，確保批次多樣性
+    style_pillars = ["A", "B", "C", "D"]
+
+    # 【v15.11 動態 Tags 優先鏈】基因庫防護字串 → channel config → REQUIRED_TAGS
+    import json as _json
+    _ch_cfg_path = Path(config.workspace_root) / "configs" / "channels" / f"{channel.lower()}.json"
+    _ch_cfg = {}
+    try:
+        with open(_ch_cfg_path, "r", encoding="utf-8") as _f:
+            _ch_cfg = _json.load(_f)
+    except Exception as _e:
+        print(f"  ⚠️ 無法讀取頻道設定 {_ch_cfg_path.name}: {_e}，使用預設值")
+
+    if gene_pool_tags:
+        channel_required_tags = gene_pool_tags
+        print(f"  🏷️  Tags 來源: 基因庫防護字串（{len(gene_pool_tags)} 個，隨風格自動更新）")
+    else:
+        channel_required_tags = _ch_cfg.get("suno_tags_required", list(REQUIRED_TAGS))
+        print(f"  🏷️  Tags 來源: channel config（{_ch_cfg_path.name}）")
+    channel_tags_moat = ", ".join(channel_required_tags)
+    print(f"  🛡️ Tags 護城河: {channel_tags_moat}")
 
     for group_idx in range(1, batch_size + 1):
         _display_map = {
@@ -365,46 +417,22 @@ def _generate_prompts_batch_from_glm4(
         while local_attempt < max_retries and not success:
             local_attempt += 1
             
-            # 【多樣性隨機注入】從池中選擇本組的樂器 + 情境
-            local_instrument = random.choice(instrument_pool)
-            # 確保同批次不重複 (輪詢可用樂器)
-            available_instruments = [i for i in instrument_pool if i not in used_instruments_in_batch]
-            if available_instruments:
-                local_instrument = random.choice(available_instruments)
-                used_instruments_in_batch.add(local_instrument)
-            else:
-                # 若已耗盡，重置並重新選擇
-                used_instruments_in_batch.clear()
-                local_instrument = random.choice(instrument_pool)
-                used_instruments_in_batch.add(local_instrument)
+            # 【v15.11 四大風格多樣性指令】A→B→C→D 依組號輪詢，確保批次風格不重複
+            style_hint = style_pillars[(group_idx - 1) % 4]
             
-            local_mood = random.choice(mood_pool)
-            
-            # 【單發提示】每次只要求 1 組 + 【v12.2 頻道化 User Prompt】
-            # 根據頻道選擇不同的音樂風格要求
-            if channel == "light_music":
-                music_style_desc = "Pure Ambient Therapeutic Music"
-            else:
-                music_style_desc = "Lofi Chillhop"
-            
-            # 【v12.7 批次多樣性意識】強制要求每組差異化，注入樂器 + 情境種子
+            # 【v15.11 新版 user_prompt】委託 gene pool 四大風格矩陣處理多樣性，不注入樂器/情境種子
             user_prompt = (
-                f"請為 Suno AI 生成高品質的 {music_style_desc} 提示詞（第 {group_idx}/{batch_size} 組，全批共需 {batch_size} 組）。\n"
-                f"【強制多樣性要求】此批次將生成 {batch_size} 組音樂配方，必須確保：\n"
-                f"  • 每組音樂必須從 不同的主導樂器核心 中選擇\n"
-                f"  • 嚴禁同批次中超過 3 組使用相同的樂器或標籤子串\n"
-                f"  • 當前組 [{group_idx}] 的強制核心：{local_instrument}，情境氛圍：{local_mood}\n"
-                f"  • 不要創變通，必須充分融入上述樂器特色與情感氛圍\n"
+                f"請依照系統提示詞的指引，生成第 {group_idx}/{batch_size} 組 Suno AI 短影音音樂提示詞。\n"
+                f"【多樣性指令】本批次共 {batch_size} 組，本組請優先採用「風格 {style_hint}」以確保批次中的風格多樣性。\n"
                 f"必須輸出以下 JSON 結構（直接 JSON，無其他文字）：\n"
                 f"{{\n"
-                f'  "title": "英文曲名或短標題（例：Midnight Rain, Coffee and Code）",\n'
-                f'  "tags": "tag1, tag2, tag3, ...",\n'
-                f'  "prompt": "[Intro] ...\\n[Verse 1] ...\\n[Chorus] ...\\n[Verse 2] ...\\n[Bridge] ...\\n[Outro] ..."\n'
+                f'  "title": "StyleName_EnglishTitle（例：TechHouse_UrbanGrid，無空格無中文無特殊符號）",\n'
+                f'  "tags": "嚴格遵循選定風格的 Tags + 護城河字串",\n'
+                f'  "prompt": "[開場標籤] (氛圍描述)...\\n\\n...\\n\\n[段落標籤] (樂器變化)...\\n\\n...\\n\\n[結尾標籤] (Fade to silence...)"\n'
                 f"}}\n"
-                f"其中 title 必須是富有詩意但簡潔的英文標題（3-5 詞）。\n"
-                f"tags 必須包含：pristine studio sound, NO vocals, NO vinyl crackle, NO tape hiss, NO background noise\n"
-                f"prompt 必須包含至少 6 個分段標籤，並在語詞中多次提及上述樂器與氛圍。\n"
-                f"...\n..."  # 時間膨脹刪節號
+                f"title 必須嚴格遵守「風格名稱_英文檔名」格式，不得含空格、中文字或特殊符號。\n"
+                f"tags 結尾必須包含護城河：{channel_tags_moat}\n"
+                f"prompt 段落數量必須控制在 5 至 7 個標籤之間（短影音 180 秒）。\n"
             )
             
             try:
@@ -433,22 +461,20 @@ def _generate_prompts_batch_from_glm4(
                     print(f"  ⚠️ 缺失 title、tags 或 prompt 欄位")
                     print(f"     返回鍵值: {list(result.keys())}")
                     continue  # 重試
-                # 防呆驗証 1: Tags 自動補齊（v15.3 Gemini 適配）
-                tags = _auto_fix_tags(tags)
-                if not _validate_tags(tags):
+                # 防呆驗証 1: Tags 自動補齊（v15.11：使用頻道專屬護城河，非全域 REQUIRED_TAGS）
+                tags = _auto_fix_tags(tags, required_tags=channel_required_tags)
+                if not _validate_tags(tags, required_tags=channel_required_tags):
                     # 理論上 _auto_fix_tags 後不應再失敗，但保底
-                    missing = [t for t in REQUIRED_TAGS if t.lower() not in tags.lower()]
+                    missing = [t for t in channel_required_tags if t.lower() not in tags.lower()]
                     print(f"  ❌ Tags 補齊後仍缺失: {missing}")
                     continue  # 重試
                 
                 # 防呆驗証 2: Prompt 結構檢查
                 if not _validate_prompt_structure(prompt):
-                    # 【詳細調試】為什麼結構失敗？
                     import re
                     section_count = len(re.findall(r"\[.*?\]", prompt))
-                    outro_found = bool(re.search(r"\[Outro\]", prompt))
-                    print(f"  ❌ Prompt 結構失敗（分段不足或缺 [Outro]），重試 {local_attempt}/{max_retries}")
-                    print(f"     分段數: {section_count}/6, [Outro]: {outro_found}")
+                    print(f"  ❌ Prompt 結構失敗（分段不足），重試 {local_attempt}/{max_retries}")
+                    print(f"     分段數: {section_count}（需要 5-7 個）")
                     print(f"     Prompt 前 200 字: {repr(prompt[:200])}")
                     continue  # 重試
                 
@@ -458,15 +484,10 @@ def _generate_prompts_batch_from_glm4(
                 # 【物理時間膨脹注入】在存檔前強制插入 ... 刪節號
                 prompt_with_dilation = _inject_time_dilation(prompt)
                 
-                # 【v10.5 視覺提示詞生成】根據頻道生成對應的視覺提示詞
-                visual_prompts = _generate_visual_prompts(title, tags, channel=channel)
-                
                 validated_prompts.append({
                     "title": title,
                     "tags": tags,
                     "prompt": prompt_with_dilation,
-                    "image_prompt": visual_prompts["image_prompt"],
-                    "video_prompt": visual_prompts["video_prompt"],
                 })
                 success = True
                 
@@ -526,10 +547,6 @@ def _save_prompts(prompts: List[Dict[str, str]], channel: str = "lofi") -> Path:
         lines.append(f"{lyric_content}\n")
         lines.append("[[[SUNO_LYRICS_END]]]\n\n")
         
-        lines.append("[[[VIDEO_PROMPT_START]]]\n")
-        lines.append(f"【Image Prompt】\n{item.get('image_prompt', 'N/A')}\n\n")
-        lines.append(f"【Video Prompt】\n{item.get('video_prompt', 'N/A')}\n")
-        lines.append("[[[VIDEO_PROMPT_END]]]\n\n")
         lines.append("-"*80 + "\n\n")
     
     content = "".join(lines)
@@ -578,6 +595,17 @@ def main() -> None:
         choices=["zhipu", "gemini", "minimax"],
         help="LLM 引擎 (zhipu/gemini/minimax)"
     )
+    parser.add_argument(
+        "--gene-pool",
+        type=str,
+        default=None,
+        metavar="PATH",
+        help=(
+            "空頻道動態注入：覆寫 channel config 的 music_gene_pool，"
+            "執行期直接指定基因庫。\n"
+            "例: .openclaw/music_genes_JESS_music.md"
+        )
+    )
     args = parser.parse_args()
     
     print("\n" + "="*80)
@@ -590,8 +618,12 @@ def main() -> None:
     print(f"品質承諾: 寧可失敗報警，也不偽造虛假 Prompt\n")
     
     print("📖 讀取基因庫規則...")
-    gene_pool = _read_gene_pool(channel=args.channel)
+    gene_pool, gene_pool_tags = _read_gene_pool(channel=args.channel, override_path=args.gene_pool)
     print(f"✅ 基因庫已載入 ({len(gene_pool)} 字元)\n")
+    if gene_pool_tags:
+        print(f"🏷️  動態 Tags 護城河（來自基因庫）: {', '.join(gene_pool_tags)}\n")
+    else:
+        print(f"🏷️  動態 Tags: 未設定，將使用 channel config 或預設值\n")
     
     print(f"🎲 啟動 {args.provider.upper()} 生成...")
     prompts = _generate_prompts_batch_from_glm4(
@@ -599,7 +631,8 @@ def main() -> None:
         batch_size=args.batch_size,
         max_retries=args.max_retries,
         channel=args.channel,
-        provider=args.provider
+        provider=args.provider,
+        gene_pool_tags=gene_pool_tags
     )
     
     print("\n💾 保存提示詞...")

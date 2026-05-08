@@ -199,13 +199,13 @@ class LLMRetryQueue:
         背景重試所有佇列中的請求。
         
         Args:
-            providers: 重試時使用的 provider 順序（預設 ["zhipu", "minimax", "gemini"]）
+            providers: 重試時使用的 provider 順序（預設 ["minimax", "zhipu", "gemini"]）
         
         Returns:
             {"succeeded": N, "failed": N, "expired": N, "details": [...]}
         """
         if providers is None:
-            providers = ["zhipu", "minimax", "gemini"]
+            providers = ["minimax", "zhipu", "gemini"]
 
         results = {"succeeded": 0, "failed": 0, "expired": 0, "details": []}
         now = time.time()
