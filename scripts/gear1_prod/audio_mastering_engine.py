@@ -151,14 +151,18 @@ def _is_remix_name(name: str) -> bool:
     return any(k in lowered for k in REMIX_KEYWORDS)
 
 
-def _shorts_publish_windows_hint(workspace_root: Path) -> dict:
-    """自 configs/shorts_publish_windows.json 讀取摘要，寫入 Shorts signal 供 Mac／營運對齊檔期。"""
+def _shorts_publish_windows_hint(workspace_root: Path, channel: str = "lofi") -> dict:
+    """自 configs/shorts_publish_windows.json 讀取摘要，寫入 Shorts signal 供 Mac／營運對齊檔期。\n    v15.11: channel 級覆寫 > 全域 slots。"""
     p = workspace_root / "configs" / "shorts_publish_windows.json"
     if not p.is_file():
         return {}
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
-        slots = data.get("slots") or []
+        ch_cfg = (data.get("channels") or {}).get(channel.lower())
+        if isinstance(ch_cfg, dict) and "slots" in ch_cfg:
+            slots = ch_cfg["slots"]
+        else:
+            slots = data.get("slots") or []
         return {
             "timezone_label": data.get("timezone_label", ""),
             "slot_times_local": [
@@ -224,7 +228,7 @@ def _sync_new_masters_to_shorts_and_signal(
             "stats": stats,
             "auto_sync_enabled": True,
             "note": "Incremental sync after mastering completion.",
-            "publish_windows_hint": _shorts_publish_windows_hint(workspace_root),
+            "publish_windows_hint": _shorts_publish_windows_hint(workspace_root, channel=channel),
         }
         atomic_write_json(signal_path, payload, indent=2)
         print(f"[SHORTS_SYNC] signal: {signal_path}")

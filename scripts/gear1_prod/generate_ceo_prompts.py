@@ -247,6 +247,16 @@ def _auto_fix_tags(tags_str: str, required_tags=None) -> str:
     return tags_str
 
 
+def _validate_title_format(title: str) -> bool:
+    """
+    v15.11 供彈標題格式驗證：必須為「風格名稱_英文檔名」格式。
+    規則：StyleName 與 EnglishTitle 皆為純英數字，底線連結，無空格、無中文、無特殊符號。
+    例：CelticFolk_MorningDew ✅ | TechHouse_UrbanGrid ✅ | Midnight Rain ❌
+    """
+    import re
+    return bool(re.match(r'^[A-Za-z][A-Za-z0-9]*_[A-Za-z][A-Za-z0-9]*$', title))
+
+
 def _validate_prompt_structure(prompt_str: str) -> bool:
     """
     源頭防呆：驗證 Prompt 是否具備必要結構。
@@ -420,13 +430,17 @@ def _generate_prompts_batch_from_glm4(
             # 【v15.11 四大風格多樣性指令】A→B→C→D 依組號輪詢，確保批次風格不重複
             style_hint = style_pillars[(group_idx - 1) % 4]
             
-            # 【v15.11 新版 user_prompt】委託 gene pool 四大風格矩陣處理多樣性，不注入樂器/情境種子
+            # 【v15.11 頻道感知 user_prompt 範例】light_music 顯示自然風格前綴
+            _title_example = (
+                "CelticFolk_MorningDew" if channel == "light_music"
+                else "TechHouse_UrbanGrid"
+            )
             user_prompt = (
                 f"請依照系統提示詞的指引，生成第 {group_idx}/{batch_size} 組 Suno AI 短影音音樂提示詞。\n"
                 f"【多樣性指令】本批次共 {batch_size} 組，本組請優先採用「風格 {style_hint}」以確保批次中的風格多樣性。\n"
                 f"必須輸出以下 JSON 結構（直接 JSON，無其他文字）：\n"
                 f"{{\n"
-                f'  "title": "StyleName_EnglishTitle（例：TechHouse_UrbanGrid，無空格無中文無特殊符號）",\n'
+                f'  "title": "StyleName_EnglishTitle（例：{_title_example}，無空格無中文無特殊符號）",\n'
                 f'  "tags": "嚴格遵循選定風格的 Tags + 護城河字串",\n'
                 f'  "prompt": "[開場標籤] (氛圍描述)...\\n\\n...\\n\\n[段落標籤] (樂器變化)...\\n\\n...\\n\\n[結尾標籤] (Fade to silence...)"\n'
                 f"}}\n"
@@ -460,6 +474,11 @@ def _generate_prompts_batch_from_glm4(
                 if not title or not tags or not prompt:
                     print(f"  ⚠️ 缺失 title、tags 或 prompt 欄位")
                     print(f"     返回鍵值: {list(result.keys())}")
+                    continue  # 重試
+                # v15.11 供彈標題格式驗證：必須為 StyleName_EnglishTitle
+                if not _validate_title_format(title):
+                    print(f"  ❌ title 格式不符 StyleName_EnglishTitle 規範: {title}")
+                    print(f"     正確格式: CelticFolk_MorningDew / TechHouse_UrbanGrid")
                     continue  # 重試
                 # 防呆驗証 1: Tags 自動補齊（v15.11：使用頻道專屬護城河，非全域 REQUIRED_TAGS）
                 tags = _auto_fix_tags(tags, required_tags=channel_required_tags)

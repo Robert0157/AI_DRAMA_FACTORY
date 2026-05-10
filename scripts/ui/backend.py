@@ -414,16 +414,18 @@ class UIBackend:
             params={"mode": mode, "video": vid_src.name},
         )
         return result
-    def run_shorts_pool_with_log(self, batch_size: int = 30) -> Tuple[bool, str, str]:
+    def run_shorts_pool_with_log(self, batch_size: int = 30, channel: str = "lofi", sub_style: str | None = None) -> Tuple[bool, str, str]:
         """
         以即時 log 方式執行 generate_shorts_pool.py，供 UI 顯示產線日誌。
-        回傳 (ok, msg, log_path)
+        v15.11: 傳遞 --channel + --sub-style 以寫入 shorts_meta_pool_{channel}_{style}.json
         """
         root = Path(self.config.workspace_root)
         script_path = root / "scripts" / "marketing" / "generate_shorts_pool.py"
         if not script_path.exists():
             return False, f"找不到腳本：{script_path}", ""
-        cmd = [sys.executable, str(script_path), str(batch_size)]
+        cmd = [sys.executable, str(script_path), str(batch_size), "--channel", str(channel).lower()]
+        if sub_style:
+            cmd.extend(["--sub-style", str(sub_style).lower()])
         returncode, log_path = self._run_with_log("shorts_pool", cmd)
         tail = self.get_latest_log_lines(log_path, 30)
         if returncode == 0:

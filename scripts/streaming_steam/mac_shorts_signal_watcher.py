@@ -76,29 +76,42 @@ def _write_ack(channel_dir: Path, signal: Dict[str, Any], status: str, detail: s
 
 
 def _has_effective_changes(signal: Dict[str, Any]) -> bool:
+    """v15.11: 對齊 Windows _sync_new_masters_to_shorts_and_signal 的 stats 鍵名。
+    copied: 本次新複製到 Short_audio/ 的檔案數。"""
     stats = signal.get("stats", {}) if isinstance(signal.get("stats"), dict) else {}
+    copied = int(stats.get("copied", 0) or 0)
+    failed = int(stats.get("failed", 0) or 0)
+    # 相容 legacy stats: moved/deleted/missing (cleanup_retired_queue 可能寫入)
     moved = int(stats.get("moved", 0) or 0)
     deleted = int(stats.get("deleted", 0) or 0)
-    missing = int(stats.get("missing", 0) or 0)
-    return (moved + deleted + missing) > 0
+    return (copied + failed + moved + deleted) > 0
 
 
 def _handle_batch(channel: str, signal: Dict[str, Any], dry_run: bool) -> str:
     """
-    Placeholder for Mac side business logic.
-    Replace this with upload/sync/indexing logic as needed.
+    Mac 端 Shorts 業務邏輯（v15.11 藍圖）。
+    
+    未來實作方向：
+    1. 讀取 Streaming/queue_staging/shorts_meta_pool_{channel}_*.json 取得標題/說明/tags
+    2. 配對 Short_audio/{channel}/ 內的母帶 WAV
+    3. 依 publish_windows_hint.slot_times_local 排程上傳 YouTube Shorts
+    
+    目前為 placeholder。
     """
     stats = signal.get("stats", {})
+    publish_hint = signal.get("publish_windows_hint", {})
+    times = publish_hint.get("slot_times_local", [])
     msg = (
         f"channel={channel}, batch_id={signal.get('batch_id')}, "
-        f"moved={stats.get('moved', 0)}, deleted={stats.get('deleted', 0)}, "
-        f"missing={stats.get('missing', 0)}"
+        f"copied={stats.get('copied', 0)}, failed={stats.get('failed', 0)}, "
+        f"slots={times}"
     )
     if dry_run:
         print(f"[{_now()}] [DRYRUN] handle_batch: {msg}")
     else:
         print(f"[{_now()}] [EXEC] handle_batch: {msg}")
-        # TODO: integrate real Mac workflow here.
+        # TODO: integrate real Mac workflow here —
+        #   load shorts_meta_pool_{channel}_*.json + match WAV + upload to YouTube
     return msg
 
 

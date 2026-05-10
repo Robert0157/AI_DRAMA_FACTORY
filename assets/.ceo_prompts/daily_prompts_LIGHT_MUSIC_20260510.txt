@@ -1,0 +1,184 @@
+================================================================================
+【R&S Echoes CEO 提示詞集合 - v12.6 工業標籤版】
+================================================================================
+[CHANNEL: LIGHT_MUSIC]
+生成時間: 2026-05-10 09:01:24
+下載路徑: F:\AI_DRAMA_FACTORY\assets\audio\ceo_approved_beats\light_music\
+總數量: 5 組
+================================================================================
+
+【Group 1】 Title: CelticFolk_MorningDew
+[[[SUNO_TAGS_START]]]
+Celtic Ambient, Fantasy Folk, Ethereal, Rubato, Celtic Harp, Tin Whistle, Cinematic Reverb, healing frequencies, pristine studio sound, instrumental ONLY, NO vocals, NO drums, NO beats, NO percussion
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[0:00]
+
+...
+...
+
+A gentle soundscape of morning mist rolling over an ancient grove. Sparse Celtic Harp arpeggios emerge like sunlight through leaves, delicate and unhurried (solo Celtic Harp, near-field, very soft attack, natural room reverb of a stone chapel).[0:30]
+
+...
+...
+
+A Tin Whistle joins with a simple pentatonic melody, breathy and pure, weaving between the harp's lingering chords. Sparse Acoustic Guitar strums a slow fingerpicked pattern underneath (acoustic space expands, gentle stereo spread, warm air).[1:00]
+
+...
+...
+
+The harp doubles in octaves, its resonance filling the space. Pan Flute enters with a slow, soaring phrase — the emotional center of the piece rises like dew on grass (full cinematic reverb swell, harmonic richness increases, dynamic peak).[1:45]
+
+...
+...
+
+All instruments hold a sustained, shimmering chord. The Tin Whistle carries the melody alone over suspended harp harmonics — a moment of breathtaking stillness, as if the forest itself is listening (maximum reverb decay, extreme dynamic softness, crystalline clarity).[2:15]The instruments fade one by one, leaving only a lone harp glissando dissolving into absolute silence. The final breath of air carries a barely audible high whistle note — a memory of the morning now gone (ultra-slow fade, single instrument isolation, fade to pure silence).
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 2】 Title: PianoImpression_AfternoonLibrary
+[[[SUNO_TAGS_START]]]
+Solo Piano, Impressionist, Nostalgic, Gentle, Rubato, Grand Piano ONLY, cinematic reverb, healing frequencies, pristine studio sound, instrumental ONLY, NO vocals, NO drums, NO beats, NO percussion
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Soft Pedal On] (A single middle C emerges in a vast, cathedral-like space. The sound decays slowly, barely audible, like dust particles floating through afternoon light. Grand Piano in far left field, extreme quiet — pp, almost as if someone is playing from memory.)
+
+...
+...
+
+[Quiet Sustained Chord] (Gentle rolled chords move through E minor, the pedal holding each resonance as the room breathes. Subtle mechanical key-release sounds are captured — the quiet magic of the instrument itself. The harmonic language is impressionistic: Debussy-meets-Chopin, unresolved, dreamlike.)
+
+...
+...
+
+[Melody Emerges] (A fragile, rubato melody enters in the right hand, wandering across the keyboard in broken arpeggios. The left hand plays sparse bass tones, anchoring the texture without ever fully resolving. Sparse, breathing space between every phrase — this is music for reading, for stillness.)
+
+...
+...
+
+[Resonance Deepens] (More reverb is introduced; each chord now blooms into the hall for several seconds before the next. The dynamic stays in the p to mp range — warm, unhurried, nostalgic. The melodic fragments repeat with slight variations, like turning pages of a beloved book.)
+
+...
+...
+
+[Fade to Silence] (The final phrase slows almost to a stop, a single high note sustaining with natural room decay. The mechanical pedal sound of the sustain pedal being lifted is heard — then nothing. Absolute silence at the end, no fade needed.)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 3】 Title: NeoClassical_FrontierEchoes
+[[[SUNO_TAGS_START]]]
+Neo-Classical, Cinematic Orchestral, Majestic Sorrow, 60 BPM, Weeping Solo Cello, Vast String Ensemble, Cinematic Reverb, healing frequencies, pristine studio sound, instrumental ONLY, NO vocals, NO drums, NO beats, NO percussion
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Weeping Solo Cello - Opening] (A lone cello begins with a slow, aching melodic phrase in a minor key. The room is vast and empty. Sparse, gentle vibrations fill the silence, the bow drawing out each note with deep emotional weight. A quiet breath before the storm. 60 BPM, rubato feel, long sustain, cinematic reverb)
+
+...
+...
+
+[Cello Melody Deepens] (The cello continues its lament, diving into a lower register, each phrase more desperate than the last. Sparse harmonics shimmer. The space around the instrument begins to expand as reverb builds, pulling the listener deeper into the melancholy of the golden hour)
+
+...
+...
+
+[Strings Enter Gently - The Swell Begins] (A vast string ensemble enters softly beneath the cello, voicing warm, rich sustained chords. The dynamic begins a slow, inexorable rise, tension coiling like twilight mist. Deep Contrabass rumbles underneath, grounding the sound with ancient weight and power)
+
+...
+...
+
+[Orchestral Swell - Emotional Peak] (Full orchestral strings surge with sweeping, majestic intensity. Dense voicings crash forward like waves of grandeur and sorrow intertwined. Every section plays in lush unison. The sound fills the entire frequency spectrum with epic, cinematic drama. Deep emotional release)
+
+...
+...
+
+[Orchestral Dissolution - Fade to Silence] (The majestic wave holds briefly at its apex, trembling with raw cinematic tension, then slowly dissolves. Each section retreats layer by layer, leaving only the faintest string sustain hanging in vast, empty air. Absolute silence approaches. Fade to absolute silence, cinematic reverb lingering like a distant memory of the frontier)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 4】 Title: ZenAmbient_MidnightMirrors
+[[[SUNO_TAGS_START]]]
+Dark Ambient, Sound Healing, Deep Sleep, Drone, 432Hz, Ethereal Synth Pads, Deep Resonant Drone, Singing Bowls, Cinematic Reverb, healing frequencies, pristine studio sound, instrumental ONLY, NO vocals, NO drums, NO beats, NO percussion
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Ambient Wash] (Ethereal synth pads emerge from absolute void — barely audible at first, like breath on still water, 432Hz healing frequency, infinite sustain)
+
+...
+...
+
+[Resonant Hum] (Deep resonant drone deepens and widens, filling the stereo field with warm low-end presence, subtle phasing movement creating a sense of vast open space)
+
+...
+...
+
+[Singing Bowl Invocation] (A single Tibetan singing bowl enters with perfect fifth overtone, ring decaying over 20 seconds into the reverb tail, gently raising the harmonic color without introducing any rhythm)
+
+...
+...
+
+[Drone Expansion] (Second layer of darker drone joins, creating harmonic depth — the two drones slowly beat against each other, generating a living, breathing tonal texture that never fully resolves)
+
+...
+...
+
+[Wind Chime Whisper] (Distant wind chimes tint the upper frequencies, so soft they feel like distant stars twinkling, purely decorative and non-rhythmic, fading in and out)
+
+...
+...
+
+[Fade to Silence] (All layers gradually reduce to near-zero amplitude over 30 seconds, leaving only the faintest breath of reverb — pure emptiness, perfect sleep-ready ending within 180 seconds)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+
+【Group 5】 Title: CelticFolk_ForestWhisper
+[[[SUNO_TAGS_START]]]
+Celtic Ambient, Fantasy Folk, Ethereal, Rubato, Celtic Harp, Pan Flute, Cinematic Reverb, healing frequencies, pristine studio sound, instrumental ONLY, NO vocals, NO drums, NO beats, NO percussion
+[[[SUNO_TAGS_END]]]
+
+[[[SUNO_LYRICS_START]]]
+[Celtic Harp Solo] (Gentle arpeggiated chords rise slowly like morning mist over an ancient forest, each note resonating with soft pedal sustain and delicate finger noise, establishing the ethereal foundation)
+
+...
+...
+
+[Pan Flute Joins] (Breathy pan flute enters with a longing folk melody threading through the harp's gentle tapestry, evoking forest sprites dancing between sunlit leaves, rubato phrases breathing naturally)
+
+...
+...
+
+[Layered Texture] (Celtic Harp expands with resonant block chords while pan flute weaves an embellished counter-melody above, subtle room ambience fills the stereo field creating vast acoustic space)
+
+...
+...
+
+[Emotional Climax] (Both instruments reach a tender crescendo, harp's bass strings drone beneath crystalline high notes, pan flute sustains a poignant phrase that dissolves into soft reverb tails, pure emotional surrender)
+
+...
+...
+
+[Fade to Silence] (Melodies thin to single notes, pan flute holds one final breathing tone while harp gently damps, natural room tone swallows the last sound, absolute stillness returns to the forest clearing, fade to pristine silence within 180 seconds)
+
+...
+...
+[[[SUNO_LYRICS_END]]]
+
+--------------------------------------------------------------------------------
+

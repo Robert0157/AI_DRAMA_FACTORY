@@ -1,7 +1,7 @@
 {
-  "schema_version": "shorts-publish-windows-v1",
+  "schema_version": "shorts-publish-windows-v2",
   "timezone_label": "Asia/Taipei",
-  "comment": "顧問建議之固定三檔；僅供文案生成與 signal 提示，實際上傳排程仍由 Mac/YouTube 執行。",
+  "comment": "顧問建議之固定檔期；僅供文案生成與 signal 提示，實際上傳排程仍由 Mac/YouTube 執行。",
   "slots": [
     {
       "local_time": "08:00",
@@ -25,9 +25,30 @@
       "overseas_note": "亞洲晚間 + 部分歐美早晨，敘事可帶入全球同聽療癒"
     }
   ],
+  "channels": {
+    "light_music": {
+      "comment": "CEO 指定 light_music 一天兩檔：午後專注 + 深夜助眠",
+      "slots": [
+        {
+          "local_time": "14:00",
+          "label": "午後專注與舒壓",
+          "mood": "專注、隔絕干擾、防午睡低谷",
+          "content_hint": "低頻和緩、辦公室／讀書背景、隔絕環境雜音，少突兀轉折",
+          "overseas_note": ""
+        },
+        {
+          "local_time": "22:00",
+          "label": "深夜助眠與冥想",
+          "mood": "深度放鬆、助眠、靈魂沉澱",
+          "content_hint": "極低動態、禪意、零旋律起伏、432Hz 頻率感、環境白噪音，完全無鼓點與節奏",
+          "overseas_note": "亞洲深夜 + 歐美下午，全球同聽深度療癒"
+        }
+      ]
+    }
+  },
   "production_reminders": [
     "Shorts 會自動迴圈：母帶／影片剪輯盡量首尾無縫銜接，利於觀看時長與演算法。",
     "前 3 秒以高畫質、慢動作自然畫面定錨，再讓聽覺接棒。",
-    "維持每日三檔節律上傳，利於帳號活躍權重（與本 repo 實際排程由營運／Mac 設定一致）。"
+    "維持每日按頻道上傳節律，利於帳號活躍權重（與本 repo 實際排程由營運／Mac 設定一致）。"
   ]
 }

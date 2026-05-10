@@ -370,11 +370,39 @@ with tab2:
 # === Shorts 雙語標題彈藥庫生成區塊 ===
     st.divider()
     st.subheader("🎬 Shorts 雙語標題彈藥庫生成")
-    # 永遠顯示固定 log 路徑（logs/shorts_pool.log）
-    from pathlib import Path
-    _project_root = Path(__file__).resolve().parents[2]
-    _shorts_log_path = _project_root / "logs" / "shorts_pool.log"
-    st.caption(f"由 Windows 端 MiniMax 2.7 產生，直接寫入 queue_staging/shorts_meta_pool.json，供 Mac mini 自動消耗。\n\n**生成過程即時日誌已整合至頁首「📟 產線即時日誌」區塊，路徑: {_shorts_log_path.resolve()}。**")
+    st.caption(f"由 Windows 端 MiniMax 2.7 產生，根據當前戰區 **{cur_ch.upper()}** 與所選子風格寫入 `queue_staging/shorts_meta_pool_{{channel}}_{{style}}.json`，供 Mac mini 自動消耗。")
+
+    # v15.11 子風格選單（lofi + light_music 皆支援）
+    _lofi_style_labels = {
+        "zara": "☕ ZARA — 商業浩室 (Minimal/Tech House)",
+        "gucci": "✨ GUCCI — 前衛奢華 (Avant-Garde/Neo-Classical)",
+        "scifi": "👾 SCI-FI — 科幻電子 (Synthwave/Glitch IDM)",
+        "jazz": "🎷 JAZZ — 爵士酒廊 (Smooth Jazz/Cafe Bossa)",
+    }
+    _lm_style_labels = {
+        "auto": "🔄 四風格自動輪轉 (CelticFolk→Piano→NeoClassical→Zen)",
+        "celtic": "🌿 CelticFolk — 居爾特奇幻民謠",
+        "piano": "🎹 PianoImpression — 印象派純鋼琴",
+        "neoclassical": "🎻 NeoClassical — 新古典史詩",
+        "zen": "🧘 ZenAmbient — 禪意環境聲景",
+    }
+    if cur_ch == "lofi":
+        _style_choice = st.selectbox(
+            "🎨 子風格（lofi 動態容器）",
+            options=list(_lofi_style_labels.keys()),
+            format_func=lambda k: _lofi_style_labels[k],
+            index=0,
+            help="選擇本次 Shorts 標題庫的音樂風格基因。",
+        )
+    else:
+        _style_choice = st.selectbox(
+            "🎨 子風格（light_music 四大自然矩陣）",
+            options=list(_lm_style_labels.keys()),
+            format_func=lambda k: _lm_style_labels[k],
+            index=0,
+            help="auto = 每組自動輪轉四大風格。若選單一風格則全部使用該風格。",
+        )
+
     shorts_batch_size = st.number_input("生成 Shorts 標題組數", min_value=5, max_value=100, value=30, step=5)
     busy_shorts = st.session_state.backend.background_busy()
     go_shorts = st.button(
@@ -384,7 +412,9 @@ with tab2:
         help="生成過程即時日誌已整合至頁首「📟 產線即時日誌」區塊。"
     )
     if go_shorts:
-        ok, msg, log_path = st.session_state.backend.run_shorts_pool_with_log(int(shorts_batch_size))
+        ok, msg, log_path = st.session_state.backend.run_shorts_pool_with_log(
+            int(shorts_batch_size), channel=cur_ch, sub_style=_style_choice
+        )
         if ok:
             st.success(msg)
         else:
