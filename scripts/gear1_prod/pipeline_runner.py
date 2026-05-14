@@ -32,6 +32,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from scripts.common.env_manager import config
 from scripts.common.youtube_cheatsheet_builder import generate_youtube_cheatsheet_file, glob_youtube_sheet_paths
 from scripts.common.pipeline_state_machine import preflight_dual_vault  # v15.10 P2-#6
+from scripts.gear1_prod.distrokid_metadata_builder import build_distrokid_upload_csv  # v15.12 Phase 3.5
 
 # 【Protocol L】導入金庫與衍生引擎
 try:
@@ -726,51 +727,64 @@ def _run_music_metadata_engine(volume: int = 1, channel: str = "lofi") -> bool:
         _log_fatal("METADATA_ENGINE_MISSING", f"music_metadata_engine.py 不存在: {metadata_script}")
     
     _log_info(f"📋 Phase 3: 觸發發行企劃引擎 (Vol.{volume}, 頻道: {channel.upper()})")
-    
+
+    # v15.11: 廢除 capture_output，改用 Popen 即時串流
+    # MiniMax/Zhipu/Gemini 三引擎鏈最壞情況 ~14 分鐘 (2 重試 × 3 引擎)
+    import io as _io
+    cmd = [sys.executable, str(metadata_script),
+           "--channel", channel, "--volume", str(volume),
+           "--provider", "minimax"]
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        cwd=str(Path(config.workspace_root)),
+        env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        bufsize=1,
+    )
+    _active_procs.append(proc)
+    accumulated: list[str] = []
     try:
-        result = subprocess.run(
-            [sys.executable, str(metadata_script),
-             "--channel", channel, "--volume", str(volume),
-             "--provider", "minimax"],  # v15.3 預設 MiniMax M2.7 (NVIDIA NIM)
-            capture_output=True,
-            text=True,
-            timeout=600,  # 10 分鐘上限
-            env={**os.environ, "PYTHONUNBUFFERED": "1"}  # v15.10: 即時日誌
-        )
-        
-        if result.returncode != 0:
-            # music_metadata_engine 用 print() 輸出到 stdout，非 stderr
-            diag = result.stdout or result.stderr or "(無輸出)"
-            _log_fatal(
-                "METADATA_GENERATION_FAILED",
-                f"music_metadata_engine.py 執行失敗:\n{diag[-800:]}"
-            )
-        
-        _log_info(f"✅ 發行企劃中繼資料生成完成")
-        _log_info(f"📝 詳細日誌:\n{result.stdout[-500:]}")  # 最後 500 字
-        
-        # 【v12.30 頻道隔離】驗證產出檔案於子目錄
-        export_dir = Path(config.workspace_root) / "assets" / "final_exports" / channel.lower()
-        # 嘗試尋找頻道專屬的 metadata 檔案
-        metadata_pattern = f"metadata_distrokid_{channel.lower()}.json"
-        metadata_file = export_dir / metadata_pattern
-        if metadata_file.exists():
-            _log_info(f"✓ 中繼資料已保存: {metadata_file}")
-        else:
-            # Fallback：查找任何 metadata 檔案（向後相容）
-            fallback_files = list(export_dir.glob("metadata_distrokid*.json"))
-            if fallback_files:
-                metadata_file = fallback_files[-1]
-                _log_info(f"✓ 中繼資料已保存 (Fallback): {metadata_file}")
-            else:
-                _log_fatal("METADATA_FILE_MISSING", f"產出檔案不存在: {metadata_file}")
-        
-        return True
-    
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            line_stripped = line.rstrip("\n\r")
+            print(line_stripped, flush=True)
+            accumulated.append(line)
+        proc.wait(timeout=900)  # 15 分鐘上限
     except subprocess.TimeoutExpired:
-        _log_fatal("METADATA_TIMEOUT", "發行企劃生成超時 (10 分鐘)")
-    except Exception as exc:
-        _log_fatal("METADATA_ERROR", str(exc))
+        proc.kill()
+        proc.wait()
+        _log_fatal("METADATA_TIMEOUT", "發行企劃生成超時 (15 分鐘)")
+    finally:
+        with _proc_lock:
+            if proc in _active_procs:
+                _active_procs.remove(proc)
+
+    full_stdout = "".join(accumulated)
+    returncode = proc.returncode
+
+    if returncode != 0:
+        tail = "\n".join(accumulated[-30:]) if accumulated else "(無輸出)"
+        _log_fatal("METADATA_GENERATION_FAILED", f"music_metadata_engine.py 失敗:\n{tail}")
+
+    _log_info("✅ 發行企劃中繼資料生成完成")
+
+    # 驗證產出檔案
+    export_dir = Path(config.workspace_root) / "assets" / "final_exports" / channel.lower()
+    metadata_pattern = f"metadata_distrokid_{channel.lower()}.json"
+    metadata_file = export_dir / metadata_pattern
+    if metadata_file.exists():
+        _log_info(f"✓ 中繼資料已保存: {metadata_file}")
+    else:
+        fallback_files = list(export_dir.glob("metadata_distrokid*.json"))
+        if fallback_files:
+            metadata_file = fallback_files[-1]
+            _log_info(f"✓ 中繼資料已保存 (Fallback): {metadata_file}")
+        else:
+            _log_fatal("METADATA_FILE_MISSING", f"產出檔案不存在: {metadata_file}")
+
+    return True
 
 
 # ────────────────────────────────────────────────────────────────
@@ -1516,6 +1530,14 @@ def _run_pipeline_workflow(skip_mastering: bool = False, skip_cleanup: bool = Fa
     if not skip_metadata:
         _log_info("\n【步驟 5 | Phase 3】發行企劃引擎 (DistroKid 中繼資料)")
         _run_music_metadata_engine(volume=volume_num, channel=channel)
+
+        # ★ v15.12 Phase 3.5: DistroKid CSV 上傳表（發後不理，不阻擋產線）
+        _log_info("\n【步驟 5.5 | Phase 3.5】DistroKid CSV 上傳表生成")
+        try:
+            csv_path = build_distrokid_upload_csv(channel)
+            _log_info(f"✅ DistroKid CSV 上傳表已生成: {csv_path.name}")
+        except Exception as _e:
+            _log_info(f"⚠️  Phase 3.5 輕度出錯（非致命，產線繼續）: {_e}")
     else:
         _log_info("\n【步驟 5 | Phase 3】⏭️  跳過發行企劃 (--skip-metadata)")
     

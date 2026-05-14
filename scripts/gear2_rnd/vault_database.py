@@ -123,6 +123,18 @@ class VaultDatabase:
             CREATE INDEX IF NOT EXISTS idx_derivation_track_id ON derivation_log(track_id)
         """)
         
+        # ========== v15.12 DistroKid 發行欄位遷移 ==========
+        _dk_columns = [
+            ("isrc", "TEXT"),
+            ("distrokid_release_date", "TEXT"),
+            ("distrokid_upc", "TEXT"),
+        ]
+        for _col_name, _col_type in _dk_columns:
+            try:
+                cursor.execute(f"ALTER TABLE audio_assets ADD COLUMN {_col_name} {_col_type}")
+            except sqlite3.OperationalError:
+                pass  # 欄位已存在，略過
+
         self.conn.commit()
         if _first_init:
             print("✅ v12.15 全量資料庫地基建立成功！")

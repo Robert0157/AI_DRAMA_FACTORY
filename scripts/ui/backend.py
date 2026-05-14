@@ -284,7 +284,7 @@ class UIBackend:
             result["msg"] = "⚠️ SMB 連線中斷或無寫入權限：請確認已掛載 Mac mini 磁碟機為 Y 槽"
             return result
 
-        smb_target_dir = self.config.smb_long_queue
+        smb_target_dir = self.config.smb_long_queue / ch
         try:
             smb_target_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:
@@ -359,7 +359,7 @@ class UIBackend:
 
         ok_sidecar, sidecar_err = validate_long_upload_v1(yt_meta, vid_src.name)
         if not ok_sidecar:
-            result["msg"] = f"Sidecar preflight 失敗（已中止投遞，未寫入 Long_Queue）：{sidecar_err}"
+            result["msg"] = f"Sidecar preflight 失敗（已中止投遞，未寫入 Long_Queue/{ch}）：{sidecar_err}"
             return result
 
         try:
@@ -394,7 +394,7 @@ class UIBackend:
             {
                 "ok": True,
                 "msg": (
-                    f"✅ {mode_text}發行指令已下達！已傳送 MP4 與上傳邊車（{vid_src.stem}.json）至 Mac mini (Y:/Long_Queue)。"
+                    f"✅ {mode_text}發行指令已下達！已傳送 MP4 與上傳邊車（{vid_src.stem}.json）至 Mac mini ({smb_target_dir})。"
                     f"（metadata 僅留在本機 final_exports，不投遞 *_metadata_distrokid.json。）"
                 ),
                 "cleaned_metadata": metadata,
@@ -654,13 +654,14 @@ class UIBackend:
         d = self.get_channel_export_dir()
         if not d.exists():
             return {"wav": [], "mp4": [], "tracklist": [], "yt_cheatsheet": [],
-                    "dk_cheatsheet": [], "metadata": [], "dir": str(d)}
+                    "dk_cheatsheet": [], "dk_upload_csv": [], "metadata": [], "dir": str(d)}
         return {
             "wav":          sorted([f.name for f in d.glob("*.wav")]),
             "mp4":          sorted([f.name for f in d.glob("*.mp4")]),
             "tracklist":    sorted([f.name for f in d.glob("Tracklist_*.txt")]),
             "yt_cheatsheet": sorted([p.name for p in glob_youtube_sheet_paths(d)]),
             "dk_cheatsheet": sorted([f.name for f in d.glob("DistroKid_Sheet_*.txt")]),
+            "dk_upload_csv": sorted([f.name for f in d.glob("DistroKid_Upload_*.csv")]),  # v15.12 Phase 3.5
             "metadata":     sorted([f.name for f in d.glob("metadata_distrokid*.json")]),
             "dir": str(d),
         }
