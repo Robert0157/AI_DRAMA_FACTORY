@@ -65,13 +65,8 @@ STYLE_CONFIG: dict[str, dict[str, str]] = {
         "suffix": "🧘 #Shorts #ZenMeditation",
         "example_title": "Midnight Stillness | 午夜禪定虛空",
         "gene_pool_file": "music_genes_light_music.md",
-    },    "uniqlo": {
-        "label": "LifeWear BGM (ShibuyaKei / LightBossa / CleanSynthPop / UpbeatAcoustic)",
-        "hook": "陽光舒適、整潔無壓、日常降伴、空氣感與秩序美學",
-        "suffix": "\u2728 #Shorts #LifeWear",
-        "example_title": "Tokyo Sunny Walk | 東京陽光漫步",
-        "gene_pool_file": "music_genes_UNIQLO_music.md",
-    },    # ── lofi 五大子風格 ──
+    },
+    # ── lofi 六大子風格 ──
     "zara": {
         "label": "Retail BGM (Minimal House / Tech House)",
         "hook": "提升工作效率、寫程式心流、保持專注、現代都會時尚感",
@@ -107,6 +102,13 @@ STYLE_CONFIG: dict[str, dict[str, str]] = {
         "example_title": "Echoes of the Desert | 荒漠靈魂的呼喚",
         "gene_pool_file": "music_genes_surreal_epic.md",
     },
+    "uniqlo": {
+        "label": "LifeWear BGM (ShibuyaKei / LightBossa / CleanSynthPop / UpbeatAcoustic)",
+        "hook": "陽光舒適、整潔無壓、日常陪伴、空氣感與秩序美學",
+        "suffix": "✨ #Shorts #LifeWear",
+        "example_title": "Tokyo Sunny Walk | 東京陽光漫步",
+        "gene_pool_file": "music_genes_UNIQLO_music.md",
+    },
 }
 
 
@@ -122,21 +124,20 @@ CONTAINER_SOURCE_MAP: dict[str, str] = {
     "scifi":   "music_genes_SCIFI_music.md",
     "jazz":    "music_genes_JESS_music.md",
     "surreal": "music_genes_surreal_epic.md",
+    "uniqlo":  "music_genes_UNIQLO_music.md",
 }
 
 def _resolve_style(channel: str, sub_style: str | None) -> tuple[str, dict[str, str]]:
     """v15.11: 解析風格 key 與對應 STYLE_CONFIG 條目。
     回傳 (style_key, style_dict)。
     
-    light_music: sub_style 可為 "celtic"/"piano"/"neoclassical"/"zen"/"uniqlo"/"auto"/None。
-    "auto"/None → style_key="auto", 觸發循環內風格輪轉。
-    "uniqlo" → 獨立呼叫，不參與四大風格軸轉。
-    lofi: sub_style 可為 "zara"/"gucci"/"scifi"/"jazz"/"surreal"。
+    light_music: sub_style 可為 "celtic"/"piano"/"neoclassical"/"zen"/"auto"/None。
+    "auto"/None → style_key="auto", 觸發循環內風格軸轉。
+    lofi: sub_style 可為 "zara"/"gucci"/"scifi"/"jazz"/"surreal"/"uniqlo"。
     """
     if channel.lower() == "light_music":
         key = (sub_style or "auto").lower()
-        # 允許獨立匹配四大軸轉風格或 uniqlo商業風格
-        if key in _LIGHT_MUSIC_STYLE_KEYS or key == "uniqlo":
+        if key in _LIGHT_MUSIC_STYLE_KEYS:
             return key, STYLE_CONFIG[key]
         if key == "auto":
             return "auto", STYLE_CONFIG["light_music_default"]
@@ -464,8 +465,8 @@ def generate_shorts_pool(
 
 if __name__ == "__main__":
     import argparse
-    lofi_styles = ["zara", "gucci", "scifi", "jazz", "surreal"]
-    lm_styles = ["auto", "uniqlo"] + _LIGHT_MUSIC_STYLE_KEYS
+    lofi_styles = ["zara", "gucci", "scifi", "jazz", "surreal", "uniqlo"]
+    lm_styles = ["auto"] + _LIGHT_MUSIC_STYLE_KEYS
     all_styles = lofi_styles + lm_styles
     parser = argparse.ArgumentParser(description="Shorts 雙語標題彈藥庫生成（v15.11 頻道+風格隔離）")
     parser.add_argument("batch_size", type=int, nargs="?", default=30, help="生成組數（預設 30）")

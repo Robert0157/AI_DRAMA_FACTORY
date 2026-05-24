@@ -293,7 +293,7 @@ with tab2:
         # 鐵律：GL_4M_Suno_prompt.md 只能作為目標，來源由 CONTAINER_SOURCE_MAP 決定
         _lofi_sub_styles = {
             k: (_SHORTS_STYLE_CONFIG[k]["label"] + (" ★ 預設" if k == "zara" else ""))
-            for k in ["zara", "gucci", "scifi", "jazz", "surreal"]
+            for k in ["zara", "gucci", "scifi", "jazz", "surreal", "uniqlo"]
             if k in _SHORTS_STYLE_CONFIG
         }
         _ceo_style_key = st.selectbox(
@@ -406,10 +406,11 @@ with tab2:
         "scifi": "👾 SCI-FI — 科幻電子 (Synthwave/Glitch IDM)",
         "jazz": "🎷 JAZZ — 爵士酒廊 (Smooth Jazz/Cafe Bossa)",
         "surreal": "🌌 SURREAL — 超現實史詩 (Cinematic Ethereal/Dark Ambient)",
+        "uniqlo": "✨ UNIQLO — LifeWear 日常美學 (ShibuyaKei/LightBossa/UpbeatAcoustic)",
     }
     _lm_style_labels = {
         "auto": "🔄 四風格自動輪轉 (CelticFolk→Piano→NeoClassical→Zen)",
-        "uniqlo": "🌸 UNIQLO — LifeWear 日常美學 (ShibuyaKei/LightBossa/UpbeatAcoustic)",
+
         "celtic": "🌿 CelticFolk — 居爾特奇幻民謠",
         "piano": "🎹 PianoImpression — 印象派純鋼琴",
         "neoclassical": "🎻 NeoClassical — 新古典史詩",
