@@ -262,15 +262,22 @@ def _validate_prompt_structure(prompt_str: str) -> bool:
     """
     源頭防呆：驗證 Prompt 是否具備必要結構。
     v15.11 Shorts 格式：段落數 5-7 個，結尾標籤形式自由（無強制 Outro）。
+    v15.12.1 雙格式支援：接受 [方括號] 或 Section Name (括弧) 兩種分段格式。
     """
     import re
-    
-    # 檢查分段標籤數量（Shorts 格式：5 至 7 個段落）
-    section_count = len(re.findall(r"\[.*?\]", prompt_str))
-    if section_count < 5:
-        return False
-    
-    return True
+
+    # Format 1: 標準 Suno [Tag] 方括號格式
+    bracket_count = len(re.findall(r"\[.*?\]", prompt_str))
+    if bracket_count >= 5:
+        return True
+
+    # Format 2: "Section Name (description)" 括弧格式
+    # 部分 LLM（如 trending 基因庫觸發）會省略方括號，改以 \n\n 段落數驗證
+    paragraphs = [p.strip() for p in prompt_str.split("\n\n") if p.strip()]
+    if len(paragraphs) >= 5:
+        return True
+
+    return False
 
 
 def _inject_time_dilation(prompt: str) -> str:
@@ -502,9 +509,10 @@ def _generate_prompts_batch_from_glm4(
                 # 防呆驗証 2: Prompt 結構檢查
                 if not _validate_prompt_structure(prompt):
                     import re
-                    section_count = len(re.findall(r"\[.*?\]", prompt))
+                    bracket_count = len(re.findall(r"\[.*?\]", prompt))
+                    paragraph_count = len([p.strip() for p in prompt.split("\n\n") if p.strip()])
                     print(f"  ❌ Prompt 結構失敗（分段不足），重試 {local_attempt}/{max_retries}")
-                    print(f"     分段數: {section_count}（需要 5-7 個）")
+                    print(f"     分段數: {bracket_count} 方括號 / {paragraph_count} \\n\\n段落（需 ≥5）")
                     print(f"     Prompt 前 200 字: {repr(prompt[:200])}")
                     continue  # 重試
                 
