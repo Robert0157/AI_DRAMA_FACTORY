@@ -109,6 +109,13 @@ STYLE_CONFIG: dict[str, dict[str, str]] = {
         "example_title": "Tokyo Sunny Walk | 東京陽光漫步",
         "gene_pool_file": "music_genes_UNIQLO_music.md",
     },
+    "trending": {
+        "label": "Viral Trends (Phonk / K-Pop Instrumental)",
+        "hook": "遊戲精華、汽車甩尾、舞蹈挑戰、高燃踩點、短影音爆款",
+        "suffix": "🔥 #Shorts #TrendingMusic",
+        "example_title": "Midnight Drifter | 午夜甩尾高光",
+        "gene_pool_file": "music_genes_trending_viral.md",
+    },
 }
 
 
@@ -125,6 +132,7 @@ CONTAINER_SOURCE_MAP: dict[str, str] = {
     "jazz":    "music_genes_JESS_music.md",
     "surreal": "music_genes_surreal_epic.md",
     "uniqlo":  "music_genes_UNIQLO_music.md",
+    "trending": "music_genes_trending_viral.md",
 }
 
 def _resolve_style(channel: str, sub_style: str | None) -> tuple[str, dict[str, str]]:
@@ -465,7 +473,7 @@ def generate_shorts_pool(
 
 if __name__ == "__main__":
     import argparse
-    lofi_styles = ["zara", "gucci", "scifi", "jazz", "surreal", "uniqlo"]
+    lofi_styles = ["zara", "gucci", "scifi", "jazz", "surreal", "uniqlo", "trending"]
     lm_styles = ["auto"] + _LIGHT_MUSIC_STYLE_KEYS
     all_styles = lofi_styles + lm_styles
     parser = argparse.ArgumentParser(description="Shorts 雙語標題彈藥庫生成（v15.11 頻道+風格隔離）")
