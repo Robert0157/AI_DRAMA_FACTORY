@@ -44,6 +44,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from scripts.common.env_manager import config
 from scripts.ui.backend import get_ui_backend
+from scripts.marketing.generate_shorts_pool import STYLE_CONFIG as _SHORTS_STYLE_CONFIG, CONTAINER_SOURCE_MAP as _LOFI_CONTAINER_SOURCES
 
 st.set_page_config(page_title="R&S Echoes CEO Console", layout="wide")
 
@@ -284,6 +285,31 @@ with tab2:
         help="與 llm_client / generate_ceo_prompts.py 一致：預設為 MiniMax M2.7（NVIDIA NIM）；大量批次可改智譜。",
     )
 
+    # 子風格基因庫選擇（lofi 專用）
+    _ceo_gene_pool: str | None = None
+    _cur_ch_tab2 = st.session_state.backend.current_channel
+    if _cur_ch_tab2 == "lofi":
+        # 五種子風格，zara 為預設（第一項）；所有選項皆觸發容器覆寫
+        # 鐵律：GL_4M_Suno_prompt.md 只能作為目標，來源由 CONTAINER_SOURCE_MAP 決定
+        _lofi_sub_styles = {
+            k: (_SHORTS_STYLE_CONFIG[k]["label"] + (" ★ 預設" if k == "zara" else ""))
+            for k in ["zara", "gucci", "scifi", "jazz", "surreal"]
+            if k in _SHORTS_STYLE_CONFIG
+        }
+        _ceo_style_key = st.selectbox(
+            "子風格基因庫（容器切換）",
+            options=list(_lofi_sub_styles.keys()),
+            format_func=lambda k: _lofi_sub_styles[k],
+            help="選擇後點擊供彈按鈕，後端自動將對應來源基因庫覆寫到 GL_4M_Suno_prompt.md 容器，再執行供彈。選 ZARA 預設 = 恢復 music_genes_ZARA_music.md 內容。",
+        )
+        _src_file = _LOFI_CONTAINER_SOURCES.get(_ceo_style_key, "")
+        if _src_file:
+            _ceo_gene_pool = f".openclaw/{_src_file}"
+            if _ceo_style_key == "zara":
+                st.info(f"🎵 恢復預設：GL_4M_Suno_prompt.md ← `{_src_file}`")
+            else:
+                st.info(f"🔄 切換容器：GL_4M_Suno_prompt.md ← `{_src_file}`")
+
     bcol1, bcol2 = st.columns(2)
     with bcol1:
         batch_size = st.number_input(
@@ -323,6 +349,7 @@ with tab2:
             provider=provider,
             batch_size=int(batch_size),
             max_retries=int(max_retries),
+            gene_pool=_ceo_gene_pool,
         )
         if ok:
             st.success(msg)
@@ -378,9 +405,11 @@ with tab2:
         "gucci": "✨ GUCCI — 前衛奢華 (Avant-Garde/Neo-Classical)",
         "scifi": "👾 SCI-FI — 科幻電子 (Synthwave/Glitch IDM)",
         "jazz": "🎷 JAZZ — 爵士酒廊 (Smooth Jazz/Cafe Bossa)",
+        "surreal": "🌌 SURREAL — 超現實史詩 (Cinematic Ethereal/Dark Ambient)",
     }
     _lm_style_labels = {
         "auto": "🔄 四風格自動輪轉 (CelticFolk→Piano→NeoClassical→Zen)",
+        "uniqlo": "🌸 UNIQLO — LifeWear 日常美學 (ShibuyaKei/LightBossa/UpbeatAcoustic)",
         "celtic": "🌿 CelticFolk — 居爾特奇幻民謠",
         "piano": "🎹 PianoImpression — 印象派純鋼琴",
         "neoclassical": "🎻 NeoClassical — 新古典史詩",
@@ -591,7 +620,7 @@ with tab5:
         )
         st.balloons()
     st.markdown("""
-**【發行前自動檢查機制】** 系統將自動檢驗 4 大核心檔案是否齊全（metadata、DistroKid_Sheet、youtube_sheet、1 小時 MP4），並透過 SMB（邊車模式）將影片與 sidecar 傳送至 Mac mini（`Y:/Long_Queue`）。
+**【發行前自動檢查機制】** 系統將自動檢驗 4 大核心檔案是否齊全（metadata、DistroKid_Sheet、youtube_sheet、1 小時 MP4），並透過 SMB（邊車模式）將影片與 sidecar 傳送至 Mac mini（`Y:/Long_Queue/{頻道}/`）。
 """)
 
     check_res = st.session_state.backend.verify_export_files(channel=cur_ch)
@@ -664,9 +693,157 @@ with tab5:
                 else:
                     st.error(pub_res["msg"])
 
+    # ── v15.12 DistroKid CSV 下載區塊 ───────────────────────────────
+    st.divider()
+    st.subheader("📥 DistroKid 發行報表下載 (v15.12)")
 
+    exports = st.session_state.backend.get_final_exports()
+    dk_csv_files = exports.get("dk_upload_csv", [])
+    # v15.12 CEO 指定：CSV 集中路徑 ISRC_csv/{channel}/
+    csv_dir = Path(st.session_state.backend.config.workspace_root) / "assets" / "final_exports" / "ISRC_csv" / cur_ch
+    # 既有 DistroKid_Sheet 維持在 final_exports/{channel}/
+    sheet_dir = Path(st.session_state.backend.config.workspace_root) / "assets" / "final_exports" / cur_ch
 
+    if dk_csv_files:
+        st.caption(f"🎵 頻道 **{cur_ch.upper()}** 的 DistroKid 上傳報表：")
 
+        for csv_name in sorted(dk_csv_files, reverse=True)[:5]:  # 只顯示最近 5 份
+            csv_path = csv_dir / csv_name
+            if csv_path.exists():
+                file_size_kb = round(csv_path.stat().st_size / 1024, 1)
+                col_dl, col_info = st.columns([1, 3])
+                with col_dl:
+                    with open(csv_path, "rb") as f:
+                        st.download_button(
+                            label=f"⬇️ {csv_name}",
+                            data=f,
+                            file_name=csv_name,
+                            mime="text/csv",
+                            key=f"dl_{csv_name}",
+                            help=f"下載 {csv_name}（{file_size_kb} KB）",
+                        )
+                with col_info:
+                    st.caption(f"📄 {file_size_kb} KB  |  含曲目級欄位（ISRC 預留、AI 宣告、Content ID）")
+    else:
+        st.info(
+            "尚無 DistroKid CSV 上傳報表。請先執行 **Tab5 全自動產線**（Phase 3.5 自動生成），"
+            "或手動執行：\n\n"
+            f"`python scripts/gear1_prod/distrokid_metadata_builder.py --channel {cur_ch}`"
+        )
+
+    # 也顯示既有 DistroKid_Sheet（人類可讀文案）
+    dk_sheets = exports.get("dk_cheatsheet", [])
+    if dk_sheets:
+        with st.expander("📋 既有 DistroKid 文案報告 (DistroKid_Sheet_*.txt)"):
+            for sheet_name in sorted(dk_sheets, reverse=True)[:5]:
+                sheet_path = sheet_dir / sheet_name
+                if sheet_path.exists():
+                    st.caption(f"📝 {sheet_name}")
+
+    # ── v15.12 ISRC 狀態儀表卡 ─────────────────────────────────────
+    st.divider()
+    st.subheader("🏷️ ISRC 版權註冊狀態 (v15.12)")
+
+    isrc_status = st.session_state.backend.get_isrc_status(channel=cur_ch)
+    total = isrc_status["total_gen0_tracks"]
+    with_isrc = isrc_status["tracks_with_isrc"]
+    without_isrc = isrc_status["tracks_without_isrc"]
+    pct = isrc_status["isrc_coverage_pct"]
+
+    col_ISRC_a, col_ISRC_b, col_ISRC_c = st.columns(3)
+    with col_ISRC_a:
+        st.metric("🎵 Gen0 總曲數", total)
+    with col_ISRC_b:
+        st.metric("✅ 已註冊 ISRC", with_isrc, delta=None if with_isrc == 0 else f"+{with_isrc}")
+    with col_ISRC_c:
+        st.metric("⏳ 待註冊 ISRC", without_isrc, delta=None if without_isrc == 0 else f"-{without_isrc}")
+
+    # 進度條
+    if total > 0:
+        st.progress(pct / 100, text=f"ISRC 覆蓋率：{pct}%（{with_isrc}/{total}）")
+
+    # 匯入摘要
+    import_log = isrc_status.get("last_import_log")
+    if import_log:
+        with st.expander(f"📋 最近一次 ISRC 匯入摘要（{import_log.get('imported_at', '?')}）"):
+            st.caption(f"來源 CSV：`{import_log.get('csv_source', '?')}`")
+            st.caption(f"已寫入：{import_log.get('tracks_updated', 0)} 筆")
+            st.caption(f"略過：{import_log.get('tracks_skipped', 0)} 筆")
+            stw = import_log.get("warnings", [])
+            if stw:
+                st.warning("⚠️ 匯入警告：")
+                for w in stw[:5]:
+                    st.caption(f"• {w}")
+
+    # 引導操作
+    if without_isrc > 0 and total > 0:
+        st.info(
+            f"📥 尚有 **{without_isrc}** 首曲目待註冊 ISRC。\n\n"
+            "營運 SOP：\n"
+            f"1. 從上方「DistroKid 發行報表下載」取得最新 CSV\n"
+            f"2. 在 DistroKid 完成發行，取得 ISRC 後回填至 CSV 的 `ISRC (Leave Blank)` 欄位\n"
+            f"3. 將填好 ISRC 的 CSV **上傳至下方**，點擊匯入\n"
+        )
+    elif isrc_status["isrc_fully_imported"]:
+        st.success(f"🎉 全部 **{total}** 首 Gen0 曲目已完成 ISRC 註冊！版權防護網已啟動。")
+
+    if total == 0:
+        st.caption("尚無 Gen0 曲目資料。請先執行產線生成母帶。")
+
+    # ── v15.12 一鍵 ISRC 匯入 ─────────────────────────────────────
+    st.divider()
+    st.subheader("📤 一鍵 ISRC 匯入 (v15.12)")
+
+    uploaded_csv = st.file_uploader(
+        "上傳已回填 ISRC 的 DistroKid CSV",
+        type=["csv"],
+        key=f"isrc_upload_{cur_ch}",
+        help="將從上方下載的 CSV 在 DistroKid 取得 ISRC 後回填，再上傳至此。",
+    )
+
+    if uploaded_csv is not None:
+        # 暫存上傳檔案
+        import tempfile, os as _os
+        _tmp_dir = Path(tempfile.gettempdir()) / "ai_drama_isrc"
+        _tmp_dir.mkdir(parents=True, exist_ok=True)
+        _tmp_path = _tmp_dir / f"uploaded_isrc_{cur_ch}.csv"
+        _tmp_path.write_bytes(uploaded_csv.getvalue())
+
+        col_dry, col_go = st.columns(2)
+        with col_dry:
+            if st.button("🔍 預覽匯入 (Dry Run)", width="stretch", key=f"dryrun_{cur_ch}"):
+                with st.spinner("預覽中..."):
+                    res = st.session_state.backend.import_isrc_from_uploaded_csv(
+                        str(_tmp_path), channel=cur_ch, dry_run=True
+                    )
+                if res["ok"]:
+                    st.success(res["msg"])
+                    if res["updated"] > 0:
+                        st.caption(f"📊 預計寫入 {res['updated']} 筆 ISRC，略過 {res['skipped']} 筆")
+                    if res["warnings"]:
+                        st.warning("⚠️ 警告：" + "；".join(res["warnings"][:5]))
+                else:
+                    st.error(res["msg"])
+
+        with col_go:
+            confirm = st.checkbox("✅ 我已確認預覽結果無誤，允許寫入資料庫", key=f"confirm_isrc_{cur_ch}")
+            if st.button(
+                "✅ 正式匯入 ISRC",
+                type="primary",
+                width="stretch",
+                disabled=not confirm,
+                key=f"import_{cur_ch}",
+            ):
+                with st.spinner("寫入 ISRC 至資料庫中..."):
+                    res = st.session_state.backend.import_isrc_from_uploaded_csv(
+                        str(_tmp_path), channel=cur_ch, dry_run=False
+                    )
+                if res["ok"]:
+                    st.success(res["msg"])
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.error(res["msg"])
 
 
 with tab6:
