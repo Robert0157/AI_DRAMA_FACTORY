@@ -379,8 +379,14 @@ def _generate_prompts_batch_from_glm4(
     """
     validated_prompts = []
     
-    # 【v15.11 四大風格輪詢】按組號依序提示風格 A→B→C→D，確保批次多樣性
-    style_pillars = ["A", "B", "C", "D"]
+    # 【v15.12 動態風格輪詢】自動偵測基因庫中的風格數量 (支援 4大、5大等任意數量)
+    import re
+    # 掃描基因庫中類似 "▶ 風格 A：" 或 "▶ 風格 E：" 的標記
+    detected_pillars = re.findall(r'▶\s*風格\s*([A-Z])\s*[：:]', gene_pool)
+    # 去除重複並排序，若未偵測到則保底使用 A~D
+    detected_pillars = sorted(list(set(detected_pillars))) if detected_pillars else ["A", "B", "C", "D"]
+
+    print(f"  🎡 動態風格輪詢矩陣: {' → '.join(detected_pillars)} (共 {len(detected_pillars)} 種)")
 
     # 【v15.11 動態 Tags 優先鏈】基因庫防護字串 → channel config → REQUIRED_TAGS
     import json as _json
@@ -417,8 +423,8 @@ def _generate_prompts_batch_from_glm4(
         while local_attempt < max_retries and not success:
             local_attempt += 1
             
-            # 【v15.11 四大風格多樣性指令】A→B→C→D 依組號輪詢，確保批次風格不重複
-            style_hint = style_pillars[(group_idx - 1) % 4]
+            # 【v15.12 動態多樣性指令】依偵測到的風格數量進行餘數輪詢
+            style_hint = detected_pillars[(group_idx - 1) % len(detected_pillars)]
             
             # 【v15.11 頻道感知 user_prompt 範例】light_music 顯示自然風格前綴
             _title_example = (
