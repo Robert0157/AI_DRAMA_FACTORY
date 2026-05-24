@@ -39,7 +39,7 @@ from scripts.common.visual_logic_vault import (
 # 設定常數
 # ────────────────────────────────────────────────────────────────
 
-PROMPT_MD_PATH = Path(config.workspace_root) / ".openclaw" / "GL_4M_Suno_prompt.md"
+PROMPT_MD_PATH = Path(config.workspace_root) / ".openclaw" / "GL_4M_Suno_prompt.md"  # 容器路徑（由 backend._switch_container_gene_pool 覆寫後讀取）
 CEP_OUTPUT_DIR = Path(config.workspace_root) / "assets" / ".ceo_prompts"
 CEP_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -192,11 +192,12 @@ def _read_gene_pool(channel: str = "lofi", override_path: str | None = None) -> 
         else:
             fallback_used = True
         
-        # Fallback 至預設 Lofi 基因文件
+        # Fallback 至容器基因文件（应由 backend._switch_container_gene_pool 從對應子風格來源顯寫）
         if not PROMPT_MD_PATH.exists():
             _fatal_exit(
                 "GENE_POOL_MISSING",
-                f"GL_4M_Suno_prompt.md not found: {PROMPT_MD_PATH}"
+                f"容器 GL_4M_Suno_prompt.md 不存在: {PROMPT_MD_PATH}\n"
+                "  解法：確認 .openclaw/GL_4M_Suno_prompt.md 存在，或检查 backend._switch_container_gene_pool 是否正常執行。"
             )
         
         # 【v15.11 基因隔離鐵律】light_music 頻道若 fallback 到 Lofi 基因庫 → 立即中止
@@ -274,46 +275,35 @@ def _validate_prompt_structure(prompt_str: str) -> bool:
 
 def _inject_time_dilation(prompt: str) -> str:
     """
-    【CTO v10.4 結構化重組版】
-    不再使用補丁式替換，改用結構化拆解重建。
-    1. 徹底清除所有舊的刪節號與過多空白。
-    2. 以段落標籤為界拆分。
-    3. 在標籤之間精準注入「雙重獨佔行」刪節號。
-    4. 自動確保 [Outro] 後方淨空。
+    【v15.4 雙棲向下相容版】無損升級！
+    向下相容純音樂 (兩層式)，同時完美支援人聲歌詞 (垂直三層式)。
+    確保時間膨脹 (...) 只會插入在「完整的段落區塊（標籤+微操+歌詞）」之間。
     """
     import re
-    
+
     # 第一步：物理清潔 - 移除所有既存的刪節號與重複換行
     clean_text = re.sub(r'\.{2,}', '', prompt)  # 移除所有 .. ... ....
     clean_text = re.sub(r'\n{3,}', '\n\n', clean_text).strip()
-    
+
     # 第二步：定義膨脹補丁 (確保獨佔行)
     dilation_patch = "\n\n...\n...\n\n"
-    
-    # 第三步：使用正則拆分段落，但保留標籤
-    # 匹配 [Tag] (Desc) 或 [Tag]
-    parts = re.split(r'(\[.*?\](?:\s*\(.*?\))?)', clean_text)
-    
+
+    # 第三步：以「換行後緊接的 [ 」作為切割點
+    # 這樣會將「[段落標籤] + (微操) + 歌詞」整個視為一個不可分割的 Block
+    temp_text = "\n" + clean_text
+    blocks = re.split(r'\n(?=\[)', temp_text)
+
     reconstructed = []
-    last_tag_index = -1
-    
-    # 找到最後一個標籤的位置 (通常是 Outro)
-    for i in range(len(parts)-1, -1, -1):
-        if parts[i].startswith('['):
-            last_tag_index = i
-            break
-            
-    for i in range(len(parts)):
-        segment = parts[i].strip()
-        if not segment:
-            continue
-        
-        reconstructed.append(segment)
-        
-        # 如果當前部分是標籤，且不是最後一個標籤，則注入補丁
-        if segment.startswith('[') and i < last_tag_index:
+    # 過濾空字串
+    valid_blocks = [b.strip() for b in blocks if b.strip()]
+
+    for i, block in enumerate(valid_blocks):
+        reconstructed.append(block)
+
+        # 只要不是最後一個 Block，就在後面補上時間膨脹符號
+        if i < len(valid_blocks) - 1:
             reconstructed.append(dilation_patch)
-            
+
     return "".join(reconstructed).strip()
 
 
@@ -442,27 +432,42 @@ def _generate_prompts_batch_from_glm4(
                 f"{{\n"
                 f'  "title": "StyleName_EnglishTitle（例：{_title_example}，無空格無中文無特殊符號）",\n'
                 f'  "tags": "嚴格遵循選定風格的 Tags + 護城河字串",\n'
-                f'  "prompt": "[開場標籤] (氛圍描述)...\\n\\n...\\n\\n[段落標籤] (樂器變化)...\\n\\n...\\n\\n[結尾標籤] (Fade to silence...)"\n'
+                f'  "prompt": "[開場標籤] (氛圍描述)\\n(若是允許人聲的風格，請在此換行填寫原創歌詞；若是純音樂則嚴格留空)...\\n\\n...\\n\\n[段落標籤] (樂器變化)\\n(歌詞或留空)...\\n\\n...\\n\\n[結尾標籤] (Fade to silence...)"\n'
                 f"}}\n"
                 f"title 必須嚴格遵守「風格名稱_英文檔名」格式，不得含空格、中文字或特殊符號。\n"
                 f"tags 結尾必須包含護城河：{channel_tags_moat}\n"
                 f"prompt 段落數量必須控制在 5 至 7 個標籤之間（短影音 180 秒）。\n"
+                f"⚠️ JSON 輸出安全規則：所有字串值內嚴禁使用雙引號 \"（會破壞 JSON 結構）；如需強調請改用單引號 ' 或省略引號。\n"
             )
             
             try:
-                # 【單發呼叫】每次獨立呼叫，要求 1 組
+                # 【v15.10 三引擎降級鏈】preferred → zhipu → gemini（架構鐵律）
+                # 單組 LLM 呼叫失敗（含 429 Rate Limit）→ 自動切換備援引擎，不重打同一引擎
                 _model_map = {
                     "gemini":  "gemini-2.5-flash",
                     "minimax": "minimaxai/minimax-m2.7",
                     "zhipu":   "glm-4",
                 }
-                result = generate_structured_json(
-                    system_prompt=gene_pool,
-                    user_prompt=user_prompt,
-                    provider=provider,
-                    model=_model_map.get(provider, "glm-4"),
-                    max_retries=1  # 每組只重試 1 次
-                )
+                _prov_chain = [provider] + [p for p in ["minimax", "zhipu", "gemini"] if p != provider]
+                result = None
+                _last_prov_exc: Exception | None = None
+                for _prov in _prov_chain:
+                    try:
+                        result = generate_structured_json(
+                            system_prompt=gene_pool,
+                            user_prompt=user_prompt,
+                            provider=_prov,
+                            model=_model_map.get(_prov, "glm-4"),
+                            max_retries=1  # 每引擎各試 1 次
+                        )
+                        if _prov != provider:
+                            print(f"  ✅ [{_prov.upper()}] 備援引擎成功")
+                        break
+                    except Exception as _pe:
+                        print(f"  ⚠️ [{_prov.upper()}] 失敗: {type(_pe).__name__}，嘗試備援引擎...")
+                        _last_prov_exc = _pe
+                if result is None:
+                    raise (_last_prov_exc or Exception("三引擎全失敗"))
                 # 【簡潔解析】直接用 json.loads() 讀取標準 JSON
                 if not isinstance(result, dict):
                     print(f"  ⚠️ LLM 回傳非 dict: {type(result).__name__}")
