@@ -65,15 +65,48 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
     if brace_start > 0:
         cleaned = cleaned[brace_start:]
 
-    # ============ 第二‧九步：Python 語法正規化 ============
-    # 【v15.12.1 RCA 修正】LLM 以 ```python 包裝時，布林值與 None 用 Python 大寫語法
+    # ============ 第二‧九步：Python 語法正規化（字串感知掃描器） ============
+    # 【v15.12.2 RCA 修正】LLM 以 ```python 包裝時，布林值與 None 用 Python 大寫語法
     # 導致 JSON 解析「Expecting value」(e.g. True → true, False → false, None → null)
-    # \b 確保不誤替換字串值中的 True/False 子字串（如 "TrueColor"）
-    cleaned = re.sub(r'\bTrue\b',  'true',  cleaned)
-    cleaned = re.sub(r'\bFalse\b', 'false', cleaned)
-    cleaned = re.sub(r'\bNone\b',  'null',  cleaned)
-    # 去除 Python dict/list 尾隨逗號（,} 或 ,]），JSON 不允許
-    cleaned = re.sub(r',\s*([}\]])', r'\1', cleaned)
+    # 【v15.12.2 修正升級】舊版 re.sub(r'\bTrue\b') 無法區分 JSON 值位置與字串值內部：
+    #   "Stay True to the Beat" 中的 True 會被誤替換成 true 導致標題竄改。
+    #   同理，尾隨逗號 r',\s*([}\]])' 若 description 含 ",]" 序列也會誤刪。
+    #   解法：與 Step 3 同架構的字串感知掃描器，僅在字串外執行替換與逗號清除。
+    _kw_map29 = [('True', 'true'), ('False', 'false'), ('None', 'null')]
+    _buf29: list = []
+    _i29 = 0
+    _in29 = False   # 是否在 JSON 字串值內
+    _esc29 = False  # 是否處理跳脫序列
+    while _i29 < len(cleaned):
+        _c29 = cleaned[_i29]
+        if _esc29:
+            _buf29.append(_c29); _esc29 = False; _i29 += 1; continue
+        if _c29 == '\\' and _in29:
+            _buf29.append(_c29); _esc29 = True; _i29 += 1; continue
+        if _c29 == '"':
+            _in29 = not _in29; _buf29.append(_c29); _i29 += 1; continue
+        if not _in29:
+            # 關鍵字替換（僅在字串外）
+            _hit29 = False
+            for _kw29, _rv29 in _kw_map29:
+                _kl29 = len(_kw29)
+                if cleaned[_i29:_i29 + _kl29] == _kw29:
+                    _pre29 = cleaned[_i29 - 1] if _i29 > 0 else ''
+                    _post29 = cleaned[_i29 + _kl29] if _i29 + _kl29 < len(cleaned) else ''
+                    if (not _pre29 or (not _pre29.isalnum() and _pre29 != '_')) and \
+                       (not _post29 or (not _post29.isalnum() and _post29 != '_')):
+                        _buf29.extend(_rv29); _i29 += _kl29; _hit29 = True; break
+            if _hit29:
+                continue
+            # 尾隨逗號清除（僅在字串外）：, 後跳過空白遇到 } 或 ] → 跳過此逗號
+            if _c29 == ',':
+                _j29 = _i29 + 1
+                while _j29 < len(cleaned) and cleaned[_j29] in ' \t\r\n':
+                    _j29 += 1
+                if _j29 < len(cleaned) and cleaned[_j29] in '}]':
+                    _i29 += 1; continue  # 跳過逗號（不 append）
+        _buf29.append(_c29); _i29 += 1
+    cleaned = ''.join(_buf29)
 
     # ============ 第三步：未閉合括號自動補全 ============
     # 【v15.12.1 RCA 修正】字串感知掃描器：不計算字串值內的 [ ] { }
