@@ -432,6 +432,14 @@ def generate_shorts_pool(
                 if not isinstance(result, dict):
                     print(f"  ⚠️ LLM 回傳非 dict: {type(result).__name__}")
                     continue
+                # v15.12.1 防呆：自動補齊缺失的風格後綴，避免偶發遺漏後綴觸發無效重試
+                _expected_sfx = item_style["suffix"]
+                _cur_title = result.get("title", "").strip()
+                if _cur_title and _expected_sfx not in _cur_title:
+                    _fixed_title = _cur_title + " " + _expected_sfx
+                    if len(_fixed_title) <= 100:
+                        result["title"] = _fixed_title
+                        print(f"  ⚠️ 標題缺少後綴，已自動補齊: {_expected_sfx}")
                 if not _validate_shorts_meta(result, expected_suffix=item_style["suffix"]):
                     print(f"  ❌ 欄位驗證失敗，重試 {local_attempt}/{max_retries}")
                     continue

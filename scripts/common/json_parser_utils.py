@@ -65,36 +65,81 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
         cleaned = cleaned[brace_start:]
 
     # ============ 第三步：未閉合括號自動補全 ============
-    # 【v15.10 修正】先補內層方括號，再補外層大括號（確保 `{"items":["x"` → `{"items":["x"]}`）
-    open_brackets = cleaned.count('[')
-    close_brackets = cleaned.count(']')
-    if open_brackets > close_brackets:
-        cleaned += ']' * (open_brackets - close_brackets)
-
-    open_braces = cleaned.count('{')
-    close_braces = cleaned.count('}')
-    if open_braces > close_braces:
-        cleaned += '}' * (open_braces - close_braces)
+    # 【v15.12.1 RCA 修正】字串感知掃描器：不計算字串值內的 [ ] { }
+    # 修正根因：description 含 [Your Live Stream URL] 等方括號時，舊版 str.count() 計數偏高
+    # 導致自動補的 ] 插入到未閉合字串值中，Phase A/B/C 三階段全失敗。
+    _open_sq = _close_sq = _open_cu = _close_cu = 0
+    _in_str = _esc = False
+    for _ch in cleaned:
+        if _esc:
+            _esc = False
+            continue
+        if _ch == '\\' and _in_str:
+            _esc = True
+            continue
+        if _ch == '"':
+            _in_str = not _in_str
+            continue
+        if not _in_str:
+            if _ch == '[':   _open_sq  += 1
+            elif _ch == ']': _close_sq += 1
+            elif _ch == '{': _open_cu  += 1
+            elif _ch == '}': _close_cu += 1
+    # JSON 截斷於字串值中間時，先補 " 關閉字串，再補結構括號
+    if _in_str:
+        cleaned += '"'
+    if _open_sq > _close_sq:
+        cleaned += ']' * (_open_sq - _close_sq)
+    if _open_cu > _close_cu:
+        cleaned += '}' * (_open_cu - _close_cu)
     
     # ============ 第四步：安全 JSON 解析 ============
-    # 【v15.10/11 RCA 修正】兩階段解析：
+    # 【v15.10/11 RCA 修正】三階段解析：
     #   Phase A — 標準嚴格模式（strict=True）
     #   Phase B — 容錯模式（strict=False）：應對 LLM 在字串值中插入 literal newline/tab
-    #             MiniMax/Gemini 多行 prompt 欄位常見此問題，strict=False 允許控制字元存在字串值內
+    #   Phase C — 迭代式未跳脫引號修復：應對 LLM 在 prompt 欄位插入未跳脫 "
+    #             "Expecting ',' delimiter" 錯誤的根本原因（surreal/dark 風格高頻觸發）
     try:
         result = json.loads(cleaned)
     except json.JSONDecodeError:
         try:
             result = json.JSONDecoder(strict=False).decode(cleaned)
-        except json.JSONDecodeError as e:
-            # 兩階段均失敗，提供清晰的診斷訊息
-            error_msg = (
-                f"JSON 解析失敗\n"
-                f"  錯誤型態：{type(e).__name__}\n"
-                f"  錯誤訊息：{str(e)}\n"
-                f"  清洗後文本（前 200 字元）：{cleaned[:200]}\n"
-            )
-            raise ValueError(error_msg)
+        except json.JSONDecodeError as _e_b:
+            # Phase C: 逐一修復未跳脫雙引號（最多 40 次）
+            _fixed = cleaned
+            _result_c = None
+            _dec = json.JSONDecoder(strict=False)
+            for _i in range(40):
+                try:
+                    _result_c = _dec.decode(_fixed)
+                    break
+                except json.JSONDecodeError as _e_c:
+                    if _e_c.pos < len(_fixed) and _fixed[_e_c.pos] == '"':
+                        # 直接命中：錯誤位置就是多餘的 "
+                        _fixed = _fixed[:_e_c.pos] + '\\"' + _fixed[_e_c.pos + 1:]
+                    elif 'delimiter' in str(_e_c):
+                        # 「Expecting ',' delimiter」型態：字串提前結束，錯誤位置前可能有空白
+                        # 向後掃描跳過空白，找到最近的 " 並跳脫
+                        _back = _e_c.pos - 1
+                        while _back >= 0 and _fixed[_back] in ' \t\r\n':
+                            _back -= 1
+                        if _back >= 0 and _fixed[_back] == '"':
+                            _fixed = _fixed[:_back] + '\\"' + _fixed[_back + 1:]
+                        else:
+                            break  # 非引號型錯誤，無法繼續修復
+                    else:
+                        break  # 非引號錯誤，無法繼續自動修復
+            if _result_c is not None:
+                result = _result_c
+            else:
+                # 三階段均失敗，提供清晰的診斷訊息
+                error_msg = (
+                    f"JSON 解析失敗\n"
+                    f"  錯誤型態：{type(_e_b).__name__}\n"
+                    f"  錯誤訊息：{str(_e_b)}\n"
+                    f"  清洗後文本（前 200 字元）：{cleaned[:200]}\n"
+                )
+                raise ValueError(error_msg)
     
     # ============ 第五步：型態驗證 ============
     if not isinstance(result, dict):
