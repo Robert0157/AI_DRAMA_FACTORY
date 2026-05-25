@@ -45,8 +45,9 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
         raise ValueError("輸入文本必須為非空字串")
     
     # ============ 第一步：剝除 Markdown 程式碼框 ============
-    # 移除 ```json 與 ``` 標籤
-    cleaned = re.sub(r'```(?:json)?\s*\n?', '', text, flags=re.IGNORECASE)
+    # 移除 ```json / ```python / ``` 等任意語言標籤的開頭圍欄
+    # 【v15.12.1 RCA 修正】舊版 (?:json)? 僅匹配 json，LLM 以 ```python 包裝時留下 python\nimport json\nmetadata = 前綴
+    cleaned = re.sub(r'```[a-zA-Z0-9_+-]*\s*\n?', '', text, flags=re.IGNORECASE)
     cleaned = re.sub(r'\n?```', '', cleaned)
     
     # 移除其他常見 Markdown 污染 (如 ` 符號、~~ 刪除線等)
@@ -63,6 +64,16 @@ def clean_and_parse_json(text: str) -> Dict[str, Any]:
     brace_start = cleaned.find('{')
     if brace_start > 0:
         cleaned = cleaned[brace_start:]
+
+    # ============ 第二‧九步：Python 語法正規化 ============
+    # 【v15.12.1 RCA 修正】LLM 以 ```python 包裝時，布林值與 None 用 Python 大寫語法
+    # 導致 JSON 解析「Expecting value」(e.g. True → true, False → false, None → null)
+    # \b 確保不誤替換字串值中的 True/False 子字串（如 "TrueColor"）
+    cleaned = re.sub(r'\bTrue\b',  'true',  cleaned)
+    cleaned = re.sub(r'\bFalse\b', 'false', cleaned)
+    cleaned = re.sub(r'\bNone\b',  'null',  cleaned)
+    # 去除 Python dict/list 尾隨逗號（,} 或 ,]），JSON 不允許
+    cleaned = re.sub(r',\s*([}\]])', r'\1', cleaned)
 
     # ============ 第三步：未閉合括號自動補全 ============
     # 【v15.12.1 RCA 修正】字串感知掃描器：不計算字串值內的 [ ] { }

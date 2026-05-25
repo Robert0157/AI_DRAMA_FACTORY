@@ -376,18 +376,19 @@ def generate_shorts_pool(
             item_style = current_style
             item_style_key = style_key
 
-        # v15.11 每組獨立 system_prompt（風格專屬後綴）
+        # v15.12.1 每組獨立 system_prompt（風格專屬後綴 + 明確禁止 Python 語法）
         item_system_prompt = (
             f"你是 R&S Echoes {item_style['label']} 頻道的行銷專家。\n"
             "你的任務是為 YouTube Shorts 撰寫高點擊率的英中雙語標題與描述。\n"
             "【強制規則 - 若違反將導致系統崩潰】：\n"
-            "1. 必須輸出純 JSON 物件，絕對不允許任何 Markdown 標記（如 ```json）或說明文字。\n"
+            "1. 必須輸出純 JSON 物件，不加任何前綴、後綴、說明文字或程式碼包裝（禁止 ```json、```python、import json、metadata = 等）。\n"
             f"2. 標題 (title) 格式必須嚴格遵守：「[純英文短句] | [純中文短句] {item_style['suffix']}」。英文在前，中文在後，中間用「 | 」隔開。\n"
             "3. 標題總長度不可超過 80 字元。\n"
             "4. 描述 (description) 必須包含中英文，並引導聽眾點擊 24/7 輕音樂直播。\n"
             "5. 標籤 (tags) 陣列長度【必須剛好是 15 個】，不可多也不可少。\n"
-            "6. categoryId 固定 '10'，privacyStatus 固定 'public'，containsSyntheticMedia 固定 true。\n"
-            "7. selfDeclaredMadeForKids 固定 false（非兒童導向／非兒童專屬）。\n"
+            "6. categoryId 固定 '10'，privacyStatus 固定 'public'，containsSyntheticMedia 固定 true（JSON 小寫，非 Python True）。\n"
+            "7. selfDeclaredMadeForKids 固定 false（JSON 小寫，非 Python False）。\n"
+            "8. 禁止使用 Python 語法：True/False/None 必須寫成 true/false/null；禁止尾隨逗號（如 \"key\": \"val\",}）。\n"
         )
 
         print(f"\n【第 {idx}/{batch_size} 組】MiniMax 2.7 單發生成 — 風格: {item_style_key}...")
