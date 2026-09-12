@@ -10,7 +10,9 @@ Two quality tiers:
     validated package fields (always available, $0)
   * LLM novelized - one DeepSeek call per episode turns the outline (and any
     written teleplay excerpt) into novel prose; results are cached under
-    <run>/novel/ep_NN.md keyed by a source hash, so re-exports are free.
+    <run>/novel/ep_NN.md keyed by a source hash, so re-exports are free. A
+    source change never downgrades the doc to outline fallback: the previous
+    novelized text is kept until the next --llm run realigns it.
 
 Usage:
   python scripts/story_room/script_novel.py --series-id timegate-56 --llm
@@ -139,6 +141,17 @@ def _cache_path(cache_dir: Path, ep: int) -> Path:
     return cache_dir / f"ep_{ep:02d}.md"
 
 
+def _read_cache_body(path: Path | None) -> tuple[str, str]:
+    """Return (header, body) of a novel cache file; ("", "") when unreadable."""
+    if not path or not path.is_file():
+        return "", ""
+    text = path.read_text(encoding="utf-8")
+    first, _, body = text.partition("\n")
+    if not first.startswith("<!-- src:"):
+        return "", ""
+    return first, body.strip()
+
+
 def build_novel(package: dict, *, series_id: str, meta: dict | None = None,
                 cache_dir: Path | None = None, llm: bool = False,
                 model: str | None = None, workers: int = 6,
@@ -159,11 +172,16 @@ def build_novel(package: dict, *, series_id: str, meta: dict | None = None,
         excerpt = _ep_excerpt(package, ep)
         src_hash = _src_hash(package, row, excerpt)
         cache = _cache_path(novel_dir, ep) if novel_dir else None
-        if cache and cache.is_file() and not force:
-            text = cache.read_text(encoding="utf-8")
-            first, _, body = text.partition("\n")
-            if first.startswith("<!-- src:") and src_hash in first and body.strip():
-                passages[ep] = (body.strip(), "llm")
+        header, body = _read_cache_body(cache) if (cache and not force) else ("", "")
+        if body:
+            if src_hash in header:
+                passages[ep] = (body, "llm")
+                continue
+            if not llm:
+                # Source changed but regeneration is off: keep the last
+                # novelized text instead of downgrading to the outline
+                # fallback; a later --llm run realigns stale episodes.
+                passages[ep] = (body, "stale")
                 continue
         pending.append({"ep": ep, "row": row, "excerpt": excerpt, "hash": src_hash})
 
@@ -194,7 +212,12 @@ def build_novel(package: dict, *, series_id: str, meta: dict | None = None,
                 except Exception as exc:  # noqa: BLE001 - degrade this ep, keep the doc
                     print(f"[warn] novel ep{item['ep']} failed: {str(exc)[:140]}",
                           file=sys.stderr, flush=True)
-                    passages[item["ep"]] = (_fallback_passage(package, item["row"]), "fallback")
+                    _h, stale_body = _read_cache_body(
+                        _cache_path(novel_dir, item["ep"]) if novel_dir else None)
+                    if stale_body:
+                        passages[item["ep"]] = (stale_body, "stale")
+                    else:
+                        passages[item["ep"]] = (_fallback_passage(package, item["row"]), "fallback")
 
     for item in pending:
         if item["ep"] not in passages:
@@ -204,6 +227,7 @@ def build_novel(package: dict, *, series_id: str, meta: dict | None = None,
     stats = {
         "episodes": len(rows),
         "llm": sum(1 for v in passages.values() if v[1] == "llm"),
+        "stale": sum(1 for v in passages.values() if v[1] == "stale"),
         "fallback": sum(1 for v in passages.values() if v[1] == "fallback"),
     }
     return md, stats

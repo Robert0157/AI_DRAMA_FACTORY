@@ -50,8 +50,16 @@ def test_cache_used_when_hash_matches(tmp_path):
     assert "快取正文。" in md and stats["llm"] == 1
 
 
-def test_stale_cache_is_ignored(tmp_path):
+def test_stale_cache_reused_offline(tmp_path):
     (tmp_path / "ep_01.md").write_text(
         "<!-- src:deadbeef | model:x | 2026 -->\n\n舊正文。", encoding="utf-8")
     md, stats = sn.build_novel(_pkg(), series_id="s1", cache_dir=tmp_path, llm=False)
-    assert "舊正文。" not in md and stats["llm"] == 0
+    # Source changed but regeneration is off: keep the novel prose, never downgrade.
+    assert "舊正文。" in md and stats["stale"] == 1
+
+
+def test_force_ignores_caches(tmp_path):
+    (tmp_path / "ep_01.md").write_text(
+        "<!-- src:deadbeef | model:x | 2026 -->\n\n舊正文。", encoding="utf-8")
+    md, stats = sn.build_novel(_pkg(), series_id="s1", cache_dir=tmp_path, llm=False, force=True)
+    assert "舊正文。" not in md and stats["fallback"] == 2

@@ -78,26 +78,60 @@ def sync_forge(series: str) -> dict:
             md, stats = script_novel.render_run(src, series)
             (dst / "劇本小說版.md").write_text(md, encoding="utf-8")
             novel_state = "synced"
-            novel_line = (
-                f"- 劇本小說版：`劇本小說版.md`（人類小說體；"
-                f"{stats.get('llm', 0)}/{stats.get('episodes', 0)} 集已小說化，其餘為大綱體）"
-            )
+            total = stats.get("episodes", 0)
+            done = stats.get("llm", 0) + stats.get("stale", 0)  # stale still counts as novelized
+            if total and done >= total:
+                novel_line = f"- 劇本小說版：`劇本小說版.md`（人類小說體；{done}/{total} 集全部已小說化）"
+            else:
+                novel_line = (
+                    f"- 劇本小說版：`劇本小說版.md`（人類小說體；"
+                    f"{done}/{total} 集已小說化，其餘為大綱體）"
+                )
     except Exception as exc:  # noqa: BLE001 - ZERO SILENT FAILURES: surface the reason
         print(f"[warn] novel render failed: {exc}", file=sys.stderr, flush=True)
         novel_state = f"failed: {exc}"
     gate_line = "- 閘門：迭代 ≥15 ∧ 總分 ≥8.8 ∧ 單域 ≥8.0 ∧ 零 error → `lock_ready.json`（CP-D 入場證）"
     if (src / "lock_ready.json").is_file():
         gate_line = "- **✅ 已達好萊塢門檻（lock_ready 已核發；CP-D 入場證就緒）**"
+    champion_lines: list[str] = []
+    bm_path = src / "best_meta.json"
+    if bm_path.is_file():
+        try:
+            bm = json.loads(bm_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            bm = {}
+        c_score = bm.get("score")
+        if c_score is not None:
+            c_iter = bm.get("iteration", "—")
+            c_domains = bm.get("domains") or {}
+            c_min = min(c_domains.values()) if c_domains else None
+            line = (f"- 王者（★）第 {c_iter} 迭代：μ **{c_score}**；八域 "
+                    f"{json.dumps(c_domains, ensure_ascii=False)}")
+            if c_min is not None:
+                line += f"（最低域 {c_min}）"
+            c_errors = sum(1 for f in (bm.get("findings") or []) if f.get("level") == "error")
+            line += "；errors 0 ✓" if c_errors == 0 else f"；errors {c_errors}"
+            champion_lines.append(line)
+            try:
+                need = round(8.8 - float(c_score), 2)
+            except (TypeError, ValueError):
+                need = None
+            if need is not None:
+                parts = [f"μ 還需 +{need}" if need > 0 else "μ 已達標 ✓"]
+                if c_min is not None:
+                    need_min = round(8.0 - float(c_min), 2)
+                    parts.append(f"最低域還需 +{need_min}" if need_min > 0 else "最低域已達標 ✓")
+                champion_lines.append("- 距閘門：" + "；".join(parts))
     lines = [
         f"# 劇本鑄造進度 — {series}",
         "",
         f"- 狀態：**{meta.get('status', '?')}**",
         f"- 迭代次數：{meta.get('iterations', 0)}（CEO 下限 {meta.get('min_iters', 15)}；上限 {meta.get('max_iters', '?')}）",
-        f"- 最新總分：{final.get('final_total', '—')}（最低域 {final.get('min_domain', '—')}）",
-        f"- 八域：{json.dumps(final.get('domains') or {}, ensure_ascii=False)}",
+        *champion_lines,
+        f"- 最新一輪（#{meta.get('iterations', 0)}）：淨分 {final.get('final_total', '—')}（懲罰後稽核值；王者以 μ 比較）",
         novel_line,
         gate_line,
-        "- 完整迭代表：`iteration_log.md`（逐迭代八域分數與動作）",
+        "- 完整迭代表：`iteration_log.md`（★＝王者、⚠＝評審異常輪）",
         "- 審核格式：劇本一律小說體（人類閱讀）；LocalMiniDrama 分鏡 JSON 為產線機器格式，不上桌",
         f"- 最後同步：{_now()}",
         "",

@@ -29,6 +29,10 @@ def _make_sources(tmp_path: Path) -> Path:
         "episode_outline": [{"ep": 1, "arc": 1, "title": "第一集",
                              "hook": "鉤子", "summary": "大綱摘要", "cliffhanger": "收束"}],
     }, ensure_ascii=False), encoding="utf-8")
+    (forge / "best_meta.json").write_text(json.dumps(
+        {"score": 8.4, "iteration": 2, "official_total": 5.0,
+         "domains": {"concept": 8.4, "structure": 8.2}, "findings": []},
+        ensure_ascii=False), encoding="utf-8")
 
     cp_d = share / "assets" / "reference_intake" / "cp_d" / "W-TEST"
     cp_d.mkdir(parents=True)
@@ -64,7 +68,10 @@ def test_sync_mirrors_and_indexes(tmp_path, monkeypatch):
     assert not (forge_dst / "state_latest.json").exists()   # stale JSON is purged
     novel = forge_dst / "劇本小說版.md"
     assert novel.is_file() and "測試劇" in novel.read_text(encoding="utf-8")
-    assert "迭代次數：2" in (forge_dst / "進度摘要.md").read_text(encoding="utf-8")
+    summary = (forge_dst / "進度摘要.md").read_text(encoding="utf-8")
+    assert "迭代次數：2" in summary
+    assert "μ **8.4**" in summary           # champion focus, not the last-iter net score
+    assert "距閘門" in summary
     assert (ceo / "02_素材與CP-D" / "W-TEST" / "review.html").is_file()
     assert (ceo / "02_素材與CP-D" / "W-TEST" / "pexels_1.jpg").is_file()
     assert (ceo / "03_樣片與交付" / "樣片清單.md").is_file()
