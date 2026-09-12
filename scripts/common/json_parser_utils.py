@@ -211,7 +211,7 @@ def parse_llm_json_response(
     參數：
         response_text: LLM 回傳原始文字
         max_retries_on_decode_error: JSON 解碼失敗時自動補全括號的重試次數（預設 0）
-        log_context: 日誌上下文標籤（如 "MiniMax", "Gemini", "Zhipu"）
+        log_context: 日誌上下文標籤（如 "DeepSeek", "Zhipu", "Gemini"）
     
     回傳：
         dict: 清洗後的 JSON 字典

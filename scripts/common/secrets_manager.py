@@ -23,14 +23,19 @@ import sys
 import platform
 from pathlib import Path
 from typing import Optional, Dict, List
-from dotenv import load_dotenv
+
+try:  # dotenv is only the .env fallback; the keychain backends are primary.
+    from dotenv import load_dotenv
+except ImportError:  # hosts with a minimal venv (e.g. the Mac worker venv) have no dotenv
+    load_dotenv = None  # type: ignore[assignment]
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 # 確保 .env 已載入（作為降級方案）
-load_dotenv()
+if load_dotenv is not None:
+    load_dotenv()
 
 # ============================================================================
 # 敏感金鑰名稱清單（用於自動遮蔽）
@@ -46,6 +51,10 @@ _SENSITIVE_KEY_PATTERNS = [
     "MJ_API_KEY",
     "TELEGRAM_BOT_TOKEN",
     "NGROK_AUTHTOKEN",
+    # Stock-library API keys for the weekly reference-intake pipeline (v16.1 §4.7)
+    "PEXELS_API_KEY",
+    "PIXABAY_API_KEY",
+    "UNSPLASH_ACCESS_KEY",
 ]
 
 # 常見金鑰前綴（用於正則匹配）
@@ -96,13 +105,21 @@ class _MacKeychainBackend(_KeychainBackend):
     def set(self, key: str, value: str) -> bool:
         import subprocess
         try:
-            subprocess.run(
+            # Check the exit code: a silent True would mask a locked keychain.
+            result = subprocess.run(
                 ["security", "add-generic-password", "-s", f"AI_Drama_Factory_{key}",
                  "-a", os.getenv("USER", "robert"), "-w", value, "-U"],
-                capture_output=True, timeout=5
+                capture_output=True, text=True, timeout=10
             )
-            return True
-        except Exception:
+            if result.returncode != 0:
+                print(
+                    f"[SecretsManager] keychain set failed rc={result.returncode}: "
+                    f"{result.stderr.strip()[:200]}",
+                    file=sys.stderr,
+                )
+            return result.returncode == 0
+        except Exception as exc:
+            print(f"[SecretsManager] keychain set exception: {exc}", file=sys.stderr)
             return False
 
 
@@ -133,20 +150,28 @@ class _WindowsCredentialBackend(_KeychainBackend):
         return None
 
     def set(self, key: str, value: str) -> bool:
+        """Store one secret in the Windows Credential Manager (result is checked)."""
         import subprocess
         try:
+            # Single-quote escaping keeps the value a safe PowerShell literal.
+            safe_value = value.replace("'", "''")
             ps_cmd = (
-                f'$cred = New-Object System.Management.Automation.PSCredential('
-                f'"AI_Drama_Factory_{key}", (ConvertTo-SecureString "{value}" -AsPlainText -Force));'
-                f'Install-Module -Name CredentialManager -Force -Scope CurrentUser -ErrorAction SilentlyContinue;'
-                f'New-StoredCredential -Target "AI_Drama_Factory_{key}" -Credential $cred -Persist LocalMachine'
+                f"$cred = New-Object System.Management.Automation.PSCredential("
+                f"'AI_Drama_Factory_{key}', (ConvertTo-SecureString '{safe_value}' -AsPlainText -Force));"
+                f"New-StoredCredential -Target 'AI_Drama_Factory_{key}' -Credential $cred -Persist LocalMachine"
             )
-            subprocess.run(
+            result = subprocess.run(
                 ["powershell", "-NoProfile", "-Command", ps_cmd],
-                capture_output=True, timeout=15
+                capture_output=True, text=True, timeout=30
             )
-            return True
-        except Exception:
+            if result.returncode != 0:
+                print(
+                    f"[SecretsManager] set failed rc={result.returncode}: {result.stderr.strip()[:200]}",
+                    file=sys.stderr,
+                )
+            return result.returncode == 0
+        except Exception as exc:
+            print(f"[SecretsManager] set exception: {exc}", file=sys.stderr)
             return False
 
 
@@ -294,6 +319,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="R&S Echoes 金鑰安全管理器")
     parser.add_argument("--check", action="store_true", help="健康檢查：列出所有金鑰狀態")
     parser.add_argument("--set", nargs=2, metavar=("KEY", "VALUE"), help="寫入金鑰到金鑰環")
+    parser.add_argument(
+        "--prompt-set",
+        metavar="KEY",
+        help="互動輸入金鑰（隱藏輸入，不進 shell 歷史）並寫入金鑰環",
+    )
     parser.add_argument("--redact", type=str, help="測試文字遮蔽功能")
     args = parser.parse_args()
 
@@ -309,6 +339,22 @@ if __name__ == "__main__":
         key, val = args.set
         ok = secrets.set(key, val)
         print(f"{'✅' if ok else '❌'} {key} {'已寫入金鑰環' if ok else '寫入失敗'}")
+
+    if args.prompt_set:
+        # Hidden input keeps the secret out of shell history and process args.
+        import getpass
+
+        val = getpass.getpass(f"請輸入 {args.prompt_set} 的值（輸入時不會顯示）: ").strip()
+        if not val:
+            print("❌ 未輸入任何值，取消")
+        else:
+            ok = secrets.set(args.prompt_set, val)
+            print(f"{'✅' if ok else '❌'} {args.prompt_set} {'已寫入金鑰環' if ok else '寫入失敗'}")
+            if ok and isinstance(secrets._backend, _EnvFallbackBackend):
+                # Environment-only storage disappears when the terminal closes.
+                print("⚠️ 目前為 .env 降級模式，金鑰僅存在於本次工作階段，請確認系統金鑰環可用")
+            elif ok:
+                print("（可執行 --check 驗證狀態）")
 
     if args.redact:
         print(f"原始: {args.redact}")

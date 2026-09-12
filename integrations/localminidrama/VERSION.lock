@@ -1,0 +1,53 @@
+{
+  "_comment": "LocalMiniDrama upstream lock file — Pin-once-Validated governance (CEO 2026-09-12). Do not edit manually without re-running the upgrade playbook.",
+  "component": "LocalMiniDrama",
+  "vendored_path": "F:/AI_DRAMA_FACTORY/LocalMiniDrama-main",
+  "upstream": {
+    "repo": "xuanyustudio/LocalMiniDrama",
+    "license": "MIT",
+    "version": "1.2.8",
+    "version_evidence": [
+      "LocalMiniDrama-main/backend-node/package.json: \"version\": \"1.2.8\"",
+      "LocalMiniDrama-main/CHANGELOG.md head"
+    ]
+  },
+  "ref": "vendored-copy@1.2.8+factory-patches (no git metadata in the vendored copy; patch ledger below is the integrity record)",
+  "integration": {
+    "surface": "HTTP REST on 127.0.0.1:5679 (/api/v1) — control plane on PC, generation host on Mac",
+    "entry_points": [
+      "GET /api/v1/health",
+      "POST /api/v1/storyboards (JSON loud-fail)",
+      "GET /api/v1/storyboards/:id/omni-reference-plan (authoritative @圖片N plan)",
+      "POST /api/v1/videos (Seedance 2.5, 4–30s)",
+      "merge endpoints (uniform-segment guard)"
+    ]
+  },
+  "validation": {
+    "date": "2026-09-10",
+    "evidence": [
+      "Seedance 2.5 30s request succeeded (35s rejected by upstream as HTTP400 — cap kept at 30)",
+      "MV mode keeps CEO-approved master track as the only audio (Seedance synth disabled)",
+      "subtitle burn-in with Noto Serif CJK TC verified in merged output",
+      "uniform-segment guard prevents -c copy concat failures across mixed fps/samplerate clips"
+    ],
+    "frozen_on": "2026-09-12"
+  },
+  "patches": [
+    {"file": "backend-node/src/services/videoClient.js", "lines": [505, 516, 583, 600], "purpose": "Seedance 2.5 duration cap raised to 30s (CEO option A 2026-09-10); MV mode disables Seedance audio synthesis (CEO §10b — song is the only master track); reference-image resolve failure is loud-fail (no silent @圖片N slot drift)"},
+    {"file": "backend-node/src/services/videoService.js", "lines": [308, 379, 617, 672], "purpose": "Broadcast discipline: fps=24 + PTS reset + 48kHz AAC; DB metadata sync to completed with local path (§4.3); corrupt reference JSON loud-fail; runtime @圖片N binding hard gate (token count vs provided reference images)"},
+    {"file": "backend-node/src/services/videoMergeService.js", "lines": [197, 201, 334, 335, 400], "purpose": "ensureUniformSegments inspects fps/resolution/samplerate before -c copy concat and normalizes mismatches; failed merge never reports fake success (ZERO SILENT FAILURES)"},
+    {"file": "backend-node/src/services/mergedEpisodePostProcess.js", "lines": [55, 213], "purpose": "Intermediate mp3 forced to 48kHz (prevents long-form A/V drift); subtitle burn-in forces Noto Serif CJK TC (§7)"},
+    {"file": "backend-node/src/services/narrationVideoPostProcess.js", "lines": [56, 191], "purpose": "48kHz intermediate + serif CJK font lookup for narration pipeline (§7)"},
+    {"file": "backend-node/src/services/omniReferencePlan.js", "lines": [2, 4, 55], "purpose": "@圖片N slot → reference URL authoritative plan (single source of truth for omni-reference order)"},
+    {"file": "backend-node/src/routes/storyboards.js", "lines": [272, 283], "purpose": "Exposes omni-reference-plan endpoint for Auto_Drama live driver"},
+    {"file": "backend-node/src/routes/index.js", "lines": [281], "purpose": "Route registration for the authoritative @圖片N plan"}
+  ],
+  "upgrade_playbook": [
+    "1. Diff the new upstream release against 1.2.8 (patch ledger above is the checklist).",
+    "2. Re-apply every patch by intent (not by line number) or confirm upstream has adopted it.",
+    "3. Run contract tests: health probe, @圖片N plan endpoint, single-shot Seedance sandbox (30s cap), merge uniform-segment guard.",
+    "4. Update this VERSION.lock (version/evidence) and sync to Y:.",
+    "5. Only then bump the vendored copy; otherwise stay frozen (Pin-once-Validated)."
+  ],
+  "triggers_to_unfreeze": ["new feature needed upstream", "security patch", "contract test failure"]
+}

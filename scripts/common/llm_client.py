@@ -5,11 +5,12 @@ scripts/common/llm_client.py
 v15.10 軍規級 API 防護：三引擎大模型安全通訊網關 + 重試佇列
 強制 Structured Outputs (JSON Schema)，內建重試與日誌瘦身，環境變數統一派發。
 
-【v15.3 三引擎架構】
-✅ 引擎1 zhipu  — 智譜 GLM-4（預設，省錢穩定）
+【v15.3 三引擎架構｜2026-09 引擎3 替換】
+✅ 引擎1 zhipu  — 智譜 GLM-4（批量首選，省錢穩定）
 ✅ 引擎2 gemini — Google Gemini 2.5 Flash（視覺解構備用）
-✅ 引擎3 minimax— MiniMax M2.7 230B MoE via NVIDIA NIM
-             相容 OpenAI 協定，base_url = https://integrate.api.nvidia.com/v1
+✅ 引擎3 deepseek— DeepSeek V4 Flash（官方 API，預設引擎）
+             base_url = https://api.deepseek.com；thinking=disabled 確保 JSON 直出
+             ⚠️ MiniMax（NVIDIA NIM）已於 2026-09 全線 EOL（m2.7/m3），正式除役。
 
 【v15.10 新增】
 ✅ LLMRetryQueue — 三引擎全失敗時的非同步重試佇列，48hr 內自動補償
@@ -69,7 +70,7 @@ class LLMRetryQueue:
     """
     【v15.10】LLM 失敗請求重試佇列。
     
-    當三引擎鏈（MiniMax → Zhipu → Gemini）全部失敗時，
+    當三引擎鏈（DeepSeek → Zhipu → Gemini）全部失敗時，
     請求自動入隊。產線完成後或閒置時，背景執行 batch_retry()。
     48 小時內未成功則棄置並記錄最終錯誤。
 
@@ -199,13 +200,13 @@ class LLMRetryQueue:
         背景重試所有佇列中的請求。
         
         Args:
-            providers: 重試時使用的 provider 順序（預設 ["minimax", "zhipu", "gemini"]）
+            providers: 重試時使用的 provider 順序（預設 ["deepseek", "zhipu", "gemini"]）
         
         Returns:
             {"succeeded": N, "failed": N, "expired": N, "details": [...]}
         """
         if providers is None:
-            providers = ["minimax", "zhipu", "gemini"]
+            providers = ["deepseek", "zhipu", "gemini"]
 
         results = {"succeeded": 0, "failed": 0, "expired": 0, "details": []}
         now = time.time()
@@ -338,34 +339,35 @@ def _log_fatal_slim(error_context: str, exception: Exception) -> None:
 
 
 
-def _generate_minimax(
+def _generate_deepseek(
     system_prompt: str,
     user_prompt: str,
     model: str,
     max_retries: int,
 ) -> Optional[Dict[str, Any]]:
     """
-    【引擎3】MiniMax M2.7 230B MoE — NVIDIA NIM (OpenAI 相容協定)
-    temperature=1.0, top_p=0.95 為官方建議最佳實踐。
+    【引擎3】DeepSeek V4 — 官方 API（OpenAI 相容協定）
+    預設 model=deepseek-v4-flash；thinking=disabled（非思考模式）確保 JSON 直出。
+    2026-09 起正式取代 MiniMax（NVIDIA NIM 之 m2.7 / m3 皆已 EOL 下架）。
     """
-    api_key = config.NVIDIA_API_KEY
-    if not api_key or api_key.startswith("nvapi-填入"):
+    api_key = config.DEEPSEEK_API_KEY
+    if not api_key or api_key.startswith("sk-填入"):
         raise EnvironmentError(
-            "NVIDIA_API_KEY 未設定。請至 https://build.nvidia.com/ 取得金鑰"
-            "並填入 .env 中的 NVIDIA_API_KEY 欄位。"
+            "DEEPSEEK_API_KEY 未設定。請至 https://platform.deepseek.com/ 取得金鑰，"
+            "並填入 .env 的 DEEPSEEK_API_KEY（或舊命名 DeepSeek_API）欄位。"
         )
     try:
         from openai import OpenAI as _OpenAI
     except ImportError:
         raise ImportError("缺少 openai 套件，請執行: pip install openai")
 
-    # timeout=180s：NVIDIA NIM MiniMax 230B 實測 ~100s，180s 給足安全邊際
+    # timeout=240s：沿用 v15.11 設定，容忍尖峰時段排隊
     client = _OpenAI(
-        base_url=config.NVIDIA_BASE_URL,
+        base_url=config.DEEPSEEK_BASE_URL,
         api_key=api_key,
-        timeout=180.0,
+        timeout=240.0,
     )
-    target_model = model or "minimaxai/minimax-m2.7"
+    target_model = model or "deepseek-v4-flash"
     last_exc = None
 
     for attempt in range(1, max_retries + 1):
@@ -378,44 +380,54 @@ def _generate_minimax(
                 ],
                 temperature=1.0,
                 top_p=0.95,
-                max_tokens=4096,  # 從 2048 提升至 4096，確保 20 首雙語曲名不截斷
+                max_tokens=4096,  # 確保 20 首雙語曲名不截斷
+                # DeepSeek V4 專屬參數：關閉 thinking，避免思考過程混入 JSON。
+                # （thinking=disabled 時允許 temperature；enabled 時官方 API 會拒收 temperature）
+                extra_body={"thinking": {"type": "disabled"}},
             )
             raw = response.choices[0].message.content or ""
             if not raw:
-                raise Exception("MiniMax API 回傳空內容")
-            return parse_llm_json_response(raw, max_retries_on_decode_error=2, log_context="MiniMax")
+                raise Exception("DeepSeek API 回傳空內容")
+            return parse_llm_json_response(raw, max_retries_on_decode_error=2, log_context="DeepSeek")
         except ValueError as e:
             # parse_llm_json_response 最終失敗（已內部重試）
             last_exc = e
-            _log_fatal_slim("MiniMax JSON Parse", e)
+            _log_fatal_slim("DeepSeek JSON Parse", e)
             if attempt < max_retries:
                 backoff = min(2 ** attempt, 30) + random.uniform(0, 1)
-                print(f"  ⚠️ MiniMax JSON 解析失敗，重試 {attempt}/{max_retries}，{backoff:.1f}s 後再試")
+                print(f"  ⚠️ DeepSeek JSON 解析失敗，重試 {attempt}/{max_retries}，{backoff:.1f}s 後再試")
                 time.sleep(backoff)
         except Exception as e:
             last_exc = e
-            _log_fatal_slim(f"MiniMax API attempt {attempt}", e)
+            _log_fatal_slim(f"DeepSeek API attempt {attempt}", e)
             if attempt < max_retries:
                 backoff = min(2 ** attempt, 30) + random.uniform(0, 1)
-                print(f"  ⚠️ MiniMax API 重試 {attempt}/{max_retries}：{e}，{backoff:.1f}s 後再試")
+                print(f"  ⚠️ DeepSeek API 重試 {attempt}/{max_retries}：{e}，{backoff:.1f}s 後再試")
                 time.sleep(backoff)
-    raise Exception(f"MiniMax API 最終失敗: {last_exc}")
+    raise Exception(f"DeepSeek API 最終失敗: {last_exc}")
 
 
 def generate_structured_json(
     system_prompt: str,
     user_prompt: str,
-    provider: str = "minimax",
+    provider: str = "deepseek",
     model: str = None,
     max_retries: int = 3,
     timeout: tuple = (30, 300)
 ) -> Optional[Dict[str, Any]]:
     """
     三引擎 LLM JSON 生成器
-    provider: "minimax"（預設，MiniMax M2.7 230B NVIDIA NIM）| "zhipu"（智譜 GLM-4）| "gemini"（Google）
+    provider: "deepseek"（預設，DeepSeek V4 Flash 官方 API）| "zhipu"（智譜 GLM-4）| "gemini"（Google）
+    "minimax" 已於 2026-09 除役（NVIDIA NIM 全線 EOL），呼叫將直接報錯。
     """
+    if provider == "deepseek":
+        return _generate_deepseek(system_prompt, user_prompt, model, max_retries)
+
     if provider == "minimax":
-        return _generate_minimax(system_prompt, user_prompt, model, max_retries)
+        # 【2026-09 除役】NVIDIA NIM 之 MiniMax m2.7 / m3 皆已 EOL，不允許再走舊引擎
+        raise ValueError(
+            "MiniMax 引擎已除役（NVIDIA NIM 模型 EOL）；請改用 provider='deepseek'。"
+        )
 
     if provider == "gemini":
         _ensure_gemini_configured()   # lazy import + configure
@@ -470,7 +482,7 @@ def generate_structured_json(
 # 【v15.10 新增】三引擎全回退 + 重試佇列安全網
 # ============================================================================
 
-_FALLBACK_CHAIN = ["minimax", "zhipu", "gemini"]
+_FALLBACK_CHAIN = ["deepseek", "zhipu", "gemini"]
 
 
 def generate_with_full_fallback(
@@ -483,7 +495,7 @@ def generate_with_full_fallback(
     """
     【v15.10】三引擎全回退 + 重試佇列安全網。
     
-    嘗試鏈：MiniMax → Zhipu → Gemini → 重試佇列
+    嘗試鏈：DeepSeek → Zhipu → Gemini → 重試佇列
     
     Args:
         system_prompt: 系統提示詞

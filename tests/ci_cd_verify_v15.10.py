@@ -121,7 +121,7 @@ try:
     queue = get_retry_queue()
     check("全域佇列初始化", queue is not None)
 
-    queue.enqueue("minimax", "sys", "usr", "test-model", Exception("test"))
+    queue.enqueue("deepseek", "sys", "usr", "test-model", Exception("test"))
     check("請求入隊", queue.size >= 1, f"(size={queue.size})")
 
     queue.clear()

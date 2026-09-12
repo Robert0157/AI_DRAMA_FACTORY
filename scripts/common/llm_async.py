@@ -80,7 +80,7 @@ async def _call_llm_async(
 async def compose_metadata_async(
     channel: str = "lofi",
     track_count: int = 20,
-    provider: str = "minimax",
+    provider: str = "deepseek",
 ) -> AsyncMetadataRecord:
     """
     【v15.10 P3-#5】並行呼叫三個 LLM 請求，加速 metadata 生成。
@@ -91,7 +91,7 @@ async def compose_metadata_async(
     Args:
         channel: 頻道名稱
         track_count: 曲目數量
-        provider: LLM provider（預設 minimax）
+        provider: LLM provider（預設 deepseek）
     
     Returns:
         AsyncMetadataRecord: 合併的 metadata 結果
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="LLM 並行非同步測試")
     parser.add_argument("--channel", default="lofi")
     parser.add_argument("--tracks", type=int, default=5)
-    parser.add_argument("--provider", default="minimax")
+    parser.add_argument("--provider", default="deepseek")
     args = parser.parse_args()
 
     async def main():

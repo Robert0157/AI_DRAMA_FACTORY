@@ -19,6 +19,8 @@ class EnvConfig:
         # mj_base_url           MJ_BASE_URL            MIDJOURNEY_API_BASE_URL
         # kling_sk              KLING_SK               KLING_API_KEY
         # nvidia_base_url       NVIDIA_BASE_URL        https://integrate.api.nvidia.com/v1
+        # deepseek_api_key      DEEPSEEK_API_KEY       DeepSeek_API（.env 既有命名）
+        # deepseek_base_url     DEEPSEEK_BASE_URL      https://api.deepseek.com
         # freshness_policy      freshness_policy.json  硬回退 {enabled:True, 0.5}
         # ───────────────────────────────────────────────────────────────────
         # ===================================================================
@@ -108,9 +110,20 @@ class EnvConfig:
 
         # 【v15.3 新增】NVIDIA NIM — MiniMax M2.7 (230B MoE)
         # 相容 OpenAI 協定，base_url = https://integrate.api.nvidia.com/v1
+        # ⚠️ MiniMax m2.7 / m3 已於 NVIDIA NIM 全線 EOL（2026-09），本區僅保留金鑰載入
         self.nvidia_api_key = os.getenv("NVIDIA_API_KEY", "").strip()
         self.nvidia_base_url = os.getenv(
             "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+        ).strip()
+
+        # 【2026-09 新增】DeepSeek V4 — 官方 API（正式取代 MiniMax）
+        # 相容 OpenAI 協定，base_url = https://api.deepseek.com；預設模型 deepseek-v4-flash
+        # 相容命名：優先 DEEPSEEK_API_KEY，回退 .env 既有之 DeepSeek_API
+        self.deepseek_api_key = os.getenv(
+            "DEEPSEEK_API_KEY", os.getenv("DeepSeek_API", "")
+        ).strip()
+        self.deepseek_base_url = os.getenv(
+            "DEEPSEEK_BASE_URL", "https://api.deepseek.com"
         ).strip()
 
         # 與既有程式碼相容：提供大寫屬性別名
@@ -122,6 +135,8 @@ class EnvConfig:
         self.GEMINI_API_KEY = self.gemini_api_key
         self.NVIDIA_API_KEY = self.nvidia_api_key
         self.NVIDIA_BASE_URL = self.nvidia_base_url
+        self.DEEPSEEK_API_KEY = self.deepseek_api_key
+        self.DEEPSEEK_BASE_URL = self.deepseek_base_url
 
         # 6. Telegram 通訊中樞（CEO 審批線路）
         self.telegram_bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
@@ -232,7 +247,7 @@ class EnvConfig:
         }
 
         # 11. Midjourney / Kling 為視覺 TTAPI 選用金鑰；Phase 3 發行企劃（music_metadata_engine）
-        #    使用 llm_client + NVIDIA_API_KEY（MiniMax），不依賴 MJ/Kling。
+        #    使用 llm_client + DEEPSEEK_API_KEY（DeepSeek V4，2026-09 起取代 MiniMax/NVIDIA NIM），不依賴 MJ/Kling。
         #    不在此對 MJ/Kling 做「假必填」列印，以免 stdout 汙染 pipeline 診斷、誤判為 METADATA 失敗原因。
 
 # 實例化供其他模組呼叫
