@@ -244,6 +244,27 @@ def test_excerpt_rotation_keeps_ep1_off_colliding_index():
     assert idx % 5 != 0
 
 
+def test_locked_episode_enforcement_roundtrip(tmp_path):
+    (tmp_path / "ceo_locked").mkdir()
+    payload = {"ep": 1, "script_excerpt": "COLD OPEN ... frozen text"}
+    (tmp_path / "ceo_locked" / "ep01_ceo_approved.json").write_text(
+        json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "ceo_locked.json").write_text(
+        json.dumps({"episodes": [1]}), encoding="utf-8")
+    locked = sf._load_locked_episodes(tmp_path)
+    assert locked[1]["script_excerpt"].startswith("COLD OPEN")
+    pkg = {"pilot": {"ep1": {"scenes": ["x"], "script_excerpt": "wiped"}}}
+    assert sf._enforce_locked(pkg, locked) == [1]
+    assert pkg["pilot"]["ep1"]["script_excerpt"] == payload["script_excerpt"]
+    assert pkg["pilot"]["ep1"]["scenes"] == ["x"]   # non-frozen fields survive
+    assert sf._enforce_locked(pkg, locked) == []      # idempotent
+
+
+def test_rotation_skips_locked_episode():
+    assert sf._pick_rotated_episode(118, {}) == 1     # slot 9 -> Ep1
+    assert sf._pick_rotated_episode(118, {1}) == 14   # steps to the next slot
+
+
 def test_append_text_retries_on_smb_lock(tmp_path, monkeypatch):
     log = tmp_path / "iteration_log.md"
     calls = {"n": 0}

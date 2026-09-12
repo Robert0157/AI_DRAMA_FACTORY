@@ -937,6 +937,74 @@ def _read_ceo_notes(run_dir: Path) -> str:
     return ""
 
 
+def _load_locked_episodes(run_dir: Path) -> dict[int, dict]:
+    """CEO-approved frozen episodes: <run>/ceo_locked.json -> ceo_locked/epNN_*.json.
+
+    CEO approval outranks any reviewer suggestion: the frozen script_excerpt is
+    skipped by the excerpt rotation and re-asserted after every patch / revert.
+    """
+    reg_path = Path(run_dir) / "ceo_locked.json"
+    if not reg_path.is_file():
+        return {}
+    try:
+        reg = json.loads(reg_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    locked: dict[int, dict] = {}
+    for ep in reg.get("episodes") or []:
+        try:
+            ep_i = int(ep)
+        except (TypeError, ValueError):
+            continue
+        payload_path = Path(run_dir) / "ceo_locked" / f"ep{ep_i:02d}_ceo_approved.json"
+        if not payload_path.is_file():
+            continue
+        try:
+            locked[ep_i] = json.loads(payload_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+    return locked
+
+
+def _enforce_locked(package: dict, locked: dict[int, dict]) -> list[int]:
+    """Re-assert frozen excerpts; returns the episodes that had to be restored."""
+    restored: list[int] = []
+    pilot = package.setdefault("pilot", {})
+    for ep, payload in locked.items():
+        text = str(payload.get("script_excerpt") or "")
+        if not text:
+            continue
+        key = f"ep{ep}"
+        entry = pilot.get(key)
+        if not isinstance(entry, dict):
+            entry = {}
+            pilot[key] = entry
+        if str(entry.get("script_excerpt") or "") != text:
+            entry["script_excerpt"] = text
+            restored.append(ep)
+    return restored
+
+
+def _pick_rotated_episode(it: int, locked: dict[int, dict] | set[int]) -> int:
+    """Excerpt-rotation pick that skips CEO-frozen episodes (steps to next slot)."""
+    rot = _EXCERPT_ROTATION
+    idx = (it // 2) % len(rot)
+    for off in range(len(rot)):
+        cand = rot[(idx + off) % len(rot)]
+        if cand not in locked:
+            return cand
+    return rot[idx]
+
+
+def _apply_patch_locked(package: dict, patch: dict, locked: dict[int, dict]) -> dict:
+    """_apply_patch + re-assert frozen excerpts (CEO approval is non-negotiable)."""
+    updated = _apply_patch(package, patch)
+    restored = _enforce_locked(updated, locked)
+    if restored:
+        print(f"[forge]   CEO-frozen excerpt restored: {restored}", flush=True)
+    return updated
+
+
 # ---------------------------------------------------------------------------
 # Logging helpers
 # ---------------------------------------------------------------------------
@@ -1048,6 +1116,12 @@ def run_forge(
         print(f"[forge] CEO notes loaded ({len(ceo_notes)} chars) — panel/revise/excerpt will honor them",
               flush=True)
 
+    locked = _load_locked_episodes(run_dir)
+    if locked:
+        print("[forge] CEO-approved locked episodes: "
+              + ", ".join(f"ep{k}" for k in sorted(locked))
+              + " — excerpts frozen (rotation skip + patch/revert enforcement)", flush=True)
+
     seed_ref: dict = {}
     if resume and state_path.exists():
         current = json.loads(state_path.read_text(encoding="utf-8"))
@@ -1057,6 +1131,9 @@ def run_forge(
         ref_file = l1_dir / "iter_01.json"
         if ref_file.is_file():
             seed_ref = json.loads(ref_file.read_text(encoding="utf-8")).get("package") or {}
+        _restored = _enforce_locked(current, locked)
+        if _restored:
+            print(f"[forge] locked excerpt restored at resume: {_restored}", flush=True)
     else:
         mode = "offline" if offline else "llm"
         if mode == "llm" and seed_package:
@@ -1239,6 +1316,7 @@ def run_forge(
             "best_iteration": best_iter,
             "updated": _now(),
         }
+        _enforce_locked(current, locked)   # belt: frozen excerpts survive every path
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {"series_id": series_id}
         meta.update(meta_update)
         _write_json(meta_path, meta)
@@ -1274,6 +1352,7 @@ def run_forge(
         if not is_best and best_package and final["llm_total"] < best_score - 0.6:
             print(f"[forge]   revert (mu {final['llm_total']} plunged below {round(best_score - 0.6, 2)}); revising from best", flush=True)
             current = json.loads(json.dumps(best_package, ensure_ascii=False))
+            _enforce_locked(current, locked)
             _write_json(state_path, current)
 
         # ---- L2 revise (alternating: teleplay excerpt pass / patch pass) ----
@@ -1283,19 +1362,19 @@ def run_forge(
                 if it % 2 == 0:
                     if it % 10 == 0:
                         patch, note = _write_production_plan(current, model)
-                        current = _apply_patch(current, patch)
+                        current = _apply_patch_locked(current, patch, locked)
                         print(f"[forge]   production plan updated {note}", flush=True)
                     else:
-                        ep = _EXCERPT_ROTATION[(it // 2) % len(_EXCERPT_ROTATION)]
+                        ep = _pick_rotated_episode(it, locked)
                         patch, note = _write_excerpt(current, ep, model, findings=findings,
                                                      ceo_notes=ceo_notes)
-                        current = _apply_patch(current, patch)
+                        current = _apply_patch_locked(current, patch, locked)
                         print(f"[forge]   excerpt ep{ep} written {note}", flush=True)
                 else:
                     low = [k for k, _v in sorted(llm_domains.items(), key=lambda kv: kv[1])[:3]]
                     patch, applied = _revise(current, findings, top_fixes, model,
                                              low_domains=low, ceo_notes=ceo_notes)
-                    current = _apply_patch(current, patch)
+                    current = _apply_patch_locked(current, patch, locked)
                 consecutive_fail = 0
             except Exception as exc:  # noqa: BLE001
                 print(f"[warn] revise/excerpt call failed at iter {it}: {exc}", file=sys.stderr, flush=True)
