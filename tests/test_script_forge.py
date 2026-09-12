@@ -229,3 +229,16 @@ def test_plateau_warning_alerts_after_idle_streak():
     assert sf._plateau_warning(100, 1) is None       # gap = 99 -> too early
     assert sf._plateau_warning(126, 1) is None       # gap = 125 -> not a boundary
     assert sf._plateau_warning(90, None) is None     # no champion yet
+
+
+def test_ceo_notes_reader(tmp_path):
+    assert sf._read_ceo_notes(tmp_path) == ""
+    (tmp_path / "ceo_notes.md").write_text("Ep1 修訂：隧道太假", encoding="utf-8")
+    assert "隧道太假" in sf._read_ceo_notes(tmp_path)
+
+
+def test_excerpt_rotation_keeps_ep1_off_colliding_index():
+    # index % 5 == 0 collides with the it % 10 == 0 production-plan branch,
+    # so that episode would never be refreshed.
+    idx = sf._EXCERPT_ROTATION.index(1)
+    assert idx % 5 != 0

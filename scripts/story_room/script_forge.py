@@ -109,7 +109,10 @@ _CRAFT: dict[str, str] = {
 }
 
 # Teleplay excerpt passes: rotate key episodes so the package grows real script pages.
-_EXCERPT_ROTATION = (1, 2, 14, 56, 28, 42, 7, 21, 35, 49)
+# NOTE: index 0 (and any index divisible by 5) collides with the it%10==0
+# production-plan branch, so that episode's excerpt was NEVER refreshed (this
+# silently starved the pilot rewrite). Keep Ep1 at index 9.
+_EXCERPT_ROTATION = (14, 2, 56, 28, 42, 7, 21, 35, 49, 1)
 
 _RUBRIC_SYS = (
     "你是好萊塢劇本開發評審（VP of Development）＋神話學顧問。"
@@ -494,7 +497,8 @@ _DIRECTOR_SYS = (
 )
 
 
-def _review_panel(package: dict, model: str | None) -> tuple[dict, list[dict], bool]:
+def _review_panel(package: dict, model: str | None,
+                  ceo_notes: str = "") -> tuple[dict, list[dict], bool]:
     """L3 multi-agent review: four specialist critics (parallel) + one showrunner director.
 
     CEO 2026-09-12: the review layer must use real AI agents from different angles,
@@ -509,6 +513,8 @@ def _review_panel(package: dict, model: str | None) -> tuple[dict, list[dict], b
         + "\n\n企劃包 JSON：\n" + json.dumps(package, ensure_ascii=False)
         + "\n\n從你的專業角度嚴格審查。findings 的 level：僅違反 canon／硬約束／連貫性時用 error；"
           "品質提升建議用 warn／info。"
+        + (f"\n\n【CEO 關切（評審必須逐項直接回答是否已落實；未落實列 warn/error）】\n{ceo_notes}"
+           if ceo_notes else "")
     )
 
     def _run_critic(name: str, spec: dict) -> tuple[str, dict]:
@@ -626,7 +632,8 @@ def _review_panel(package: dict, model: str | None) -> tuple[dict, list[dict], b
 
 
 def _revise(package: dict, findings: list[dict], top_fixes: list[str], model: str | None,
-            low_domains: list[str] | None = None) -> tuple[dict, list[str]]:
+            low_domains: list[str] | None = None,
+            ceo_notes: str = "") -> tuple[dict, list[str]]:
     """Sparse patch revision: the model returns only changed fields (small output);
     a truncated reply falls back to the salvage parser for a partial patch."""
     from scripts.story_room import llm_text
@@ -640,6 +647,8 @@ def _revise(package: dict, findings: list[dict], top_fixes: list[str], model: st
         + "\n優先修正：" + json.dumps(top_fixes, ensure_ascii=False)
         + (f"\n本次請優先拉高這些低分維度：{', '.join(low_domains)}" if low_domains else "")
         + (f"\n工藝強化（低分維度必須遵守）：\n{craft}" if craft else "")
+        + (f"\n\n【CEO 定向修訂（最高優先；必須落實並以 patch/episode_patches 同步相關欄位）】\n{ceo_notes}"
+           if ceo_notes else "")
         + (f"\n目前分集數不足，請用 episode_patches 補齊缺的 {outline_need} 集。" if outline_need else "")
         + "\n請回傳 {\"patch\": {...}, \"fixes_applied\": [...]}（精簡修補，只含變更欄位）。"
     )
@@ -659,7 +668,8 @@ def _revise(package: dict, findings: list[dict], top_fixes: list[str], model: st
 
 
 def _write_excerpt(package: dict, ep: int, model: str | None,
-                   findings: list[dict] | None = None) -> tuple[dict, str]:
+                   findings: list[dict] | None = None,
+                   ceo_notes: str = "") -> tuple[dict, str]:
     """Deep pass: write/upgrade a real teleplay excerpt (cold open + first scene).
 
     Carries the canon guardrails and the latest judge findings so the writer
@@ -692,6 +702,8 @@ def _write_excerpt(package: dict, ep: int, model: str | None,
         f"\n- 主角：{', '.join(leads)}；本集大綱：{json.dumps({k: entry.get(k) for k in ('title', 'hook', 'summary', 'cliffhanger')}, ensure_ascii=False)}"
         + (f"\n- canon 規則：{json.dumps(canon_rules, ensure_ascii=False)}" if canon_rules else "")
         + (f"\n- 近期評審發現（本次寫作必須避免）：\n" + "\n".join(avoid) if avoid else "")
+        + (f"\n\n【CEO 定向修訂（最高優先；本集如涉 CEO 關切，必須逐條落實）】\n{ceo_notes}"
+           if ceo_notes else "")
         + (f"\n\n現有節錄（請寫得更好）：\n{existing[:4000]}" if existing else "")
         + "\n\n只回傳 JSON：{\"script_excerpt\": \"...完整劇本節錄文字...\", \"notes\": \"一句話\"}"
     )
@@ -699,7 +711,10 @@ def _write_excerpt(package: dict, ep: int, model: str | None,
         "你是獲獎電視劇編劇（showrunner 級）。只回傳 JSON。",
         user,
         model=excerpt_model,
-        max_tokens=8192,
+        # NOTE: reasoner thinking tokens count against this budget; 8192 proved
+        # too small (reasoning exhausted it -> empty content, no retry could
+        # recover). 16384 leaves room for both reasoning and the excerpt.
+        max_tokens=16384,
         temperature=0.8,
         thinking=True,
     )
@@ -910,6 +925,18 @@ def _plateau_warning(it: int, best_iter: int | None) -> str | None:
     return None
 
 
+def _read_ceo_notes(run_dir: Path) -> str:
+    """CEO-directed revision notes (highest priority) from <run>/ceo_notes.md.
+
+    Injected into the L3 review panel, the L2 revise pass and the excerpt
+    writer so every round must report on the CEO's explicit concerns.
+    """
+    notes_path = Path(run_dir) / "ceo_notes.md"
+    if notes_path.is_file():
+        return notes_path.read_text(encoding="utf-8").strip()[:4000]
+    return ""
+
+
 # ---------------------------------------------------------------------------
 # Logging helpers
 # ---------------------------------------------------------------------------
@@ -989,6 +1016,11 @@ def run_forge(
         )
     if lock_path.exists() and not force:
         raise SystemExit("[FATAL] lock_ready already present; series is beyond the forge gate")
+
+    ceo_notes = _read_ceo_notes(run_dir)
+    if ceo_notes:
+        print(f"[forge] CEO notes loaded ({len(ceo_notes)} chars) — panel/revise/excerpt will honor them",
+              flush=True)
 
     seed_ref: dict = {}
     if resume and state_path.exists():
@@ -1094,7 +1126,7 @@ def run_forge(
         degraded = False
         if mode == "llm":
             try:
-                rubric_result, llm_findings, degraded = _review_panel(current, model)
+                rubric_result, llm_findings, degraded = _review_panel(current, model, ceo_notes)
                 llm_domains = rubric_result["domains"]
                 top_fixes = rubric_result["top_fixes"]
                 verdict = rubric_result["verdict"]
@@ -1230,12 +1262,14 @@ def run_forge(
                         print(f"[forge]   production plan updated {note}", flush=True)
                     else:
                         ep = _EXCERPT_ROTATION[(it // 2) % len(_EXCERPT_ROTATION)]
-                        patch, note = _write_excerpt(current, ep, model, findings=findings)
+                        patch, note = _write_excerpt(current, ep, model, findings=findings,
+                                                     ceo_notes=ceo_notes)
                         current = _apply_patch(current, patch)
                         print(f"[forge]   excerpt ep{ep} written {note}", flush=True)
                 else:
                     low = [k for k, _v in sorted(llm_domains.items(), key=lambda kv: kv[1])[:3]]
-                    patch, applied = _revise(current, findings, top_fixes, model, low_domains=low)
+                    patch, applied = _revise(current, findings, top_fixes, model,
+                                             low_domains=low, ceo_notes=ceo_notes)
                     current = _apply_patch(current, patch)
                 consecutive_fail = 0
             except Exception as exc:  # noqa: BLE001

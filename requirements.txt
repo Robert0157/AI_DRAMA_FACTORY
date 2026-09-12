@@ -1,8 +1,7 @@
 # Streamlit（app.py 使用 width= 取代已棄用之 use_container_width）
 streamlit>=1.39.0
 
-playwright>=1.40.0
-playwright-stealth==2.0.3
+# (removed 2026-09-12) playwright / playwright-stealth — 違反 §10 NO RPA 政策且無活躍 import（v2 檢視 §4.4 清理）
 beautifulsoup4==4.12.3
 requests==2.31.0
 python-dotenv==1.0.1
