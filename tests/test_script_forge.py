@@ -242,3 +242,22 @@ def test_excerpt_rotation_keeps_ep1_off_colliding_index():
     # so that episode would never be refreshed.
     idx = sf._EXCERPT_ROTATION.index(1)
     assert idx % 5 != 0
+
+
+def test_append_text_retries_on_smb_lock(tmp_path, monkeypatch):
+    log = tmp_path / "iteration_log.md"
+    calls = {"n": 0}
+    real_open = Path.open
+
+    def flaky_open(self, *a, **kw):
+        if self == log:
+            calls["n"] += 1
+            if calls["n"] <= 2:          # first two attempts hit the SMB lock
+                raise PermissionError("locked")
+        return real_open(self, *a, **kw)
+
+    monkeypatch.setattr(Path, "open", flaky_open)
+    monkeypatch.setattr(sf.time, "sleep", lambda s: None)
+    sf._append_text(log, "row1\n")
+    assert log.read_text(encoding="utf-8") == "row1\n"
+    assert calls["n"] >= 3   # two locked attempts + the successful append

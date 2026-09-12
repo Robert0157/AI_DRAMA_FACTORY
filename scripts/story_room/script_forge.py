@@ -954,6 +954,32 @@ def _write_json(path: Path, payload: dict) -> None:
             time.sleep(0.5 * (attempt + 1))
 
 
+def _write_text_retry(path: Path, text: str) -> None:
+    """Plain text write with SMB retry (no os.replace; header writes)."""
+    for attempt in range(4):
+        try:
+            path.write_text(text, encoding="utf-8")
+            return
+        except PermissionError:
+            if attempt == 3:
+                raise
+            time.sleep(0.5 * (attempt + 1))
+
+
+def _append_text(path: Path, text: str) -> None:
+    """Append with SMB retry (the Y: share can briefly lock files; a locked
+    iteration_log.md used to crash the whole run at the end of an iteration)."""
+    for attempt in range(4):
+        try:
+            with path.open("a", encoding="utf-8") as fh:
+                fh.write(text)
+            return
+        except PermissionError:
+            if attempt == 3:
+                raise
+            time.sleep(0.5 * (attempt + 1))
+
+
 def _md_row(entry: dict) -> str:
     d = entry["final"]["domains"]
     return (
@@ -1086,7 +1112,7 @@ def run_forge(
             "started": _now(),
         })
         if not log_path.exists():
-            log_path.write_text(_MD_HEADER, encoding="utf-8")
+            _write_text_retry(log_path, _MD_HEADER)
 
     if not seed_ref:
         seed_ref = current
@@ -1194,8 +1220,7 @@ def run_forge(
             "package_hash": _hash(current),
         }
         _write_json(run_dir / f"iter_{it:02d}.json", entry)
-        with log_path.open("a", encoding="utf-8") as fh:
-            fh.write(_md_row(entry) + "\n")
+        _append_text(log_path, _md_row(entry) + "\n")
         last_entry = entry
         print(
             f"[forge] iter {it:02d} total={final['final_total']} min={final['min_domain']} "
