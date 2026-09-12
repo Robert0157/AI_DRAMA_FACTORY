@@ -59,7 +59,16 @@ RUBRIC_WEIGHTS: dict[str, float] = {
     "dual_track": 0.10,   # LM (scenery) / LF (character) expansion potential
 }
 MIN_ITERATIONS = 15
-DEFAULT_MAX_ITERATIONS = 150  # CEO 2026-09-12: iteration ceiling = 150 per campaign
+# CEO 2026-09-12 (rev): the 150 ceiling proved too low (Phase 1 was capped
+# without reaching the gate). Industry-standard practice for an iterative
+# quality campaign: the QUALITY GATE is the stop condition and the cap is
+# only a budget guardrail of 10^3 evaluations - the same order of magnitude
+# as one Hollywood season's revision volume (56 episodes x 10-20 passes =
+# 560-1,120).
+DEFAULT_MAX_ITERATIONS = 1000
+# Patience alarm: warn when the champion has been idle this long (alert-only,
+# never auto-stop - the CEO decides whether to intervene).
+PLATEAU_PATIENCE = 100
 HOLLYWOOD_TOTAL = 8.8
 HOLLYWOOD_MIN_DOMAIN = 8.0
 _PENALTY = {"error": 0.5, "warn": 0.25, "info": 0.1}
@@ -888,6 +897,19 @@ def _restore_missing(package: dict, reference: dict) -> tuple[dict, list[str]]:
     return merged, restored
 
 
+def _plateau_warning(it: int, best_iter: int | None) -> str | None:
+    """Patience alarm: alert (never auto-stop) when the champion sits idle.
+
+    Fires on 50-iteration boundaries once the gap reaches PLATEAU_PATIENCE.
+    """
+    if not best_iter:
+        return None
+    gap = it - best_iter
+    if gap >= PLATEAU_PATIENCE and gap % 50 == 0:
+        return f"[warn] plateau: champion idle for {gap} iterations (gate still unmet)"
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Logging helpers
 # ---------------------------------------------------------------------------
@@ -1044,6 +1066,7 @@ def run_forge(
     best_package: dict = {}
     best_findings: list[dict] = []
     best_domains: dict = {}
+    best_iter: int | None = None
     if resume and best_path.is_file():
         try:
             best_package = json.loads(best_path.read_text(encoding="utf-8"))
@@ -1052,6 +1075,7 @@ def run_forge(
                 best_score = float(_bm.get("score", -1.0))
                 best_findings = _bm.get("findings") or []
                 best_domains = _bm.get("domains") or {}
+                best_iter = int(_bm.get("iteration", 0)) or None
         except (OSError, json.JSONDecodeError):
             best_score = -1.0
 
@@ -1097,6 +1121,7 @@ def run_forge(
         is_best = errors == 0 and not degraded and final["llm_total"] > best_score
         if is_best:
             best_score = final["llm_total"]
+            best_iter = it
             best_package = json.loads(json.dumps(current, ensure_ascii=False))
             best_findings = findings
             best_domains = final["domains"]
@@ -1145,12 +1170,16 @@ def run_forge(
             f"errors={errors} warns={warns} -> {action}",
             flush=True,
         )
+        plateau = _plateau_warning(it, best_iter)
+        if plateau:
+            print(plateau, file=sys.stderr, flush=True)
 
         meta_update = {
             "iterations": it,
             "status": "locked_ready" if ok else "running",
             "max_iters": max_iters,
             "best_score": round(best_score, 2),
+            "best_iteration": best_iter,
             "updated": _now(),
         }
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {"series_id": series_id}
@@ -1266,7 +1295,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--brief-file", help="markdown/text file with the genre brief (default: CEO 2026-09-12 brief)")
     parser.add_argument("--out", help="output root override (defaults to Y: share, then local)")
     parser.add_argument("--min-iters", type=int, default=MIN_ITERATIONS)
-    parser.add_argument("--max-iters", type=int, default=DEFAULT_MAX_ITERATIONS)
+    parser.add_argument("--max-iters", type=int, default=DEFAULT_MAX_ITERATIONS,
+                        help="campaign budget guardrail (default 1000 = industry-standard 10^3 "
+                             "evaluation budget; the quality gate is the real stop condition)")
     parser.add_argument("--offline", action="store_true", help="deterministic $0 mode (tests/dry runs)")
     parser.add_argument("--resume", action="store_true", help="continue an existing run")
     parser.add_argument("--force", action="store_true", help="restart even if run/lock exists")

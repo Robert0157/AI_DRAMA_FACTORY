@@ -216,3 +216,16 @@ def test_md_row_marks_degraded_rounds():
     }
     row = sf._md_row(entry)
     assert "⚠" in row and "★" not in row
+
+
+def test_campaign_cap_is_industry_1000():
+    # CEO 2026-09-12 (rev): 150 was too low -> industry-standard 10^3 budget.
+    assert sf.DEFAULT_MAX_ITERATIONS == 1000
+
+
+def test_plateau_warning_alerts_after_idle_streak():
+    assert sf._plateau_warning(101, 1) is not None   # gap = 100 -> alert
+    assert sf._plateau_warning(151, 1) is not None   # gap = 150 -> alert
+    assert sf._plateau_warning(100, 1) is None       # gap = 99 -> too early
+    assert sf._plateau_warning(126, 1) is None       # gap = 125 -> not a boundary
+    assert sf._plateau_warning(90, None) is None     # no champion yet

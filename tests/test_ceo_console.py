@@ -22,6 +22,13 @@ def _make_sources(tmp_path: Path) -> Path:
     (forge / "iter_02.json").write_text(json.dumps(
         {"iteration": 2, "final": {"final_total": 5.1, "min_domain": 5.5, "domains": {}}}),
         encoding="utf-8")
+    (forge / "best_package.json").write_text(json.dumps({
+        "schema": "series_contract.v1",
+        "title": "測試劇",
+        "logline": "一句話故事。",
+        "episode_outline": [{"ep": 1, "arc": 1, "title": "第一集",
+                             "hook": "鉤子", "summary": "大綱摘要", "cliffhanger": "收束"}],
+    }, ensure_ascii=False), encoding="utf-8")
 
     cp_d = share / "assets" / "reference_intake" / "cp_d" / "W-TEST"
     cp_d.mkdir(parents=True)
@@ -46,12 +53,18 @@ def test_sync_mirrors_and_indexes(tmp_path, monkeypatch):
     share = _make_sources(tmp_path)
     monkeypatch.setenv("CEO_CONSOLE_ROOT", str(tmp_path / "CEO"))
     monkeypatch.setenv("CEO_SOURCE_ROOT", str(share))
+    forge_dst = tmp_path / "CEO" / "01_劇本鑄造" / "s1"
+    forge_dst.mkdir(parents=True, exist_ok=True)
+    (forge_dst / "state_latest.json").write_text("{}", encoding="utf-8")  # stale JSON from old syncs
     rc = cc.main(["--sync", "--forge-series", "s1", "--week", "W-TEST"])
     assert rc == 0
     ceo = tmp_path / "CEO"
-    assert (ceo / "01_劇本鑄造" / "s1" / "iteration_log.md").is_file()
-    assert (ceo / "01_劇本鑄造" / "s1" / "iter_02.json").is_file()
-    assert "迭代次數：2" in (ceo / "01_劇本鑄造" / "s1" / "進度摘要.md").read_text(encoding="utf-8")
+    assert (forge_dst / "iteration_log.md").is_file()
+    assert not (forge_dst / "iter_02.json").exists()        # machine JSON stays offline
+    assert not (forge_dst / "state_latest.json").exists()   # stale JSON is purged
+    novel = forge_dst / "劇本小說版.md"
+    assert novel.is_file() and "測試劇" in novel.read_text(encoding="utf-8")
+    assert "迭代次數：2" in (forge_dst / "進度摘要.md").read_text(encoding="utf-8")
     assert (ceo / "02_素材與CP-D" / "W-TEST" / "review.html").is_file()
     assert (ceo / "02_素材與CP-D" / "W-TEST" / "pexels_1.jpg").is_file()
     assert (ceo / "03_樣片與交付" / "樣片清單.md").is_file()
