@@ -1,0 +1,47 @@
+{
+  "_comment": "ComfyUI upstream lock file — Pin-once-Validated governance (CEO 2026-09-12). Do not edit manually without re-running the upgrade playbook.",
+  "component": "ComfyUI",
+  "vendored_path": "Y:/AI_Drama_Factory/integrations/comfyui (Mac execution host) — no PC copy",
+  "upstream": {
+    "repo": "comfyanonymous/ComfyUI",
+    "license": "GPL-3.0 (used strictly as an external HTTP process — no code linking, no redistribution)",
+    "version": "0.35.0",
+    "version_evidence": ["Y:/AI_Drama_Factory/integrations/comfyui/pyproject.toml", "Y:/AI_Drama_Factory/integrations/comfyui/comfyui_version.py"]
+  },
+  "ref": "1d48d9cf7bcecb6022a87b3cb13e0fb435bf9b8a (git HEAD, 2026-09-10)",
+  "role": "Mac render engine — Wan 2.1 t2v @ :8188 (A-line main path; B-line standby/sample path)",
+  "integration": {
+    "surface": "native HTTP API: /object_info (preflight), POST /prompt, /history/{id}, /view, /queue, /interrupt",
+    "clients": [
+      "scripts/pipeline/mac_wan_worker.py (class ComfyClient, lines ~131-260)",
+      "scripts/auxiliary_assets/comfyui_wan21.py (class ComfyUIWan21Client)"
+    ],
+    "note": "Two clients duplicate the same protocol — consolidation into one shared comfy_client.py is planned (v2 redesign §3)"
+  },
+  "models": [
+    {"file": "models/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors", "size_mb_approx": 2707},
+    {"file": "models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors", "size_mb_approx": 6424}
+  ],
+  "models_sha256": "TODO — compute for both model files during the next maintenance window (multi-GB; skipped at lock time)",
+  "validation": {
+    "date": "2026-09-12",
+    "evidence": [
+      "mac_wan_worker produced 480p 20fps 175s MV segments (Y:/AI_Drama_Factory/logs/mac_wan_worker.log)",
+      "story_room selfcheck: mv.production PASS (wan=6 units=36)",
+      "comfyui_server.log active 2026-09-12 (Y:/AI_Drama_Factory/logs/comfyui_server.log)"
+    ]
+  },
+  "frozen_on": "2026-09-12",
+  "patches": [],
+  "contract_tests": [
+    "TODO tests/contracts/test_comfyui_contract.py — /object_info preflight (required nodes + models present), one 1-shot t2v smoke render at 480p, /queue health check"
+  ],
+  "upgrade_playbook": [
+    "1. Diff the target release against 0.35.0 (config format, node renames, API changes).",
+    "2. Dry-run one smoke render into a staging directory first.",
+    "3. Run contract tests (preflight + smoke + queue).",
+    "4. Update this VERSION.lock (version / HEAD / model hashes) and sync the copy to the Mac side.",
+    "5. Only then promote; otherwise stay frozen (Pin-once-Validated)."
+  ],
+  "triggers_to_unfreeze": ["new feature needed upstream", "security patch", "contract test failure"]
+}
