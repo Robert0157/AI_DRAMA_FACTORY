@@ -37,7 +37,8 @@ def test_forge_runs_full_floor_before_lock(tmp_path):
     md = (run / "iteration_log.md").read_text(encoding="utf-8")
     assert "| 15 |" in md
     gate = sf.gate_check(run)
-    assert gate["eligible"] is True
+    assert gate["eligible"] is False
+    assert gate["evidence_valid"] is True
     # Champion tracking: the best package snapshot is persisted for resume
     assert (run / "best_package.json").is_file()
     best_meta = json.loads((run / "best_meta.json").read_text(encoding="utf-8"))
@@ -51,6 +52,66 @@ def test_capped_run_is_not_eligible(tmp_path):
     assert result["iterations"] == 16
     run = tmp_path / "t-broken"
     assert not (run / "lock_ready.json").exists()
+    assert sf.gate_check(run)["eligible"] is False
+
+
+@pytest.mark.parametrize("payload", [
+    {"cp_d_eligible": True, "iterations": 15, "final_total": 1.0, "min_domain": 1.0},
+    {"eligible": True, "cp_d_eligible": False, "iterations": 15},
+    {"cp_d_eligible": True, "iterations": 15, "mode": "offline"},
+])
+def test_gate_rejects_unverified_lock(tmp_path, payload):
+    """A lock file alone must never grant production eligibility."""
+    (tmp_path / "lock_ready.json").write_text(json.dumps(payload), encoding="utf-8")
+    assert sf.gate_check(tmp_path)["eligible"] is False
+
+
+def test_gate_rejects_malformed_lock(tmp_path):
+    """Corrupt evidence must return a visible rejection, not approval."""
+    (tmp_path / "lock_ready.json").write_text("{", encoding="utf-8")
+    result = sf.gate_check(tmp_path)
+    assert result["eligible"] is False
+    assert result["reason"]
+
+
+def _reviewed_test_run(tmp_path):
+    """Build simulated production evidence without any network calls."""
+    sf.run_forge("brief", "verified", tmp_path, offline=True)
+    run = tmp_path / "verified"
+    for path in [run / "run_meta.json", run / "lock_ready.json", *run.glob("iter_*.json")]:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["mode"] = "llm"
+        if path.name == "lock_ready.json":
+            data["cp_d_eligible"] = True
+        path.write_text(json.dumps(data), encoding="utf-8")
+    return run
+
+
+def test_gate_accepts_complete_consistent_evidence(tmp_path):
+    assert sf.gate_check(_reviewed_test_run(tmp_path))["eligible"] is True
+
+
+@pytest.mark.parametrize("filename,field,value", [
+    ("state_latest.json", "title", "changed after review"),
+    ("best_package.json", "title", "changed after review"),
+    ("iter_01.json", "degraded", True),
+    ("iter_01.json", "errors", 1),
+    ("run_meta.json", "mode", "offline"),
+    ("lock_ready.json", "final_total", float("nan")),
+    ("lock_ready.json", "final_total", 1.0),
+])
+def test_gate_rejects_changed_evidence(tmp_path, filename, field, value):
+    run = _reviewed_test_run(tmp_path)
+    path = run / filename
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data[field] = value
+    path.write_text(json.dumps(data), encoding="utf-8")
+    assert sf.gate_check(run)["eligible"] is False
+
+
+def test_gate_rejects_missing_iteration(tmp_path):
+    run = _reviewed_test_run(tmp_path)
+    (run / "iter_05.json").unlink()
     assert sf.gate_check(run)["eligible"] is False
 
 

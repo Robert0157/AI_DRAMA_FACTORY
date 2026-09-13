@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import sys
 import time
@@ -152,8 +153,13 @@ def _now() -> str:
 
 
 def _hash(package: dict) -> str:
+    return _package_sha256(package)[:16]
+
+
+def _package_sha256(package: dict) -> str:
+    """Fingerprint the complete canonical package for production evidence."""
     blob = json.dumps(package, ensure_ascii=False, sort_keys=True).encode("utf-8")
-    return hashlib.sha256(blob).hexdigest()[:16]
+    return hashlib.sha256(blob).hexdigest()
 
 
 def _salvage_json(text: str) -> dict | None:
@@ -1326,6 +1332,10 @@ def run_forge(
             status = "locked_ready"
             _write_json(state_path, best_package)
             _write_json(lock_path, {
+                "schema": "forge.lock.v2",
+                "mode": mode,
+                "package_sha256": _package_sha256(best_package),
+                "best_iteration": best_iter,
                 "series_id": series_id,
                 "iterations": it,
                 "final_total": best_score,
@@ -1335,7 +1345,7 @@ def run_forge(
                                "min_iterations": min_iters},
                 "log": str(log_path),
                 "generated": _now(),
-                "cp_d_eligible": True,
+                "cp_d_eligible": mode == "llm",
             })
             break
         if it == max_iters:
@@ -1416,12 +1426,79 @@ def status_report(run_dir: Path) -> dict:
 
 
 def gate_check(run_dir: Path) -> dict:
+    """Revalidate local evidence; an offline or stale lock cannot enter CP-D."""
+    run_dir = Path(run_dir)
     lock_path = Path(run_dir) / "lock_ready.json"
     if not lock_path.is_file():
         return {"eligible": False, "reason": "lock_ready.json missing (forge gate not passed)"}
-    lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    eligible = bool(lock.get("cp_d_eligible")) and int(lock.get("iterations", 0)) >= MIN_ITERATIONS
-    return {"eligible": eligible, **lock}
+    try:
+        def read_evidence(path: Path) -> dict:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(value, dict):
+                raise ValueError(f"{path.name}: expected an object")
+            return value
+
+        lock = read_evidence(lock_path)
+        if lock.get("schema") != "forge.lock.v2":
+            raise ValueError("legacy/unverified lock: a new reviewed lock is required")
+        mode = lock.get("mode")
+        if mode not in ("llm", "offline"):
+            raise ValueError("invalid evidence mode")
+        iterations = lock["iterations"]
+        best_iteration = lock["best_iteration"]
+        if type(iterations) is not int or iterations < MIN_ITERATIONS:
+            raise ValueError("insufficient logged iterations")
+        if type(best_iteration) is not int or not 1 <= best_iteration <= iterations:
+            raise ValueError("invalid champion iteration")
+        domains = lock["domains"]
+        if set(domains) != set(RUBRIC_WEIGHTS):
+            raise ValueError("incomplete rubric domains")
+        scores = [float(domains[name]) for name in RUBRIC_WEIGHTS]
+        if not all(math.isfinite(score) and HOLLYWOOD_MIN_DOMAIN <= score <= 10 for score in scores):
+            raise ValueError("rubric domain below threshold or non-finite")
+        total = float(lock["final_total"])
+        weighted = sum(float(domains[name]) * weight for name, weight in RUBRIC_WEIGHTS.items())
+        if not math.isfinite(total) or not HOLLYWOOD_TOTAL <= total <= 10 or abs(total - weighted) > 0.06:
+            raise ValueError("total below threshold or inconsistent with rounded domains")
+        if float(lock["min_domain"]) != min(scores):
+            raise ValueError("minimum domain mismatch")
+        meta = read_evidence(run_dir / "run_meta.json")
+        if (meta.get("mode") != mode or meta.get("status") != "locked_ready"
+                or meta.get("iterations") != iterations or meta.get("series_id") != lock.get("series_id")):
+            raise ValueError("run metadata does not match the lock")
+        package = read_evidence(run_dir / "best_package.json")
+        state = read_evidence(run_dir / "state_latest.json")
+        digest = _package_sha256(package)
+        if lock.get("package_sha256") != digest or _package_sha256(state) != digest:
+            raise ValueError("locked package was changed")
+        if any(finding.get("level") == "error" for finding in rule_findings(package)):
+            raise ValueError("locked package violates structural rules")
+        log_text = (run_dir / "iteration_log.md").read_text(encoding="utf-8")
+        champion = None
+        for number in range(1, iterations + 1):
+            entry = read_evidence(run_dir / f"iter_{number:02d}.json")
+            snapshot = read_evidence(run_dir / "l1_workbench" / f"iter_{number:02d}.json")
+            if (entry.get("iteration") != number or snapshot.get("iteration") != number
+                    or entry.get("mode") != mode or f"| {number} |" not in log_text
+                    or entry.get("package_hash") != _hash(snapshot["package"])):
+                raise ValueError(f"iteration {number}: missing or inconsistent evidence")
+            if number == best_iteration:
+                champion = entry
+                if _package_sha256(snapshot["package"]) != digest:
+                    raise ValueError("champion snapshot differs from the locked package")
+        if (champion is None or champion.get("best") is not True
+                or champion.get("degraded") is not False or champion.get("errors") != 0
+                or any(finding.get("level") == "error" for finding in champion.get("findings", []))
+                or champion["final"]["domains"] != domains
+                or float(champion["final"]["llm_total"]) != total):
+            raise ValueError("champion is degraded, invalid, or inconsistent")
+        eligible = mode == "llm" and lock.get("cp_d_eligible") is True
+        return {**lock, "evidence_valid": True, "eligible": eligible,
+                "reason": "verified production evidence" if eligible else "offline evidence cannot authorize production"}
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        reason = f"forge evidence rejected: {exc}"
+        print(f"[gate] {reason}", file=sys.stderr, flush=True)
+        return {"eligible": False, "evidence_valid": False, "reason": reason}
 
 
 # ---------------------------------------------------------------------------

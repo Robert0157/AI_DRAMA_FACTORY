@@ -21,7 +21,9 @@ Job lifecycle (all under the handoff root, shared with the PC over SMB):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -30,7 +32,9 @@ import time
 import urllib.parse
 import urllib.request
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
+from fractions import Fraction
 from typing import Any
 
 DEFAULT_COMFY = "http://127.0.0.1:8188"
@@ -78,9 +82,7 @@ def probe_video(path: Path) -> dict[str, Any]:
     out = subprocess.run(
         [
             _tool("ffprobe"), "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=codec_name,width,height,avg_frame_rate",
-            "-show_entries", "format=duration",
+            "-show_streams", "-show_format",
             "-of", "json", str(path),
         ],
         capture_output=True, text=True,
@@ -89,8 +91,108 @@ def probe_video(path: Path) -> dict[str, Any]:
         raise RuntimeError(f"ffprobe failed on {path.name}: {out.stderr.strip()[:400]}")
     data = json.loads(out.stdout)
     if not data.get("streams"):
-        raise RuntimeError(f"{path.name} has no video stream")
+        raise RuntimeError(f"{path.name} has no media stream")
     return data
+
+
+def file_sha256(path: Path) -> str:
+    """Hash media incrementally without loading it into memory."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_json_atomic(path: Path, payload: dict) -> None:
+    """Publish a complete record or preserve the previous record on failure."""
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+@contextmanager
+def exclusive_worker(root: Path):
+    """Hold an OS-backed lock across recovery and every worker execution mode."""
+    root.mkdir(parents=True, exist_ok=True)
+    handle = (root / ".worker.lock").open("a+b")
+    acquired = False
+    try:
+        if os.name == "nt":
+            import msvcrt
+            if handle.seek(0, os.SEEK_END) == 0:
+                handle.write(b"0")
+                handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        acquired = True
+        yield
+    finally:
+        if acquired:
+            if os.name == "nt":
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        handle.close()
+
+
+def validate_master_track(music: dict, duration: float) -> Path:
+    """Reject missing, changed, or short master audio before costly generation."""
+    source = music.get("master_track")
+    master = Path(str(source).replace("\\", "/")) if source else None
+    if master is None or not master.is_file():
+        raise ValueError("CEO master track is required")
+    if file_sha256(master) != music.get("sha256"):
+        raise ValueError("CEO master track sha256 mismatch")
+    info = probe_video(master)
+    audio = next((stream for stream in info["streams"] if stream.get("codec_type") == "audio"), None)
+    if audio is None or float(info["format"]["duration"]) + 0.001 < duration:
+        raise ValueError("CEO master track has no audio or is shorter than the timeline")
+    return master
+
+
+def verify_delivery(path: Path, width: int, height: int, fps: float, frames: int) -> dict:
+    """Validate technical delivery; this does not authorize publication."""
+    info = probe_video(path)
+    video = next((stream for stream in info["streams"] if stream.get("codec_type") == "video"), None)
+    audio = next((stream for stream in info["streams"] if stream.get("codec_type") == "audio"), None)
+    if video is None or video.get("codec_name") != "h264":
+        raise ValueError("delivery must contain H.264 video")
+    if (video.get("width"), video.get("height")) != (width, height):
+        raise ValueError("delivery dimensions mismatch")
+    if abs(float(Fraction(video.get("avg_frame_rate", "0"))) - fps) > 0.001:
+        raise ValueError("delivery fps mismatch")
+    if int(video.get("nb_frames", 0)) != frames:
+        raise ValueError("delivery frame count mismatch")
+    if audio is None or audio.get("codec_name") != "aac" or int(audio.get("sample_rate", 0)) != 48000:
+        raise ValueError("delivery must contain AAC at 48000 Hz")
+    duration = frames / fps
+    if abs(float(audio.get("duration", 0)) - duration) > 1 / fps + 0.025:
+        raise ValueError("delivery audio duration mismatch")
+    run_tool([_tool("ffmpeg"), "-v", "error", "-xerror", "-i", str(path),
+              "-f", "null", "-"], "full delivery decode")
+    return info
+
+
+def normalize_unit(source: Path, destination: Path, fps: float, frames: int) -> None:
+    """Trim surplus model frames in Stage 1; never pad missing motion."""
+    info = probe_video(source)
+    video = next(stream for stream in info["streams"] if stream.get("codec_type") == "video")
+    if float(video.get("duration", info["format"]["duration"])) + 0.001 < frames / fps:
+        raise ValueError("generated unit is shorter than its target timeline")
+    run_tool([_tool("ffmpeg"), "-y", "-v", "error", "-i", str(source),
+              "-vf", f"setpts=PTS-STARTPTS,fps={fps},trim=end_frame={frames}",
+              "-an", "-c:v", "libx264", "-preset", "slow", "-crf", "23",
+              "-pix_fmt", "yuv420p", "-flags", "+cgop", "-g", "48",
+              "-keyint_min", "48", "-sc_threshold", "0", str(destination)],
+             "normalize MV unit")
 
 
 def concat_clips(clips: list[Path], destination: Path) -> None:
@@ -115,13 +217,14 @@ def concat_clips(clips: list[Path], destination: Path) -> None:
 
 def mux_master_track(silent: Path, master: Path, destination: Path) -> None:
     """Attach the CEO-approved master track as the only audio stream."""
+    duration = float(probe_video(silent)["format"]["duration"])
     run_tool(
         [
             _tool("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error",
             "-i", str(silent), "-i", str(master),
             "-map", "0:v:0", "-map", "1:a:0",
             "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
-            "-shortest", str(destination),
+            "-af", f"atrim=duration={duration},asetpts=PTS-STARTPTS", str(destination),
         ],
         "mux master track",
     )
@@ -136,6 +239,7 @@ class ComfyClient:
     def __init__(self, base_url: str, timeout: int = 60):
         self.base = base_url.rstrip("/")
         self.timeout = timeout
+        self.task_path: Path | None = None
 
     def _get(self, path: str) -> Any:
         with urllib.request.urlopen(f"{self.base}{path}", timeout=self.timeout) as resp:
@@ -216,15 +320,36 @@ class ComfyClient:
                 "video": ["10", 0], "filename_prefix": filename_prefix,
                 "format": "mp4"}},
         }
-        submitted = self._post(
-            "/prompt", {"prompt": workflow, "client_id": str(uuid.uuid4())}
-        )
-        prompt_id = submitted.get("prompt_id")
-        if not prompt_id:
-            raise RuntimeError(f"ComfyUI rejected workflow: {submitted}")
+        request_hash = hashlib.sha256(json.dumps(workflow, sort_keys=True).encode("utf-8")).hexdigest()
+        journal = {}
+        if self.task_path and self.task_path.is_file():
+            journal = json.loads(self.task_path.read_text(encoding="utf-8"))
+            if journal.get("request_sha256") != request_hash:
+                raise ValueError("task journal belongs to different generation inputs")
+            if not journal.get("prompt_id"):
+                raise RuntimeError("submission outcome unknown; reconcile ComfyUI before retrying")
+        if not journal:
+            journal = {"request_sha256": request_hash, "phase": "submitting", "updated_epoch": time.time()}
+            if self.task_path:
+                write_json_atomic(self.task_path, journal)
+            submitted = self._post(
+                "/prompt", {"prompt": workflow, "client_id": str(uuid.uuid4())}
+            )
+            prompt_id = submitted.get("prompt_id")
+            if not prompt_id:
+                raise RuntimeError(f"ComfyUI rejected workflow: {submitted}")
+            journal.update({"prompt_id": prompt_id, "phase": "submitted"})
+            if self.task_path:
+                write_json_atomic(self.task_path, journal)
+        prompt_id = journal["prompt_id"]
+        if journal.get("phase") == "completed" and journal.get("output"):
+            return journal["output"]
 
         deadline = time.monotonic() + timeout_sec
         while time.monotonic() < deadline:
+            journal["updated_epoch"] = time.time()
+            if self.task_path:
+                write_json_atomic(self.task_path, journal)
             history = self._get(f"/history/{prompt_id}").get(prompt_id)
             if history:
                 status = history.get("status") or {}
@@ -235,6 +360,9 @@ class ComfyClient:
                     for key in ("videos", "gifs", "images"):
                         files = node_output.get(key) or []
                         if files:
+                            journal.update({"phase": "completed", "output": files[0]})
+                            if self.task_path:
+                                write_json_atomic(self.task_path, journal)
                             return files[0]
             time.sleep(5)
         raise TimeoutError(f"Wan generation timed out after {timeout_sec}s")
@@ -253,7 +381,9 @@ class ComfyClient:
             payload = resp.read()
         if not payload:
             raise RuntimeError(f"empty download for {record['filename']}")
-        destination.write_bytes(payload)
+        temporary = destination.with_suffix(destination.suffix + ".part")
+        temporary.write_bytes(payload)
+        os.replace(temporary, destination)
         return destination
 
 
@@ -261,9 +391,11 @@ class ComfyClient:
 # Job maths
 # --------------------------------------------------------------------------
 def to_wan_frames(duration_sec: float, fps: float) -> int:
-    """Wan needs 4n+1 frames; snap to the nearest legal count."""
-    target = max(5, int(round(duration_sec * fps)))
-    snapped = ((target - 1) // 4) * 4 + 1
+    """Round up to legal 4n+1 frames so Stage 1 can trim without padding."""
+    if not math.isfinite(duration_sec) or not math.isfinite(fps) or duration_sec <= 0 or fps <= 0:
+        raise ValueError("duration and fps must be finite and positive")
+    target = max(5, math.ceil(duration_sec * fps - 1e-9))
+    snapped = math.ceil((target - 1) / 4) * 4 + 1
     return max(5, snapped)
 
 
@@ -305,7 +437,7 @@ class RenderWorker:
         for stranded in sorted((self.root / "processing").glob("*.json")):
             target = self.root / "inbox" / stranded.name
             if target.exists():
-                target.unlink()
+                raise RuntimeError(f"recovery conflict: {stranded.name}; both jobs preserved")
             os.replace(stranded, target)
             print(f"[worker] recovered stalled job -> {target.name}", flush=True)
 
@@ -325,9 +457,7 @@ class RenderWorker:
     def _finish(self, job_file: Path, bucket: str, status: dict) -> None:
         target_dir = self.root / bucket / job_file.stem
         target_dir.mkdir(parents=True, exist_ok=True)
-        (target_dir / "status.json").write_text(
-            json.dumps(status, ensure_ascii=False, indent=1), encoding="utf-8"
-        )
+        write_json_atomic(target_dir / "status.json", status)
         job_file.unlink(missing_ok=True)
 
     # -- rendering --------------------------------------------------------
@@ -342,6 +472,36 @@ class RenderWorker:
         steps = int(production.get("steps", 20))
         cfg = float(production.get("cfg", 6.0))
         width, height = frame_size(resolution, aspect)
+        if resolution != "480p" or fps != 20 or (steps < 20 and job.get("purpose") != "engineering_smoke"):
+            raise ValueError("job violates the 480p/20fps/20-step production policy")
+        if Path(job_id).name != job_id or "/" in job_id or "\\" in job_id or job_id in (".", ".."):
+            raise ValueError("invalid job identifier")
+        output_name = job.get("output", {}).get("file", f"{job_id}.mp4")
+        if Path(output_name).name != output_name or "/" in output_name or "\\" in output_name:
+            raise ValueError("output must be a filename")
+        total_frames = 0
+        shot_numbers = set()
+        for shot in job["shots"]:
+            shot_number = int(shot["shot_number"])
+            if shot_number <= 0 or shot_number in shot_numbers:
+                raise ValueError("duplicate or invalid shot number")
+            shot_numbers.add(shot_number)
+            unit_numbers = set()
+            for unit in shot.get("units") or [{"duration_sec": shot["duration_sec"]}]:
+                unit_number = int(unit.get("index", 1))
+                if unit_number <= 0 or unit_number in unit_numbers:
+                    raise ValueError("duplicate or invalid unit number")
+                unit_numbers.add(unit_number)
+                duration = float(unit["duration_sec"])
+                frames = int(unit.get("target_frames") or round(duration * fps))
+                if not math.isfinite(duration) or duration <= 0 or frames <= 0 or abs(frames - duration * fps) > 1:
+                    raise ValueError("invalid unit timeline")
+                total_frames += frames
+        if total_frames <= 0:
+            raise ValueError("empty timeline")
+        if job.get("target_frames", total_frames) != total_frames:
+            raise ValueError("declared timeline frame count mismatch")
+        master_path = validate_master_track(job.get("music") or {}, total_frames / fps)
 
         work = self.work_root / job_id
         (work / "units").mkdir(parents=True, exist_ok=True)
@@ -365,10 +525,19 @@ class RenderWorker:
             unit_files: list[Path] = []
             for unit in units:
                 unit_no = int(unit["index"])
-                frames = to_wan_frames(float(unit["duration_sec"]), fps)
+                target_frames = int(unit.get("target_frames") or round(float(unit["duration_sec"]) * fps))
+                frames = to_wan_frames(target_frames / fps, fps)
                 seed = int(unit.get("seed", shot.get("seed", 260911)))
                 target = work / "units" / f"sh{shot_no:03d}_u{unit_no:02d}.mp4"
+                cache_path = target.with_suffix(".json")
+                inputs = {"production": production, "shot": shot, "unit": unit,
+                          "models": [WAN_UNET, WAN_CLIP, WAN_VAE], "worker_sha256": file_sha256(Path(__file__))}
+                input_hash = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode("utf-8")).hexdigest()
                 if target.is_file() and target.stat().st_size > 0:
+                    cached = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.is_file() else {}
+                    if cached.get("input_sha256") != input_hash or cached.get("media_sha256") != file_sha256(target):
+                        raise ValueError(f"unverified or stale cache: {target.name}; explicit regeneration required")
+                    probe_video(target)
                     unit_files.append(target)
                     print(f"[{job_id}] unit {target.name} reused", flush=True)
                     continue
@@ -377,8 +546,9 @@ class RenderWorker:
                     f"submitting {frames}f @ {fps}fps {width}x{height}",
                     flush=True,
                 )
+                self.comfy.task_path = target.with_suffix(".task.json")
                 record = self.comfy.generate(
-                    prompt=shot["prompt"],
+                    prompt=unit.get("prompt") or shot["prompt"],
                     negative_prompt=shot.get("negative_prompt") or DEFAULT_NEGATIVE,
                     width=width,
                     height=height,
@@ -390,14 +560,17 @@ class RenderWorker:
                     filename_prefix=f"handoff/{job_id}/sh{shot_no:03d}_u{unit_no:02d}",
                     timeout_sec=timeout_sec,
                 )
-                self.comfy.download(record, target)
-                probe = probe_video(target)
+                raw = target.with_name(target.stem + "_raw.mp4")
+                self.comfy.download(record, raw)
+                probe = probe_video(raw)
                 stream = probe["streams"][0]
                 if (int(stream["width"]), int(stream["height"])) != (width, height):
                     raise RuntimeError(
                         f"unit {target.name} rendered {stream['width']}x{stream['height']}, "
                         f"expected {width}x{height}"
                     )
+                normalize_unit(raw, target, fps, target_frames)
+                write_json_atomic(cache_path, {"input_sha256": input_hash, "media_sha256": file_sha256(target)})
                 unit_files.append(target)
 
             shot_file = work / "shots" / f"sh{shot_no:03d}.mp4"
@@ -418,26 +591,23 @@ class RenderWorker:
         silent = work / "episode_silent.mp4"
         concat_clips(shot_files, silent)
 
+        validate_master_track(job["music"], total_frames / fps)
+        staged = work / "delivery.mp4"
+        mux_master_track(silent, master_path, staged)
+        probe = verify_delivery(staged, width, height, fps, total_frames)
         output_dir = self.root / "done" / job_id
         output_dir.mkdir(parents=True, exist_ok=True)
-        final = output_dir / job.get("output", {}).get("file", f"{job_id}.mp4")
-
-        master = (job.get("music") or {}).get("master_track")
-        # Older Windows dispatchers wrote backslash separators; POSIX needs "/".
-        master_path = Path(master.replace("\\", "/")) if master else None
-        if master_path and master_path.is_file():
-            mux_master_track(silent, master_path, final)
-            status["audio"] = {"source": str(master_path), "mode": "ceo_master_track"}
-        else:
-            shutil.copy2(silent, final)
-            status["audio"] = {"source": None, "mode": "silent_needs_master_track"}
-            status["findings"].append(
-                f"master track unavailable: {master!r}; delivered silent cut"
-            )
-
-        probe = probe_video(final)
-        stream = probe["streams"][0]
+        final = output_dir / output_name
+        shutil.copy2(staged, final.with_suffix(".mp4.part"))
+        os.replace(final.with_suffix(".mp4.part"), final)
+        status["audio"] = {"source": str(master_path), "mode": "ceo_master_track", "sha256": job["music"]["sha256"]}
+        stream = next(stream for stream in probe["streams"] if stream.get("codec_type") == "video")
         status.update({
+            "state": "technical_qc_passed",
+            "publish_eligible": False,
+            "pending_reviews": ["visual_content", "watermark", "variation_policy", "ceo_approval"],
+            "target_frames": total_frames,
+            "output_sha256": file_sha256(final),
             "finished": time.strftime("%Y-%m-%d %H:%M:%S"),
             "elapsed_sec": round(time.time() - started, 1),
             "output": str(final),
@@ -453,6 +623,8 @@ class RenderWorker:
         """Render a claimed job and file it under done/ or failed/."""
         try:
             status = self.render(job_file, timeout_sec)
+            if not status.get("pass"):
+                raise ValueError(f"delivery rejected: {status.get('findings')}")
             self._finish(job_file, "done", status)
             print(f"[{job_file.stem}] DONE -> {status['output']}", flush=True)
             return status
@@ -486,8 +658,8 @@ def _other_worker_running() -> int:
 
     The persistent --watch daemon must have exactly one owner: the LaunchAgent
     copy (auto-revived after a Mac reboot) and a manually started copy must
-    never fight over the handoff queue. One-shot modes (--once / --job) stay
-    exempt so manual interventions keep working.
+    never fight over the handoff queue. All CLI modes check legacy workers
+    before acquiring the OS-backed handoff lock and recovering stranded jobs.
 
     Only Python processes actually running the worker script count. A bare
     `pgrep -f` match is not enough: shell wrappers, editors, log tails or ssh
@@ -551,17 +723,23 @@ def main() -> int:
     # The single-owner check must run BEFORE the worker object is built: its
     # constructor recovers stalled jobs, which would otherwise shuffle the job
     # a live worker is still rendering in ComfyUI.
-    if args.watch:
-        other = _other_worker_running()
-        if other:
-            print(
-                f"[worker] another worker is already running (pid {other}); "
-                "exiting so the handoff queue keeps a single owner",
-                flush=True,
-            )
-            return 0
+    other = _other_worker_running()
+    if other:
+        print(f"[worker] another worker is already running (pid {other}); refusing recovery",
+              file=sys.stderr, flush=True)
+        return 1
 
     root = Path(args.handoff)
+    try:
+        with exclusive_worker(root):
+            return _run_locked_worker(args, root)
+    except (OSError, RuntimeError) as exc:
+        print(f"[worker] startup failed: {exc}", file=sys.stderr, flush=True)
+        return 1
+
+
+def _run_locked_worker(args: argparse.Namespace, root: Path) -> int:
+    """Recover and execute only while the CLI holds the exclusive root lock."""
     work_root = Path(args.work_root) if args.work_root else root / "work"
     worker = RenderWorker(root, args.comfy_url, work_root)
 

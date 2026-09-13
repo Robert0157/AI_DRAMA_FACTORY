@@ -1,0 +1,7 @@
+........................................................................ [ 93%]
+.....                                                                    [100%]
+- generated xml file: /Volumes/AI_Workspace/AI_Drama_Factory/Auto_Drama/output/qa_releases/20260913T012919574995Z/CEO/04_架構檢視/驗證證據/20260913T013029810895Z/pytest.xml -
+77 passed in 0.77s
+
+ENGINEERING_QA=PASS PRODUCTION_RELEASE=BLOCKED
+EVIDENCE=/Volumes/AI_Workspace/AI_Drama_Factory/Auto_Drama/output/qa_releases/20260913T012919574995Z/CEO/04_架構檢視/驗證證據/20260913T013029810895Z

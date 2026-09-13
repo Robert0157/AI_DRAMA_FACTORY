@@ -113,6 +113,7 @@ def build_job(story: dict, master_track: Path | None, limits: dict) -> dict:
         shots = shots[: limits["shots"]]
 
     job_shots = []
+    timeline_frames = 0
     for position, shot in enumerate(shots, 1):
         route = shot.get("generation_route") or {}
         plan = shot.get("generation_plan") or {}
@@ -122,6 +123,15 @@ def build_job(story: dict, master_track: Path | None, limits: dict) -> dict:
         unit_duration = float(plan.get("unit_duration_sec", shot["duration_sec"]))
         if limits.get("units"):
             unit_count = min(unit_count, limits["units"])
+        units = []
+        for index in range(1, unit_count + 1):
+            end_frame = round(index * unit_duration * 20)
+            start_frame = round((index - 1) * unit_duration * 20)
+            units.append({"index": index, "duration_sec": unit_duration,
+                          "target_frames": end_frame - start_frame,
+                          "seed": int(shot.get("seed", 260911)) + shot_number * 1000 + index,
+                          "prompt": shot["prompt"]})
+        timeline_frames += sum(unit["target_frames"] for unit in units)
         job_shots.append({
             "shot_number": shot_number,
             "duration_sec": float(shot["duration_sec"]),
@@ -130,10 +140,7 @@ def build_job(story: dict, master_track: Path | None, limits: dict) -> dict:
             "seed": int(shot.get("seed", 260911)) + shot_number,
             "visual_anchor": shot.get("visual_anchor"),
             "route": route,
-            "units": [
-                {"index": index, "duration_sec": unit_duration}
-                for index in range(1, unit_count + 1)
-            ],
+            "units": units,
         })
 
     music: dict = {"master_track": None, "sha256": None}
@@ -150,6 +157,8 @@ def build_job(story: dict, master_track: Path | None, limits: dict) -> dict:
 
     return {
         "schema": "handoff.job.v1",
+        "purpose": "engineering_smoke" if limits.get("smoke_test") else "ceo_sample",
+        "target_frames": timeline_frames,
         "job_id": job_id,
         "created": time.strftime("%Y-%m-%d %H:%M:%S"),
         "dispatched_by": "scripts/pipeline/dispatch_to_mac.py",
@@ -227,7 +236,8 @@ def main() -> int:
     if master and not master.is_file():
         raise SystemExit(f"[FATAL] master track not found: {master}")
 
-    limits = {"shots": args.limit_shots, "units": args.limit_units, "steps": args.steps}
+    limits = {"shots": args.limit_shots, "units": args.limit_units, "steps": args.steps,
+              "smoke_test": args.smoke_test}
     job = build_job(story, master, limits)
     target = dispatch(job, handoff_root(args.handoff), args.dry_run)
 
