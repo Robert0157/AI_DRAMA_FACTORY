@@ -1,0 +1,37 @@
+{
+ "job_id": "20260913T102245_伸展台之夢｜微縮日常",
+ "started": "2026-09-13 10:23:11",
+ "resolution": "480x848",
+ "fps": 20.0,
+ "shots": [
+  {
+   "shot_number": 1,
+   "units": 1,
+   "file": "/var/folders/60/4mcq31w95t795j9n7y9yvztw0000gn/T/aidrama_work/20260913T102245_伸展台之夢｜微縮日常/shots/sh001.mp4",
+   "duration_sec": 4.85
+  }
+ ],
+ "findings": [],
+ "audio": {
+  "source": "/Volumes/AI_Workspace/AI_Drama_Factory/assets/audio/ceo_approved_beats/lofi/CinematicAnthem_FallingStars.mp3",
+  "mode": "ceo_master_track",
+  "sha256": "69d6131763421e58f5ff6a28e8f7a08cd8e154c73e921365d7800addd2f768bc"
+ },
+ "state": "technical_qc_passed",
+ "publish_eligible": false,
+ "pending_reviews": [
+  "visual_content",
+  "watermark",
+  "variation_policy",
+  "ceo_approval"
+ ],
+ "target_frames": 97,
+ "output_sha256": "fc12489208a3984a81c5bf6f8505ddd82442b076a76d82f18209b4504eb50b91",
+ "finished": "2026-09-13 11:43:26",
+ "elapsed_sec": 4815.8,
+ "output": "/Volumes/AI_Workspace/AI_Drama_Factory/Auto_Drama/output/handoff/done/20260913T102245_伸展台之夢｜微縮日常/v01.mp4",
+ "codec": "h264",
+ "size": "480x848",
+ "duration_sec": 4.85,
+ "pass": true
+}
