@@ -1,6 +1,6 @@
 {
  "schema": "ceo.first_frame_pool.v1",
- "generated": "2026-09-13T09:14:13Z",
+ "generated": "2026-09-13T09:21:40Z",
  "source_dirs": [
   "first_frames",
   "VEO_download"
@@ -1870,32 +1870,6 @@
    "ext": ".md",
    "size": 2258,
    "naming_issues": []
-  },
-  {
-   "dir": "VEO_download",
-   "name": "Gemini_Generated_Image_27aq5627aq5627aq.png",
-   "ext": ".png",
-   "size": 9013328,
-   "naming_issues": [],
-   "sha256": "b12462169f0375af3f4dd7b1f6dd0ccc007e224d91f3614d40aaccf05af9cf8e",
-   "dims": [
-    2816,
-    1536,
-    "PNG"
-   ]
-  },
-  {
-   "dir": "VEO_download",
-   "name": "Gemini_Generated_Image_27aq5627aq5627aq_2.png",
-   "ext": ".png",
-   "size": 8483179,
-   "naming_issues": [],
-   "sha256": "54d13f43b60a319cc088eb70a28d79ab00566d2ecdf76bd77bbf074eb60434ec",
-   "dims": [
-    2760,
-    1504,
-    "PNG"
-   ]
   },
   {
    "dir": "VEO_download",
