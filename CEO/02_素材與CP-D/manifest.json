@@ -1,6 +1,6 @@
 {
  "schema": "ceo.first_frame_pool.v1",
- "generated": "2026-09-13T09:21:40Z",
+ "generated": "2026-09-13T09:43:39Z",
  "source_dirs": [
   "first_frames",
   "VEO_download"
@@ -383,22 +383,6 @@
    "dims": [
     921,
     1152,
-    "JPEG"
-   ]
-  },
-  {
-   "dir": "VEO_download",
-   "name": "a342547e02c30f3dfd02d6a5119fbe43 - 複製.jpg",
-   "ext": ".jpg",
-   "size": 284458,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
-   "sha256": "d67d507bbaa3f6050a1927d69b9fe6930216cbc1f3b185089194f81f9d0b03db",
-   "dims": [
-    810,
-    1440,
     "JPEG"
    ]
   },
@@ -1829,22 +1813,6 @@
    "dims": [
     736,
     1308,
-    "JPEG"
-   ]
-  },
-  {
-   "dir": "VEO_download",
-   "name": "Garden06 - 複製.jpg",
-   "ext": ".jpg",
-   "size": 228353,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
-   "sha256": "147c0584caaa973f87ccb30c79342bdf770b8ea3bc774d857da2d0ce35418546",
-   "dims": [
-    736,
-    1313,
     "JPEG"
    ]
   },
