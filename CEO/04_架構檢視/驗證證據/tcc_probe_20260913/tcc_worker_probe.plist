@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>com.aidramafactory.tcctest</string>
+<key>ProgramArguments</key><array>
+<string>/usr/bin/python3</string>
+<string>-c</string>
+<string>import json, subprocess, time
+P = "/Volumes/AI_Workspace/AI_Drama_Factory/assets/audio/ceo_approved_beats/lofi/CinematicAnthem_FallingStars.mp3"
+res = {}
+def test(name, argv):
+    t0 = time.time()
+    try:
+        p = subprocess.run(argv, capture_output=True, text=True, timeout=25)
+        res[name] = {"verdict": "ok" if p.returncode == 0 else "rc", "rc": p.returncode, "sec": round(time.time() - t0, 1), "err": (p.stderr or "")[-200:]}
+    except subprocess.TimeoutExpired:
+        res[name] = {"verdict": "HUNG", "sec": 25}
+    except Exception as e:
+        res[name] = {"verdict": "exc", "detail": repr(e)[:200]}
+try:
+    fh = open(P, "rb")
+    fh.read(1024)
+    fh.close()
+    res["py_open"] = "ok"
+except Exception as e:
+    res["py_open"] = repr(e)
+test("ffprobe", ["/opt/homebrew/bin/ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1", P])
+test("ffmpeg", ["/opt/homebrew/bin/ffmpeg", "-hide_banner", "-v", "error", "-t", "1", "-i", P, "-f", "null", "-"])
+try:
+    open("/tmp/tcctest.json", "w").write(json.dumps(res, indent=1))
+except Exception as e:
+    res["tmp_write"] = repr(e)
+try:
+    open("/Volumes/AI_Workspace/AI_Drama_Factory/logs/tcctest.json", "w").write(json.dumps(res, indent=1))
+except Exception as e:
+    res["vol_write"] = repr(e)
+print(json.dumps(res))</string>
+</array>
+<key>RunAtLoad</key><true/>
+<key>StandardOutPath</key><string>/tmp/tcctest.stdout</string>
+<key>StandardErrorPath</key><string>/tmp/tcctest.stderr</string>
+</dict></plist>

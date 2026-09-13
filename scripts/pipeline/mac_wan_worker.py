@@ -28,6 +28,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.parse
 import urllib.request
@@ -70,23 +71,64 @@ def _tool(name: str) -> str:
 
 
 def run_tool(cmd: list[str], label: str) -> None:
-    """Run a media tool and fail loudly with its stderr on error."""
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    """Run a media tool and fail loudly with its stderr on error or timeout."""
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"{label} timed out after 1800s; child killed") from exc
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout or "").strip()[-1500:]
         raise RuntimeError(f"{label} failed (exit {proc.returncode}): {detail}")
 
 
+def _is_tcc_volume(path: Path) -> bool:
+    """True for paths on the external volume that macOS TCC blocks under launchd.
+
+    Verified 2026-09-13 with a launchd contract probe: a Homebrew ffprobe or
+    ffmpeg child calling open() on /Volumes/* hangs forever because the consent
+    prompt can never be shown to the user, while the same paths work fine when
+    spawned from an interactive shell. Apple-signed python3 reads and writes the
+    same files without any prompt, so all tool I/O runs on TMPDIR and Python
+    performs the volume-side copies.
+    """
+    return os.name != "nt" and str(path).startswith("/Volumes/")
+
+
+def _stage_input(path: Path) -> Path:
+    """Return a locally readable copy of a volume file for ffmpeg/ffprobe."""
+    if not _is_tcc_volume(path):
+        return path
+    stage = Path(tempfile.gettempdir()) / "aidrama_stage"
+    stage.mkdir(parents=True, exist_ok=True)
+    staged = stage / f"{file_sha256(path)[:16]}_{path.name}"
+    if not staged.is_file() or staged.stat().st_size != path.stat().st_size:
+        shutil.copy2(path, staged)
+        print(f"[worker] staged {path.name} -> TMPDIR (macOS TCC gate)", flush=True)
+    return staged
+
+
+def _work_stage(job_id: str) -> Path:
+    """Per-job scratch space on TMPDIR so every ffmpeg path stays off /Volumes."""
+    work = Path(tempfile.gettempdir()) / "aidrama_work" / job_id
+    (work / "units").mkdir(parents=True, exist_ok=True)
+    (work / "shots").mkdir(parents=True, exist_ok=True)
+    return work
+
+
 def probe_video(path: Path) -> dict[str, Any]:
-    """Return codec/width/height/duration for a media file."""
-    out = subprocess.run(
-        [
-            _tool("ffprobe"), "-v", "error",
-            "-show_streams", "-show_format",
-            "-of", "json", str(path),
-        ],
-        capture_output=True, text=True,
-    )
+    """Return codec/width/height/duration for a media file (TCC-safe staging)."""
+    probe_path = _stage_input(path)
+    try:
+        out = subprocess.run(
+            [
+                _tool("ffprobe"), "-v", "error",
+                "-show_streams", "-show_format",
+                "-of", "json", str(probe_path),
+            ],
+            capture_output=True, text=True, timeout=300,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"ffprobe timed out on {path.name}; TCC or I/O stall") from exc
     if out.returncode != 0:
         raise RuntimeError(f"ffprobe failed on {path.name}: {out.stderr.strip()[:400]}")
     data = json.loads(out.stdout)
@@ -216,12 +258,14 @@ def concat_clips(clips: list[Path], destination: Path) -> None:
 
 
 def mux_master_track(silent: Path, master: Path, destination: Path) -> None:
-    """Attach the CEO-approved master track as the only audio stream."""
+    """Attach the CEO-approved master track as the only audio stream (TCC-safe)."""
     duration = float(probe_video(silent)["format"]["duration"])
+    silent_local = _stage_input(silent)
+    master_local = _stage_input(master)
     run_tool(
         [
             _tool("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error",
-            "-i", str(silent), "-i", str(master),
+            "-i", str(silent_local), "-i", str(master_local),
             "-map", "0:v:0", "-map", "1:a:0",
             "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
             "-af", f"atrim=duration={duration},asetpts=PTS-STARTPTS", str(destination),
@@ -503,9 +547,10 @@ class RenderWorker:
             raise ValueError("declared timeline frame count mismatch")
         master_path = validate_master_track(job.get("music") or {}, total_frames / fps)
 
-        work = self.work_root / job_id
-        (work / "units").mkdir(parents=True, exist_ok=True)
-        (work / "shots").mkdir(parents=True, exist_ok=True)
+        # All intermediate media lives on TMPDIR: launchd cannot grant ffmpeg
+        # access to /Volumes (TCC), while Python copies to /Volumes are allowed.
+        # Consequence: per-unit caches reset when TMPDIR is cleared.
+        work = _work_stage(job_id)
 
         self.comfy.precondition(width, height)
         started = time.time()
