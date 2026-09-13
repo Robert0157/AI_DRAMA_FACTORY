@@ -101,3 +101,27 @@ def test_json_roundtrip(tmp_path):
 def test_source_pool_too_small_raises():
     with pytest.raises(RuntimeError, match="too small"):
         plan_from_analysis(_analysis(), 100.0, _sources(count=2, duration=10.0), seed=9)
+
+
+def test_ambient_style_uses_long_holds():
+    plan = plan_from_analysis(_analysis(), 60.0, _sources(), style="ambient_cinematic", seed=11)
+    assert validate_plan(plan) == []
+    assert len(plan.shots) <= 15  # 60 s of >= 4 s holds -> at most 15 shots
+    for shot in plan.shots:
+        length = shot.end_sec - shot.start_sec
+        assert 4.0 - 1e-6 <= length <= 9.0 + 1e-6
+
+
+def test_validator_honors_style_params():
+    plan = plan_from_analysis(_analysis(), 60.0, _sources(), style="ambient_cinematic", seed=12)
+    data = plan.to_json_dict()
+    data["shots"][0] = {**data["shots"][0], "end_sec": data["shots"][0]["start_sec"] + 2.0,
+                        "frames": 40}
+    broken = TimelinePlan.from_json_dict(data)
+    errors = validate_plan(broken)
+    assert any("shorter than 4.0" in error for error in errors)
+
+
+def test_unknown_style_rejected():
+    with pytest.raises(ValueError, match="unknown style"):
+        plan_from_analysis(_analysis(), 30.0, _sources(), style="nonexistent", seed=13)

@@ -1,0 +1,58 @@
+{
+ "created": "2026-09-13 12:37:19",
+ "seed": 645038,
+ "excerpt": {
+  "start_sec": 81.874,
+  "length_sec": 30.0
+ },
+ "master_sha256": "69d6131763421e58f5ff6a28e8f7a08cd8e154c73e921365d7800addd2f768bc",
+ "mapping": {
+  "track_1": "fixed",
+  "track_2": "mir_v1",
+  "track_3": "ambient_cinematic"
+ },
+ "plans": {
+  "mir_v1": {
+   "shots": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "params": {
+    "min_shot_sec": 1.6,
+    "max_shot_sec": 3.4,
+    "hard_shot_sec": 4.5,
+    "beat_tolerance_sec": 0.18,
+    "onset_tolerance_sec": 0.25
+   }
+  },
+  "ambient_cinematic": {
+   "shots": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "params": {
+    "min_shot_sec": 4.0,
+    "max_shot_sec": 8.0,
+    "hard_shot_sec": 9.0,
+    "beat_tolerance_sec": 0.35,
+    "onset_tolerance_sec": 0.5
+   }
+  }
+ },
+ "pool_sources": [
+  "Y:\\AI_Drama_Factory\\Auto_Drama\\output\\handoff\\done\\20260912T115959_伸展台之夢｜微縮日常\\v01.mp4",
+  "Y:\\AI_Drama_Factory\\Auto_Drama\\output\\handoff\\done\\20260911T212309_伸展台之夢｜微縮日常\\v01.mp4",
+  "Y:\\AI_Drama_Factory\\Auto_Drama\\output\\handoff\\done\\20260911T201957_湖光微火｜微縮日常\\v01.mp4",
+  "Y:\\AI_Drama_Factory\\Auto_Drama\\output\\handoff\\done\\20260911T202014_湖光微火｜微縮日常\\v01.mp4"
+ ]
+}

@@ -29,7 +29,7 @@ TESTS = (
     "tests/test_music_timeline.py",
     "Auto_Drama/tests/test_lmd_video_guards.py",
 )
-MIN_EXPECTED_TESTS = 86
+MIN_EXPECTED_TESTS = 89
 SOURCES = (
     "scripts/story_room/script_forge.py",
     "scripts/pipeline/mac_wan_worker.py",

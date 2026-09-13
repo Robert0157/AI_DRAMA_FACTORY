@@ -47,6 +47,19 @@ DEFAULT_PARAMS: dict[str, float] = {
     "onset_tolerance_sec": 0.25,
 }
 
+# Style presets (CEO 2026-09-13 decisions: D1-D3 rules unchanged; ambient is a
+# parallel candidate for the healing/light_music direction, 4-8 s holds).
+STYLE_PRESETS: dict[str, dict[str, float]] = {
+    "mir_v1": dict(DEFAULT_PARAMS),
+    "ambient_cinematic": {
+        "min_shot_sec": 4.0,
+        "max_shot_sec": 8.0,
+        "hard_shot_sec": 9.0,
+        "beat_tolerance_sec": 0.35,
+        "onset_tolerance_sec": 0.50,
+    },
+}
+
 
 # --------------------------------------------------------------------------
 # Data model
@@ -108,6 +121,7 @@ class TimelinePlan:
     seed: int
     source_use_count: dict[str, int]
     created_utc: str
+    style: str = "mir_v1"
     warnings: list[str] = field(default_factory=list)
 
     def to_json_dict(self) -> dict:
@@ -227,17 +241,22 @@ def _snap(candidate: float, beats: list[float], onsets: list[float],
 
 
 def plan_from_analysis(analysis: MusicAnalysis, duration: float,
-                       sources: list[SourceSpec], *, seed: int = 7,
+                       sources: list[SourceSpec], *, style: str = "mir_v1",
+                       seed: int = 7,
                        fps: float = 20.0,
                        params: dict[str, float] | None = None) -> TimelinePlan:
-    """Build the mir_v1 shot plan (D1/D2 semantics).
+    """Build the shot plan for the chosen style (D1/D2 semantics).
 
     Sources are consumed as sequential cursors: the first shot takes the head
     of a source, the next takes what follows, so every shot is a unique
     (source, in, out) triple - zero replays by construction (D1 strictest
     reading).  Adjacent shots never share a source while alternatives exist.
+    Style presets supply the shot-length envelope and snapping tolerances;
+    explicit ``params`` override them.
     """
-    active = {**DEFAULT_PARAMS, **(params or {})}
+    if style not in STYLE_PRESETS:
+        raise ValueError(f"unknown style {style!r}; choose from {sorted(STYLE_PRESETS)}")
+    active = {**DEFAULT_PARAMS, **STYLE_PRESETS[style], **(params or {})}
     min_shot = active["min_shot_sec"]
     max_shot = active["max_shot_sec"]
     hard_shot = active["hard_shot_sec"]
@@ -344,24 +363,36 @@ def plan_from_analysis(analysis: MusicAnalysis, duration: float,
         seed=seed,
         source_use_count=counts,
         created_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        style=style,
         warnings=warnings,
     )
 
 
 def plan_timeline(master: Path, duration: float, sources: list[SourceSpec], *,
-                  seed: int = 7, fps: float = 20.0,
+                  style: str = "mir_v1", seed: int = 7, fps: float = 20.0,
                   params: dict[str, float] | None = None) -> TimelinePlan:
     """Convenience wrapper: analyse the master then plan."""
     analysis = analyze_master(master)
-    return plan_from_analysis(analysis, duration, sources, seed=seed, fps=fps, params=params)
+    return plan_from_analysis(analysis, duration, sources, style=style,
+                              seed=seed, fps=fps, params=params)
 
 
 # --------------------------------------------------------------------------
 # Validation
 # --------------------------------------------------------------------------
-def validate_plan(plan: TimelinePlan, *, min_shot_sec: float = 1.6,
-                  max_shot_sec: float = 4.5, max_source_repeats: int = 3) -> list[str]:
-    """Return a list of violations (empty list == pass)."""
+def validate_plan(plan: TimelinePlan, *, min_shot_sec: float | None = None,
+                  max_shot_sec: float | None = None, max_source_repeats: int = 3) -> list[str]:
+    """Return a list of violations (empty list == pass).
+
+    Bounds come from the plan's own params (style preset) unless overridden
+    explicitly, so mir_v1 and ambient_cinematic are each judged by their own
+    envelope.
+    """
+    params = plan.params or {}
+    if min_shot_sec is None:
+        min_shot_sec = float(params.get("min_shot_sec", 1.6))
+    if max_shot_sec is None:
+        max_shot_sec = float(params.get("hard_shot_sec", 4.5))
     errors: list[str] = []
     if not plan.shots:
         return ["plan has no shots"]
@@ -421,6 +452,8 @@ def main() -> int:
     parser.add_argument("--done-dir", help="directory whose *.mp4 become sources")
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--fps", type=float, default=20.0)
+    parser.add_argument("--style", default="mir_v1", choices=sorted(STYLE_PRESETS),
+                        help="shot-length envelope preset")
     parser.add_argument("--out", required=True, help="plan JSON output path")
     args = parser.parse_args()
 
@@ -430,7 +463,8 @@ def main() -> int:
         return 1
     try:
         sources = _collect_sources(args)
-        plan = plan_timeline(master, args.duration, sources, seed=args.seed, fps=args.fps)
+        plan = plan_timeline(master, args.duration, sources, style=args.style,
+                             seed=args.seed, fps=args.fps)
     except (RuntimeError, ValueError) as exc:
         print(f"[FATAL] planning failed: {exc}", file=sys.stderr)
         return 1
@@ -443,7 +477,7 @@ def main() -> int:
         return 1
     out = Path(args.out)
     save_plan(plan, out)
-    print(f"PLAN_OK shots={len(plan.shots)} boundaries={len(plan.boundaries)} "
+    print(f"PLAN_OK style={plan.style} shots={len(plan.shots)} boundaries={len(plan.boundaries)} "
           f"total_frames={round(plan.duration_sec * plan.fps)}")
     print(f"  sources used: {plan.source_use_count}")
     print(f"  written: {out}")
