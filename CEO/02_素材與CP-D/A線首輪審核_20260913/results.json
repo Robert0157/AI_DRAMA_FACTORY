@@ -1,0 +1,148 @@
+{
+ "created": "2026-09-13 18:40:43",
+ "mode": "offline",
+ "n_per_topic": 5,
+ "topics": {
+  "湖光微火": [
+   {
+    "variant": 1,
+    "signature": "H22+T10+雙線交錯+餘韻遺憾",
+    "world_signature": "miniature_daily_life|燭焰橘、湖水墨綠、夜霧青|無風、水氣薄霧、火星上升",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\湖光微火\\v1.json",
+    "resumed": true
+   },
+   {
+    "variant": 2,
+    "signature": "H20+T08+迴圈重複+開放懸念",
+    "world_signature": "memory_archive|燭焰橘、湖水墨綠、夜霧青|無風、水氣薄霧、火星上升",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\湖光微火\\v2.json",
+    "resumed": true
+   },
+   {
+    "variant": 3,
+    "signature": "H02+T20+懸崖回落+循環回歸",
+    "world_signature": "surreal_metamorphosis|燭焰橘、湖水墨綠、夜霧青|無風、水氣薄霧、火星上升",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\湖光微火\\v3.json",
+    "resumed": true
+   },
+   {
+    "variant": 4,
+    "signature": "H13+T18+倒敘拼圖+釋然收束",
+    "world_signature": "slow_travelogue|燭焰橘、湖水墨綠、夜霧青|無風、水氣薄霧、火星上升",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\湖光微火\\v4.json",
+    "resumed": true
+   },
+   {
+    "variant": 5,
+    "signature": "H19+T03+雙線交錯+循環回歸",
+    "world_signature": "chapter_chronicle|燭焰橘、湖水墨綠、夜霧青|無風、水氣薄霧、火星上升",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\湖光微火\\v5.json",
+    "resumed": true
+   }
+  ],
+  "伸展台之夢": [
+   {
+    "variant": 1,
+    "signature": "H22+T10+雙線交錯+餘韻遺憾",
+    "world_signature": "miniature_daily_life|象牙白、金屬銀、祖母綠|室內強光、無風、地面反光",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\伸展台之夢\\v1.json",
+    "resumed": true
+   },
+   {
+    "variant": 2,
+    "signature": "H20+T08+迴圈重複+開放懸念",
+    "world_signature": "memory_archive|象牙白、金屬銀、祖母綠|室內強光、無風、地面反光",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\伸展台之夢\\v2.json",
+    "resumed": true
+   },
+   {
+    "variant": 3,
+    "signature": "H02+T20+懸崖回落+循環回歸",
+    "world_signature": "surreal_metamorphosis|象牙白、金屬銀、祖母綠|室內強光、無風、地面反光",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\伸展台之夢\\v3.json",
+    "resumed": true
+   },
+   {
+    "variant": 4,
+    "signature": "H13+T18+倒敘拼圖+釋然收束",
+    "world_signature": "slow_travelogue|象牙白、金屬銀、祖母綠|室內強光、無風、地面反光",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\伸展台之夢\\v4.json",
+    "resumed": true
+   },
+   {
+    "variant": 5,
+    "signature": "H19+T03+雙線交錯+循環回歸",
+    "world_signature": "chapter_chronicle|象牙白、金屬銀、祖母綠|室內強光、無風、地面反光",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\伸展台之夢\\v5.json",
+    "resumed": true
+   }
+  ],
+  "華服荒原": [
+   {
+    "variant": 1,
+    "signature": "H22+T10+雙線交錯+餘韻遺憾",
+    "world_signature": "miniature_daily_life|骨白、沙金、灰紫|無風的靜止、緩慢落塵",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\華服荒原\\v1.json",
+    "resumed": true
+   },
+   {
+    "variant": 2,
+    "signature": "H20+T08+迴圈重複+開放懸念",
+    "world_signature": "memory_archive|骨白、沙金、灰紫|無風的靜止、緩慢落塵",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\華服荒原\\v2.json",
+    "resumed": true
+   },
+   {
+    "variant": 3,
+    "signature": "H02+T20+懸崖回落+循環回歸",
+    "world_signature": "surreal_metamorphosis|骨白、沙金、灰紫|無風的靜止、緩慢落塵",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\華服荒原\\v3.json",
+    "resumed": true
+   },
+   {
+    "variant": 4,
+    "signature": "H13+T18+倒敘拼圖+釋然收束",
+    "world_signature": "slow_travelogue|骨白、沙金、灰紫|無風的靜止、緩慢落塵",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\華服荒原\\v4.json",
+    "resumed": true
+   },
+   {
+    "variant": 5,
+    "signature": "H19+T03+雙線交錯+循環回歸",
+    "world_signature": "chapter_chronicle|骨白、沙金、灰紫|無風的靜止、緩慢落塵",
+    "score": 8.6,
+    "pass": true,
+    "file": "F:\\AI_DRAMA_FACTORY\\Auto_Drama\\output\\sandbox\\story_room\\p3_experiment\\華服荒原\\v5.json",
+    "resumed": true
+   }
+  ]
+ }
+}

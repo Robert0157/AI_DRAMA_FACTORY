@@ -1,6 +1,6 @@
 {
  "schema": "ceo.first_frame_pool.v1",
- "generated": "2026-09-13T09:43:39Z",
+ "generated": "2026-09-13T10:40:15Z",
  "source_dirs": [
   "first_frames",
   "VEO_download"
@@ -242,13 +242,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "731291276d3e2c8468aa5ac9fcf87c3f - 複製.jpg",
+   "name": "731291276d3e2c8468aa5ac9fcf87c3f.jpg",
    "ext": ".jpg",
    "size": 154646,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "4ef4b72b3acc0b55f86ae234438f1ebb0d67c2d3d61c2684d8ef2cf8775c2377",
    "dims": [
     800,
@@ -648,12 +645,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171616 (1).png",
+   "name": "A_perfectly_static,_202604171616_1.png",
    "ext": ".png",
    "size": 3055964,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "c0f8f41418fa2cf6ff5d5a4d47aeec932af13d3d9b64eeef47764591bd03b02c",
    "dims": [
     2752,
@@ -663,12 +658,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171616 (2).png",
+   "name": "A_perfectly_static,_202604171616_2.png",
    "ext": ".png",
    "size": 3442253,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "6fcec432e599d9be7fd19dd2fe62980611292e3b6e270a73076d40c85b74947e",
    "dims": [
     2752,
@@ -704,12 +697,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171618 (1).png",
+   "name": "A_perfectly_static,_202604171618_1.png",
    "ext": ".png",
    "size": 4211105,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "0ca90901549d0e73dac06e8c36c5bbdfbf6d232e3f4a555f6d679cc6fbc9ac9a",
    "dims": [
     2752,
@@ -732,12 +723,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171619 (1).png",
+   "name": "A_perfectly_static,_202604171619_1.png",
    "ext": ".png",
    "size": 3374086,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "6c4e5876338b6728b7d68af2ac248a5c794999471385af91101e828b7d482522",
    "dims": [
     2752,
@@ -760,12 +749,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171620 (1).png",
+   "name": "A_perfectly_static,_202604171620_1.png",
    "ext": ".png",
    "size": 3407020,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "639dd5cea063e9771f31b956e379e2618493150e44015ed27d365eacad2e140e",
    "dims": [
     2752,
@@ -775,12 +762,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171620 (2).png",
+   "name": "A_perfectly_static,_202604171620_2.png",
    "ext": ".png",
    "size": 4270717,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "d36b4c7448499448ead71d0ccae2974699531a8a3758851db874e1ab9c0f631c",
    "dims": [
     2752,
@@ -803,12 +788,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171621 (1).png",
+   "name": "A_perfectly_static,_202604171621_1.png",
    "ext": ".png",
    "size": 3274037,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "80239a1a0b5c0ed197f1f1a4247dffb105b96336793fb9d14b0abf6627deebce",
    "dims": [
     2752,
@@ -831,12 +814,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171622 (1).png",
+   "name": "A_perfectly_static,_202604171622_1.png",
    "ext": ".png",
    "size": 4085442,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "1f9afcff193cee1abd4bea9ec854c6d8e7ce6e78404aaa9dffa73e3c473ea957",
    "dims": [
     2752,
@@ -872,12 +853,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171624 (1).png",
+   "name": "A_perfectly_static,_202604171624_1.png",
    "ext": ".png",
    "size": 3457484,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "c3f9ce856408fb7972e2fcd0a618441ad430697a6e567065d46b9a14eb84bef2",
    "dims": [
     2752,
@@ -887,12 +866,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171624 (2).png",
+   "name": "A_perfectly_static,_202604171624_2.png",
    "ext": ".png",
    "size": 3330744,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "b3290b122882e96df4d8c5bdb75bb80fad10c2a2d8edf33705ff3b58b4972416",
    "dims": [
     2752,
@@ -928,12 +905,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171626 (1).png",
+   "name": "A_perfectly_static,_202604171626_1.png",
    "ext": ".png",
    "size": 2972836,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "223454ca52c7e36a89c01eaae0f8d63e80c1f2167c05b1acdadcf42237e5d6b6",
    "dims": [
     2752,
@@ -943,12 +918,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171626 (2).png",
+   "name": "A_perfectly_static,_202604171626_2.png",
    "ext": ".png",
    "size": 3393582,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "231f7f4e911e51df34cc411ddcea1291e5c7125bded2ed08f0bbe252407cef47",
    "dims": [
     2752,
@@ -984,12 +957,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171628 (1).png",
+   "name": "A_perfectly_static,_202604171628_1.png",
    "ext": ".png",
    "size": 3081206,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "b4c83fae69033b8cb625577994a77097362290cc9b50ff82abcb5bdb9de78217",
    "dims": [
     2752,
@@ -1012,12 +983,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171629 (1).png",
+   "name": "A_perfectly_static,_202604171629_1.png",
    "ext": ".png",
    "size": 4347577,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "5248d523ec3b74f091a8f23cfa456d7691ba583992d976ed94844cdfa84c99ef",
    "dims": [
     2752,
@@ -1040,12 +1009,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604171630 (1).png",
+   "name": "A_perfectly_static,_202604171630_1.png",
    "ext": ".png",
    "size": 4145135,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "0ba4d01cc2d08a8cab9ac2c569f432de0ee6b7c5d85821be8b84e573de9104b0",
    "dims": [
     2752,
@@ -1224,12 +1191,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604281103 (1).jpeg",
+   "name": "A_perfectly_static,_202604281103_1.jpeg",
    "ext": ".jpeg",
    "size": 2680694,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "4e58ecabb6b3a6ae689303c17bd03ebcef2e3bb2748d4f944ed216915bd82786",
    "dims": [
     2752,
@@ -1239,12 +1204,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "A_perfectly_static,_202604281103 (2).jpeg",
+   "name": "A_perfectly_static,_202604281103_2.jpeg",
    "ext": ".jpeg",
    "size": 2686703,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "39e182ba319971922b93871b7b5ee61f8a9a5353adb41b036f6aad343faf56dd",
    "dims": [
     2752,
@@ -1618,13 +1581,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "caffee08 - 複製.jpg",
+   "name": "caffee08.jpg",
    "ext": ".jpg",
    "size": 232671,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "1c756779d1275c25d3e636a979c5829ac07f97454060ad044bca66c372ad3e8f",
    "dims": [
     928,
@@ -1647,13 +1607,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "d07f0daa2561fbbf8c944e05845b293e - 複製.jpg",
+   "name": "d07f0daa2561fbbf8c944e05845b293e.jpg",
    "ext": ".jpg",
    "size": 174802,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "fcd89b49ecbdbce3fe1be9c6081d2d098c71f438c94c909d67682974d82a5934",
    "dims": [
     896,
@@ -1689,13 +1646,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "dfb6d5429cc9f7d73abd3a326395b1ac - 複製.jpg",
+   "name": "dfb6d5429cc9f7d73abd3a326395b1ac.jpg",
    "ext": ".jpg",
    "size": 160772,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "84c290a1689fb85431e4003a52965aa543f5a9f235a97b3eac9c3c06c0439736",
    "dims": [
     736,
@@ -1705,13 +1659,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "e2e95ee6a9927c34ed1df09f3ad39fe2 - 複製.jpg",
+   "name": "e2e95ee6a9927c34ed1df09f3ad39fe2.jpg",
    "ext": ".jpg",
    "size": 218224,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "7eeb39f4cade12e9cc3b1825ed578a7a1563bab7414a3aac3a031f23d01493a9",
    "dims": [
     736,
@@ -1786,13 +1737,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "Garden02 - 複製.jpg",
+   "name": "Garden02.jpg",
    "ext": ".jpg",
    "size": 216717,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "92b32769cc4222e25398ec470c57fd30e59bf9357e55e7f0b25e602eb43d0662",
    "dims": [
     736,
@@ -1802,13 +1750,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "Garden03 - 複製.jpg",
+   "name": "Garden03.jpg",
    "ext": ".jpg",
    "size": 204186,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "2c4e0d31e763f74b38b7c19afc310b93a8148028bb60581de30901c1a0306542",
    "dims": [
     736,
@@ -1818,13 +1763,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "Garden09 - 複製.jpg",
+   "name": "Garden09.jpg",
    "ext": ".jpg",
    "size": 173427,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "dfdc67d0845635a404a141acebf3de5c6a405bd51ad807deab3a5e60a010ac19",
    "dims": [
     736,
@@ -1841,13 +1783,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "house03 - 複製.jpg",
+   "name": "house03.jpg",
    "ext": ".jpg",
    "size": 193800,
-   "naming_issues": [
-    "space",
-    "copy-suffix"
-   ],
+   "naming_issues": [],
    "sha256": "6c339eb56556a5201263f434d871050b7ae238de58e862d9d2953ccf114373db",
    "dims": [
     704,
@@ -2065,12 +2004,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "The_EXACT_same_202604171627 (1).png",
+   "name": "The_EXACT_same_202604171627_1.png",
    "ext": ".png",
    "size": 3709302,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "a9ba6bfb9551f98f294abb1807aa28dc0364a251ca2ae1d79244b24ee93a74dd",
    "dims": [
     2752,
@@ -2093,12 +2030,10 @@
   },
   {
    "dir": "VEO_download",
-   "name": "The_EXACT_same_202604171628 (1).png",
+   "name": "The_EXACT_same_202604171628_1.png",
    "ext": ".png",
    "size": 3291898,
-   "naming_issues": [
-    "space"
-   ],
+   "naming_issues": [],
    "sha256": "fe2830145f48595456dbfc7e608af07079af86fe46fbb48999221adf45a856c1",
    "dims": [
     2752,
