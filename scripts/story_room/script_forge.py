@@ -19,7 +19,9 @@ Artifacts per series (under <out>/<series_id>/):
   state_latest.json       latest full series package (resume point)
   iter_NN.json            per-iteration record (scores, findings, layer actions)
   iteration_log.md        human-readable table (CP-D evidence)
-  lock_ready.json         written ONLY when the gate passes
+  lock_ready.json         written ONLY when the full gate passes (mass production)
+  pilot_arc.json          B+ pilot-arc review evidence (Ep1-4; written by the review step)
+  lock_ready_pilot.json   written ONLY when the pilot-arc gate passes (CP-D entry; B+)
   l1_workbench/iter_NN.json + latest.json   cockpit drop
 
 CLI:
@@ -27,6 +29,7 @@ CLI:
   python scripts/story_room/script_forge.py --series-id timegate-56 --resume
   python scripts/story_room/script_forge.py --series-id timegate-56 --status
   python scripts/story_room/script_forge.py --series-id timegate-56 --gate-check
+  python scripts/story_room/script_forge.py --series-id timegate-56 --gate-check --pilot
 """
 from __future__ import annotations
 
@@ -1502,6 +1505,99 @@ def gate_check(run_dir: Path) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# B+ rolling-arc gate (CEO 2026-09-13): the pilot arc (Ep1-4) unlocks CP-D
+# before the full 56-episode package reaches the bar; mass production still
+# requires the full-package lock_ready.json.  Evidence binds to the current
+# champion package - a change after review makes the pilot review stale.
+# ---------------------------------------------------------------------------
+PILOT_ARC_EVIDENCE = "pilot_arc.json"
+PILOT_ARC_LOCK = "lock_ready_pilot.json"
+PILOT_ARC_SCHEMA = "forge.pilot_arc.v1"
+PILOT_ARC_LOCK_SCHEMA = "forge.lock_pilot.v1"
+PILOT_ARC_ID = "ep01-ep04"
+
+
+def pilot_gate_check(run_dir: Path) -> dict:
+    """Validate pilot-arc evidence; write lock_ready_pilot.json when it passes."""
+    run_dir = Path(run_dir)
+    evidence_path = run_dir / PILOT_ARC_EVIDENCE
+    if not evidence_path.is_file():
+        return {"eligible": False, "reason": f"{PILOT_ARC_EVIDENCE} missing (pilot arc review not done)"}
+    try:
+        def read_evidence(path: Path) -> dict:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(value, dict):
+                raise ValueError(f"{path.name}: expected an object")
+            return value
+
+        evidence = read_evidence(evidence_path)
+        if evidence.get("schema") != PILOT_ARC_SCHEMA:
+            raise ValueError("legacy/unverified pilot evidence: a new arc review is required")
+        if evidence.get("arc") != PILOT_ARC_ID:
+            raise ValueError(f"pilot arc must be {PILOT_ARC_ID}")
+        iterations = evidence["iterations"]
+        if type(iterations) is not int or iterations < MIN_ITERATIONS:
+            raise ValueError("insufficient logged iterations for the pilot arc")
+        arc_score = float(evidence["arc_score"])
+        min_domain = float(evidence["min_domain"])
+        if not math.isfinite(arc_score) or not HOLLYWOOD_TOTAL <= arc_score <= 10:
+            raise ValueError("pilot arc below the Hollywood total threshold")
+        if not math.isfinite(min_domain) or not HOLLYWOOD_MIN_DOMAIN <= min_domain <= arc_score:
+            raise ValueError("pilot arc domain below threshold")
+        if evidence.get("errors") != 0:
+            raise ValueError("pilot arc contains error findings")
+        if evidence.get("bible_complete") is not True or evidence.get("canon_complete") is not True:
+            raise ValueError("series bible / canon incomplete")
+        for field in ("bible_ref", "canon_ref"):
+            ref = str(evidence.get(field) or "").strip()
+            if not ref:
+                raise ValueError(f"{field} missing")
+            resolved = (run_dir / ref).resolve()
+            if not resolved.is_relative_to(run_dir.resolve()) or not resolved.is_file():
+                raise ValueError(f"{field} points to a missing artifact")
+        meta = read_evidence(run_dir / "run_meta.json")
+        if meta.get("series_id") != evidence.get("series_id"):
+            raise ValueError("run metadata does not match the pilot review")
+        if meta.get("mode") not in ("llm", "offline"):
+            raise ValueError("invalid evidence mode")
+        if type(meta.get("iterations")) is not int or iterations > meta["iterations"]:
+            raise ValueError("pilot review claims more iterations than were logged")
+        package = read_evidence(run_dir / "best_package.json")
+        digest = _package_sha256(package)
+        if evidence.get("package_sha256") != digest:
+            raise ValueError("pilot review is stale: the champion package changed after review")
+        if meta.get("mode") != "llm":
+            return {"eligible": False, "evidence_valid": True,
+                    "reason": "offline evidence cannot authorize production"}
+        lock = {
+            "schema": PILOT_ARC_LOCK_SCHEMA,
+            "mode": meta["mode"],
+            "series_id": evidence["series_id"],
+            "arc": PILOT_ARC_ID,
+            "iterations": iterations,
+            "arc_score": arc_score,
+            "min_domain": min_domain,
+            "errors": 0,
+            "bible_ref": evidence["bible_ref"],
+            "canon_ref": evidence["canon_ref"],
+            "package_sha256": digest,
+            "thresholds": {"arc_total": HOLLYWOOD_TOTAL, "arc_min_domain": HOLLYWOOD_MIN_DOMAIN,
+                           "min_iterations": MIN_ITERATIONS},
+            "evidence": PILOT_ARC_EVIDENCE,
+            "generated": _now(),
+            "cp_d_eligible": True,
+            "note": "pilot arc unlocks CP-D; the full-package lock_ready.json is still required before mass production",
+        }
+        _write_json(run_dir / PILOT_ARC_LOCK, lock)
+        return {**lock, "evidence_valid": True, "eligible": True,
+                "reason": "verified pilot-arc evidence"}
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        reason = f"pilot arc evidence rejected: {exc}"
+        print(f"[pilot-gate] {reason}", file=sys.stderr, flush=True)
+        return {"eligible": False, "evidence_valid": False, "reason": reason}
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> int:
@@ -1521,6 +1617,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="start a fresh run from an existing package JSON (phase continuation)")
     parser.add_argument("--status", action="store_true", help="print run status and exit")
     parser.add_argument("--gate-check", action="store_true", help="exit 0 when CP-D eligible, else 1")
+    parser.add_argument("--pilot", action="store_true",
+                        help="with --gate-check: validate the B+ pilot-arc gate (Ep1-4 unlocks CP-D)")
     parser.add_argument("--reclaim", action="store_true",
                         help="merge the longest teleplay excerpt per episode from workbench snapshots into best_package")
     args = parser.parse_args(argv)
@@ -1537,7 +1635,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{k}: {v}")
         return 0
     if args.gate_check:
-        rep = gate_check(run_dir)
+        rep = pilot_gate_check(run_dir) if args.pilot else gate_check(run_dir)
         print(json.dumps(rep, ensure_ascii=False, indent=1))
         return 0 if rep.get("eligible") else 1
 

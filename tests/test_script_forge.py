@@ -343,3 +343,106 @@ def test_append_text_retries_on_smb_lock(tmp_path, monkeypatch):
     sf._append_text(log, "row1\n")
     assert log.read_text(encoding="utf-8") == "row1\n"
     assert calls["n"] >= 3   # two locked attempts + the successful append
+
+
+# ---------------------------------------------------------------------------
+# B+ pilot-arc gate (CEO 2026-09-13): Ep1-4 unlocks CP-D before the full lock
+# ---------------------------------------------------------------------------
+def _pilot_arc_payload(run: Path, **overrides) -> dict:
+    package = json.loads((run / "best_package.json").read_text(encoding="utf-8"))
+    payload = {
+        "schema": sf.PILOT_ARC_SCHEMA,
+        "series_id": "verified",
+        "arc": sf.PILOT_ARC_ID,
+        "iterations": 15,
+        "arc_score": 8.9,
+        "min_domain": 8.2,
+        "errors": 0,
+        "bible_complete": True,
+        "canon_complete": True,
+        "bible_ref": "bible.md",
+        "canon_ref": "canon.md",
+        "package_sha256": sf._package_sha256(package),
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _pilot_ready_run(tmp_path, **overrides):
+    run = _reviewed_test_run(tmp_path)
+    (run / "bible.md").write_text("bible", encoding="utf-8")
+    (run / "canon.md").write_text("canon", encoding="utf-8")
+    (run / sf.PILOT_ARC_EVIDENCE).write_text(
+        json.dumps(_pilot_arc_payload(run, **overrides)), encoding="utf-8")
+    return run
+
+
+def test_pilot_gate_accepts_valid_arc_and_writes_lock(tmp_path):
+    run = _pilot_ready_run(tmp_path)
+    report = sf.pilot_gate_check(run)
+    assert report["eligible"] is True
+    lock = json.loads((run / sf.PILOT_ARC_LOCK).read_text(encoding="utf-8"))
+    assert lock["schema"] == sf.PILOT_ARC_LOCK_SCHEMA
+    assert lock["arc"] == "ep01-ep04"
+    assert lock["cp_d_eligible"] is True
+    # Idempotent: re-checking the same evidence stays green.
+    assert sf.pilot_gate_check(run)["eligible"] is True
+
+
+def test_pilot_gate_requires_review_evidence(tmp_path):
+    run = _reviewed_test_run(tmp_path)
+    report = sf.pilot_gate_check(run)
+    assert report["eligible"] is False
+    assert "pilot_arc.json missing" in report["reason"]
+
+
+def test_pilot_gate_goes_stale_when_package_changes(tmp_path):
+    run = _pilot_ready_run(tmp_path)
+    package = json.loads((run / "best_package.json").read_text(encoding="utf-8"))
+    package["title"] = "changed after the arc review"
+    (run / "best_package.json").write_text(json.dumps(package), encoding="utf-8")
+    report = sf.pilot_gate_check(run)
+    assert report["eligible"] is False
+    assert "stale" in report["reason"]
+
+
+def test_pilot_gate_offline_run_cannot_authorize(tmp_path):
+    sf.run_forge("brief", "pilot-offline", tmp_path, offline=True)
+    run = tmp_path / "pilot-offline"
+    (run / "bible.md").write_text("bible", encoding="utf-8")
+    (run / "canon.md").write_text("canon", encoding="utf-8")
+    (run / sf.PILOT_ARC_EVIDENCE).write_text(
+        json.dumps(_pilot_arc_payload(run, series_id="pilot-offline")), encoding="utf-8")
+    report = sf.pilot_gate_check(run)
+    assert report["eligible"] is False
+    assert report["evidence_valid"] is True
+    assert not (run / sf.PILOT_ARC_LOCK).exists()
+
+
+def test_pilot_gate_cli_dispatch(tmp_path):
+    run = _pilot_ready_run(tmp_path)
+    code = sf.main(["--series-id", "verified", "--out", str(tmp_path),
+                    "--gate-check", "--pilot"])
+    assert code == 0
+    assert (run / sf.PILOT_ARC_LOCK).is_file()
+
+
+@pytest.mark.parametrize("overrides", [
+    {"schema": "forge.pilot_arc.v0"},
+    {"arc": "ep01-ep03"},
+    {"iterations": 14},
+    {"arc_score": 8.7},
+    {"min_domain": 7.9},
+    {"errors": 1},
+    {"bible_complete": False},
+    {"canon_complete": False},
+    {"bible_ref": ""},
+    {"bible_ref": "no_such_artifact.md"},
+    {"bible_ref": "../escape.md"},
+    {"package_sha256": "0" * 64},
+])
+def test_pilot_gate_rejects_bad_arc_evidence(tmp_path, overrides):
+    run = _pilot_ready_run(tmp_path, **overrides)
+    report = sf.pilot_gate_check(run)
+    assert report["eligible"] is False
+    assert not (run / sf.PILOT_ARC_LOCK).exists()

@@ -188,3 +188,5 @@ CEO 新增 Aura Bloom 三支參考後，依公開封面、完整說明與 Veo 3.
 建議另行比較 `ambient_cinematic` 的 4–8 秒停留與樂句換景，並研究核准首幀 → Veo 外部素材 → 時間軸的薄轉接方式。這是 **v1 以外、待 CEO 核准的延伸**，不變更 §5 已定案參數、1.6 秒下限、逐集 opt-in 或「生成層不動」邊界。Veo 原生至少 720p／24fps，不能宣稱目前 480p／20fps 生成政策已涵蓋它；需先核准來源規格例外及費用。
 
 **2026-09-13 CEO 核准**：療癒慢鏡先以 0 成本重剪盲評立項（D1-D3 不變）；720p/24fps 生成源逐案例外；小樣預算 ≤US$20；本地對照組強制前置；lofi 臉部特寫放行（light_music 仍零人物）。實作狀態：`ambient_cinematic` 樣式已進入 `music_timeline.py`（`STYLE_PRESETS`；validator 依 `plan.params` 檢核）。
+
+**盲評 2 複驗（2026-09-13，療癒慢鏡三軌，CEO 評分完成）**：track_1 現行 fixed **12** ＞ track_2 mir_v1 10 ＞ track_3 `ambient_cinematic` 9（解答 `CEO/03_樣片與交付/盲評2_療癒慢鏡_解答.json`）。本批素材上 mir_v1／ambient 樣式**未勝出** → §5 已定案參數、1.6s 下限、P3 逐集 opt-in **全部不變**；`ambient_cinematic` 保留為可選樣式（`STYLE_PRESETS`）。樣式選擇改以**素材形態**為判據（療癒長鏡素材 → fixed；短拍快切素材 → mir_v1），列入下一輪多集素材盲評比較項；GO 條件：GATE 0（VEO 水印預檢）＋本地對照強制前置不變。

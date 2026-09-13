@@ -1,0 +1,13 @@
+# GATE 0 水印預檢用 VEO 提示詞（2026-09-13）
+# 用法：貼上 Google Flow／VEO 3.1；比例 9:16、時長 8s、最高可用畫質；逐支官方匯出後放回本資料夾。
+# 命名：veo_<YYYYMMDD>_worldwide.mp4 / veo_<YYYYMMDD>_hands.mp4 / veo_<YYYYMMDD>_figure.mp4
+# 邊界：只生成 3 支；匯出後不後製；檢查右下角是否帶「Veo」浮水印。
+
+# A — 世界漫遊（遠景；零人物）
+Cinematic wide establishing shot of a serene stone temple by a misty lake at dawn, soft golden light rays through fog, lotus petals drifting on still water, extremely slow dolly-in, contemplative and healing mood, photorealistic, natural colors, vertical 9:16, 8 seconds, no people, no on-screen text.
+
+# B — 材質特寫（手部；臉不入鏡）
+Slow-motion close-up of gentle hands pouring hot tea from a clay teapot into a ceramic cup, delicate steam curling in warm window light, shallow depth of field, cozy ritual atmosphere, photorealistic, earthy warm tones, vertical 9:16, 8 seconds, face not visible, no on-screen text.
+
+# C — 匿名女性（側背中景；臉不露出）
+Medium tracking shot from behind and side of a woman with long dark hair in flowing beige linen, walking slowly on a winding stone path through a sunlit bamboo grove, her face never visible, gentle gliding camera, golden hour glow, cinematic and serene, photorealistic, vertical 9:16, 8 seconds, no dialogue, no on-screen text.

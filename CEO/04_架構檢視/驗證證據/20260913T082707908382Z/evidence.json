@@ -1,0 +1,73 @@
+{
+  "schema": "dual_line.qa.v1",
+  "run_id": "20260913T082707908382Z",
+  "scope": "offline_regression_and_synthetic_ffmpeg_only",
+  "engineering_status": "PASS",
+  "production_release": "BLOCKED",
+  "release_blockers": [
+    "Mac production deployment and restart acceptance not established by this test run",
+    "Persistent authenticated approvals and publishing enforcement remain incomplete",
+    "Music-aware editing, visual reference workflows and variation QC remain incomplete",
+    "B-line CP-D/CP1/CP2 end-to-end acceptance and production freeze authorization outstanding",
+    "Human visual quality review, reference-film analysis and capacity acceptance outstanding"
+  ],
+  "python": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+  "interpreter": "F:\\AI_DRAMA_FACTORY\\venv\\Scripts\\python.exe",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "dependencies": {
+    "pytest": "9.1.1",
+    "requests": "2.33.1",
+    "python-dotenv": "1.2.2"
+  },
+  "tools": {
+    "ffmpeg": {
+      "available": true,
+      "version": "ffmpeg version N-123395-gb66c314c4b-20260312 Copyright (c) 2000-2026 the FFmpeg developers"
+    },
+    "ffprobe": {
+      "available": true,
+      "version": "ffprobe version N-123395-gb66c314c4b-20260312 Copyright (c) 2007-2026 the FFmpeg developers"
+    }
+  },
+  "test_command": [
+    "F:\\AI_DRAMA_FACTORY\\venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "F:\\AI_DRAMA_FACTORY\\.dual-line-qa-sd7xcety",
+    "--junitxml",
+    "F:\\AI_DRAMA_FACTORY\\CEO\\04_架構檢視\\驗證證據\\20260913T082707908382Z\\pytest.xml",
+    "tests/test_script_forge.py",
+    "tests/test_mac_wan_worker.py",
+    "tests/test_dispatch_steps_policy.py",
+    "tests/test_dispatch_to_mac_path.py",
+    "tests/test_music_timeline.py",
+    "Auto_Drama/tests/test_lmd_video_guards.py"
+  ],
+  "test_exit_code": 0,
+  "counts": {
+    "tests": 106,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "minimum_expected_tests": 106,
+  "source_sha256": {
+    "scripts/story_room/script_forge.py": "abfedb89248ba598e47838206f210a9d16ca66859d20b2dce82a6b379f55ffef",
+    "scripts/pipeline/mac_wan_worker.py": "5872596a39040aab9e2881edeaba02b95af688eb8a7fc99a9abc975516567585",
+    "scripts/pipeline/dispatch_to_mac.py": "4c67a4665feb8e8aadfa136a1b982d2b45e6b648a1a5846becb591df974aa34a",
+    "scripts/pipeline/music_timeline.py": "8ced80ee966d68e051606ef714c3fdf8c783d938486e7b705d7b3fd3ad06104d",
+    "Auto_Drama/auto_drama/lmd_video_chain.py": "3611cc80950ca63f882ce1ceeb7a7acc857301d398348db2f874c58bb45ac395",
+    "scripts/maintenance/verify_dual_line_release.py": "64ecd1e86257f20a43793e01b4d8c0333a6cf552ba9c64d984c94238f20132c9",
+    "tests/test_script_forge.py": "ca29a524cdda322e8448abf62af8b7096672d983522c0d6fe1430419bdf3761b",
+    "tests/test_mac_wan_worker.py": "2936486c6d320df7434ff0f8e1c5781f4ce3c85eeb422915f94fe1c67a711c87",
+    "tests/test_dispatch_steps_policy.py": "57d5bde256ddf8eaa338019407b3d74db1a64a3b3f40c30c74bd14d0369df159",
+    "tests/test_dispatch_to_mac_path.py": "f7367cba431dbd5193b060b35dc0ed69002065ec85bf7313e6f49db2e128976f",
+    "tests/test_music_timeline.py": "c359fe29126a275a91a4030c16c155ae9cd617faafcdba75fb26e4a611953f05",
+    "Auto_Drama/tests/test_lmd_video_guards.py": "4891c131bac0687a65be24697eb784cc90d4bfb29bb4f48689ed82b75f3192ca"
+  },
+  "sources_unchanged_during_tests": true
+}
