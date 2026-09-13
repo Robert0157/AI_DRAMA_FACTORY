@@ -9,30 +9,50 @@
     "version_evidence": ["Y:/AI_Drama_Factory/integrations/comfyui/pyproject.toml", "Y:/AI_Drama_Factory/integrations/comfyui/comfyui_version.py"]
   },
   "ref": "1d48d9cf7bcecb6022a87b3cb13e0fb435bf9b8a (git HEAD, 2026-09-10)",
-  "role": "Mac render engine — Wan 2.1 t2v @ :8188 (A-line main path; B-line standby/sample path)",
+  "role": "Mac render engine @ :8188 — Wan 2.1 t2v (A-line base path) + Flux.1-schnell GGUF first-frame stills (G1 first-frame gate)",
   "integration": {
     "surface": "native HTTP API: /object_info (preflight), POST /prompt, /history/{id}, /view, /queue, /interrupt",
     "clients": [
       "scripts/pipeline/mac_wan_worker.py (class ComfyClient, lines ~131-260)",
-      "scripts/auxiliary_assets/comfyui_wan21.py (class ComfyUIWan21Client)"
+      "scripts/auxiliary_assets/comfyui_wan21.py (class ComfyUIWan21Client)",
+      "scripts/pipeline/frame_forge.py (first-frame stills, GGUF graph)"
     ],
-    "note": "Two clients duplicate the same protocol — consolidation into one shared comfy_client.py is planned (v2 redesign §3)"
+    "note": "Two Wan clients duplicate the same protocol — consolidation into one shared comfy_client.py is planned (v2 redesign §3)"
   },
-  "models": [
-    {"file": "models/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors", "size_mb_approx": 2707},
-    {"file": "models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors", "size_mb_approx": 6424}
+  "custom_nodes": [
+    {
+      "name": "ComfyUI-GGUF",
+      "repo": "city96/ComfyUI-GGUF",
+      "license": "Apache-2.0",
+      "commit": "6ea2651e7df66d7585f6ffee804b20e92fb38b8a",
+      "role": "GGUF quantized model loading (required by the Flux first-frame stack)",
+      "requires": "gguf>=0.13.0 (installed into the ComfyUI venv)"
+    }
   ],
-  "models_sha256": "TODO — compute for both model files during the next maintenance window (multi-GB; skipped at lock time)",
+  "models": [
+    {"file": "models/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors", "size_mb_approx": 2707, "sha256": "be531024cd9018cb5b48c40cfbb6a6191645b1c792eb8bf4f8c1c6e10f924dc5"},
+    {"file": "models/vae/wan_2.1_vae.safetensors", "size_mb_approx": 242, "sha256": "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b"},
+    {"file": "models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors", "size_mb_approx": 6424, "sha256": "c3355d30191f1f066b26d93fba017ae9809dce6c627dda5f6a66eaa651204f68"},
+    {"file": "models/unet/flux1-schnell-Q6_K.gguf", "size_mb_approx": 9379, "sha256": "a42fd143cec4d7194da281dc8d23a8fe54b16875a13423c042cb545d1da6fa50", "role": "Flux first-frame UNET (GGUF Q6_K, city96/FLUX.1-schnell-gguf)"},
+    {"file": "models/text_encoders/t5-v1_1-xxl-encoder-Q6_K.gguf", "size_mb_approx": 3727, "sha256": "d80116f6fc39801e4eef425a584e7a7a41cbe5119797bef2dad67299909fe2ae", "role": "Flux text encoder (T5-XXL Q6_K, city96/t5-v1_1-xxl-encoder-gguf)"},
+    {"file": "models/text_encoders/clip_l.safetensors", "size_mb_approx": 235, "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd", "role": "Flux CLIP-L (comfyanonymous/flux_text_encoders)"},
+    {"file": "models/vae/ae.safetensors", "size_mb_approx": 320, "sha256": "49b6f4abdf60458190aaf45ccbd153c1a5ded81e712a5d60eaa07cfd95b2a8c2", "role": "Flux VAE — extracted (prefix-stripped) from the byte-verified single-file checkpoint; official BFL download is gated (HTTP 401); no post_quant_conv -> ComfyUI AutoencodingEngine branch"},
+    {"file": "models/checkpoints/flux1-schnell-fp8.safetensors", "size_mb_approx": 16439, "sha256": "ead426278b49030e9da5df862994f25ce94ab2ee4df38b556ddddb3db093bf72", "status": "legacy — Float8_e4m3fn cannot sample on Apple MPS (RuntimeError 'Undefined type Float8_e4m3fn'); retained only as the verified VAE extraction source"}
+  ],
+  "models_sha256": "Computed 2026-09-13 on the Mac (see per-model sha256 fields above)",
   "validation": {
-    "date": "2026-09-12",
+    "date": "2026-09-12 (Wan) / 2026-09-13 (GGUF first-frame stack)",
     "evidence": [
       "mac_wan_worker produced 480p 20fps 175s MV segments (Y:/AI_Drama_Factory/logs/mac_wan_worker.log)",
       "story_room selfcheck: mv.production PASS (wan=6 units=36)",
-      "comfyui_server.log active 2026-09-12 (Y:/AI_Drama_Factory/logs/comfyui_server.log)"
+      "comfyui_server.log active 2026-09-12 (Y:/AI_Drama_Factory/logs/comfyui_server.log)",
+      "frame_forge.py produced 768x1344 first-frame stills on the GGUF stack (CEO/02_素材與CP-D/first_frames): firstframe_20260913T135934_s7.png sha256=5dac0c47e745fab14b24eaa672c3bf4c0a46772ddd3bfbaa758013368f72c57c; firstframe_20260913T140218_s8.png sha256=4ed6a60cb6f372b3894dfa91f216bcae18130e2fe741fdb41439c2afa6bd1f0b"
     ]
   },
-  "frozen_on": "2026-09-12",
-  "patches": [],
+  "frozen_on": "2026-09-12 (base) / 2026-09-13 (GGUF first-frame stack)",
+  "patches": [
+    "ae.safetensors is produced by scripts/mac/extract_vae_from_checkpoint.py — lazy-reads and prefix-strips the 244 vae.* tensors from the verified single-file checkpoint (provenance: ead42627... -> 49b6f4ab...)"
+  ],
   "contract_tests": [
     "TODO tests/contracts/test_comfyui_contract.py — /object_info preflight (required nodes + models present), one 1-shot t2v smoke render at 480p, /queue health check"
   ],
