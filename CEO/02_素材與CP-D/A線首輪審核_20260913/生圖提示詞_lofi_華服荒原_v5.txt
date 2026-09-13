@@ -1,27 +1,23 @@
-# 生圖提示詞 — 華服荒原｜第1章 · 章回編年（lofi）
+# 生圖提示詞（Cinemagraph 版 v2）— 華服荒原｜第1章 · 章回編年（lofi）
+# 依 CEO 2026-09-13 實證回饋：固定機位・零運鏡・微量動態清單・其餘凍結・8 秒循環氛圍
+# 世界：記憶剝落之後｜色調：骨白、沙金、灰紫｜天候：無風的靜止、緩慢落塵
+# 規格：6 鏡・175.0s・9:16・零對白｜每鏡生成 1–3 張揀選（圖片免費）
+# 匯出後放 `VEO_download/生圖_華服荒原v5/`，檔名建議 sh001…sh006
 
-- 版本：v5｜華服荒原｜章回編年
-- 世界：記憶剝落之後｜沙丘、半埋拱門、懸浮殘骸與鏡面鹽地
-- 色調：骨白、沙金、灰紫｜天候：無風的靜止、緩慢落塵
-- 規格：6 鏡・175.0s・9:16・零對白
-- 用法：貼進 Flow 生圖，每鏡生成 1–3 張揀選（圖片免費）；匯出後放
-  `VEO_download/生圖_華服荒原v5/`，檔名建議 sh001…sh006
-- 提示詞已含負面約束（no text／no logo／零對白），整段貼上即可。
+===== [sh001] 鏡1・29.2s・wide establishing・錨點：半埋拱門 =====
+Cinemagraph style, profoundly still surreal desert of pale salt and sand. Fixed camera angle, eye-level wide establishing shot. Zero camera movement. A colossal half-buried stone archway rises from rippled bone-white dunes; a mirror-like salt flat stretches at its feet; a lone elegant woman in layered sand-gold and bone-white ceremonial robes stands motionless between the dunes, seen from a respectful distance. Carefully isolated micro-motions: 1) fine dust drifting slowly across the sand; 2) the long ribbons and hem of her robes swaying almost imperceptibly; 3) faint heat shimmer trembling over the salt mirror. Everything else remains perfectly frozen and solid: the archway, the dunes, the distant floating wreckage silhouettes and the pale sky. Do NOT animate the architecture, the sky or the camera. One beautiful elegant unnamed woman, face may be visible; no named character, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh001] 鏡1・29.2s・wide establishing／slow push-in／cold ambient・錨點：半埋拱門 ─────
-recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 半埋拱門; 以題材鉤子畫面開場，零對白，直接建立懸念; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+===== [sh002] 鏡2・29.2s・medium・錨點：鏡面鹽地 =====
+Cinemagraph style, dreamlike silence over a vast cracked salt mirror. Fixed camera angle, eye-level medium shot. Zero camera movement. The woman stands at the center of the mirror-white salt flat; the pale sky reflects perfectly beneath her feet; one weightless fragment of ancient wreckage floats motionless above the far horizon behind her. Carefully isolated micro-motions: 1) the salt-mirror surface glinting and trembling with slow heat shimmer; 2) her long sleeve ribbons lifting very slowly, as if weightless; 3) a thin veil of dust sliding low across the salt. Everything else remains perfectly frozen and solid: the salt crust, the sky reflection, the floating wreckage and the horizon. Do NOT animate the sky, the wreckage or the camera. One beautiful elegant unnamed woman, face may be visible; no named character, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh002] 鏡2・29.2s・medium／static wide／practical warm・錨點：鏡面鹽地 ─────
-recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 鏡面鹽地; 建立這座地方的日常與規則，環境主導; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+===== [sh003] 鏡3・29.2s・wide・錨點：懸浮殘骸 =====
+Cinemagraph style, hushed wonder beneath floating ruins. Fixed camera angle, eye-level wide shot. Zero camera movement. Shards of ancient shipwreck and torn ceremonial banners float weightlessly in the pale air above the dunes like broken kites, casting thin distant shadows; the woman stands small among the dunes in pale robes, looking upward. Carefully isolated micro-motions: 1) one tattered banner tail turning almost imperceptibly in the windless air; 2) fine sand streaming slowly off a dune crest; 3) the edge of her long robe trembling faintly. Everything else remains perfectly frozen and solid: the floating wreckage, the dunes, the far archway and the muted violet sky. Do NOT animate the wreckage, the sky or the camera. One beautiful elegant unnamed woman, face may be visible; no named character, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh003] 鏡3・29.2s・wide／slow pan left／backlit rim・錨點：懸浮殘骸 ─────
-recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 懸浮殘骸; 日常中出現不協調的細節，暗示異變; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+===== [sh004] 鏡4・29.2s・close detail・錨點：半埋拱門 =====
+Cinemagraph style, intimate close detail of weathered ceremonial stone. Fixed camera angle, eye-level close-up. Zero camera movement. Ancient carved glyphs cover a slab of the half-buried archway; a slender woman's hand rests gently on the carving, her layered silk sleeve pooling across the salt dust; tiny salt crystals glitter on the stone. Carefully isolated micro-motions: 1) a thread of fine dust falling slowly from the carved edge; 2) the silk sleeve edge shifting barely, like a slow breath; 3) faint glints traveling across the salt crystals. Everything else remains perfectly frozen and solid: the hand, the carvings, the sleeve, the sand and the soft light. Do NOT animate the hand, the stones or the camera. No dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh004] 鏡4・29.2s・close detail／crane up／low-key contrast・錨點：半埋拱門 ─────
-recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 半埋拱門; 異常正式進入這座地方的日常; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+===== [sh005] 鏡5・29.2s・medium・錨點：鏡面鹽地 =====
+Cinemagraph style, quiet departure across the endless salt mirror. Fixed camera angle, eye-level medium shot. Zero camera movement. The woman is seen from behind, mid-step on the mirror-flat salt, her long embroidered train floating low behind her; far ahead, the half-buried archway stands pale against the grey-violet dusk. Carefully isolated micro-motions: 1) her long train and sleeve ribbons drifting almost imperceptibly; 2) slow heat shimmer crawling across the salt mirror; 3) a few grains of salt dust lifting and settling. Everything else remains perfectly frozen and solid: her silhouette, the mirror reflection, the distant archway and the sky. Do NOT animate the landscape or the camera. The woman is seen from behind, face not visible; no named character, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh005] 鏡5・29.2s・medium／slow pull-out／soft diffuse・錨點：鏡面鹽地 ─────
-recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 鏡面鹽地; 場景離開原本狀態，往更深處推進; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
-
-───── [sh006] 鏡6・29.0s・wide climax／tracking flow／hero light・錨點：懸浮殘骸 ─────
-recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 懸浮殘骸; 環境出現第一個不和諧，代價開始累積; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+===== [sh006] 鏡6・29.0s・wide climax・錨點：懸浮殘骸 =====
+Cinemagraph style, the first cold note in a frozen desert twilight. Fixed camera angle, wide cinematic shot. Zero camera movement. The sky deepens to dusty violet; the floating wreckage hangs closer and lower, and among the drifting shards one pale golden mask turns slowly, free, catching the last light; the woman's small figure stands motionless below in pale ceremonial robes. Carefully isolated micro-motions: 1) the golden mask rotating slowly in mid-air; 2) long dust streams drifting across the dunes; 3) the edges of her robe trembling almost imperceptibly. Everything else remains perfectly frozen and solid: the dunes, the wreckage silhouettes, the mask's shadow and the violet sky. Do NOT animate the sky, the dunes or the camera. One beautiful elegant unnamed woman, face may be visible; no named character, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.

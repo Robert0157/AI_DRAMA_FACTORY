@@ -1,27 +1,23 @@
-# 生圖提示詞 — 湖光微火｜第1章 · 記憶檔案（light_music）
+# 生圖提示詞（Cinemagraph 版 v2）— 湖光微火｜第1章 · 記憶檔案（light_music）
+# 依 CEO 2026-09-13 實證回饋：固定機位・零運鏡・微量動態清單・其餘凍結・8 秒循環氛圍
+# 世界：沒有年份的湖邊長夜｜色調：燭焰橘、湖水墨綠、夜霧青｜天候：無風、水氣薄霧、火星上升
+# 規格：6 鏡・175.0s・9:16・零對白｜每鏡生成 1–3 張揀選（圖片免費）
+# 匯出後放 `VEO_download/生圖_湖光微火v2/`，檔名建議 sh001…sh006
 
-- 版本：v2｜湖光微火｜記憶檔案
-- 世界：沒有年份的湖邊長夜｜木造水榭、石砌火塘、林間小徑與映水燈籠
-- 色調：燭焰橘、湖水墨綠、夜霧青｜天候：無風、水氣薄霧、火星上升
-- 規格：6 鏡・175.0s・9:16・零對白
-- 用法：貼進 Flow 生圖，每鏡生成 1–3 張揀選（圖片免費）；匯出後放
-  `VEO_download/生圖_湖光微火v2/`，檔名建議 sh001…sh006
-- 提示詞已含負面約束（no text／no logo／零對白），整段貼上即可。
+===== [sh001] 鏡1・29.2s・wide establishing・錨點：湖畔火塘 =====
+Cinemagraph style, deeply peaceful lakeside night. Fixed camera angle, eye-level wide establishing shot. Zero camera movement. A calm black-green lake under soft blue night mist; on the near shore a low stone-ringed fire pit burns steadily, warm orange embers glowing; a small wooden stilt pavilion with paper lanterns stands at the water's edge. Carefully isolated micro-motions: 1) gentle slow ripples spreading across the lake, trembling with reflected firelight; 2) thin sparks drifting slowly upward into the misty air; 3) faint mist creeping low over the water. Everything else remains perfectly frozen and solid: the pavilion, the stone lanterns, the trees, the shoreline and the sky. Do NOT animate the buildings, the lanterns or the camera. No people, no humans, no characters, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh001] 鏡1・29.2s・wide establishing／slow push-in／cold ambient・錨點：湖畔火塘 ─────
-archival visual diary, restrained locked shots and slow pans; 沒有年份的湖邊長夜; 木造水榭、石砌火塘、林間小徑與映水燈籠; palette: 燭焰橘、湖水墨綠、夜霧青; weather: 無風、水氣薄霧、火星上升; landmark: 湖畔火塘; 以題材鉤子畫面開場，零對白，直接建立懸念; no people, no humans, no characters, no dialogue, no text
+===== [sh002] 鏡2・29.2s・medium・錨點：映水燈籠 =====
+Cinemagraph style, tranquil midnight waterside courtyard. Fixed camera angle, eye-level medium shot. Zero camera movement. Stone lanterns with warm candlelight line a quiet wooden deck; their flames hang mirrored in the still black-green water; a stone hearth glows softly in the misty background. Carefully isolated micro-motions: 1) candle flames inside the stone lanterns flickering gently; 2) slow ripples briefly breaking and restoring the mirrored reflections; 3) lamplight trembling faintly on the wet deck boards. Everything else remains perfectly frozen and solid: the deck, the railings, the lantern stonework, the trees and the night sky. Do NOT animate the architecture or the camera. No people, no humans, no characters, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh002] 鏡2・29.2s・medium／static wide／practical warm・錨點：映水燈籠 ─────
-archival visual diary, restrained locked shots and slow pans; 沒有年份的湖邊長夜; 木造水榭、石砌火塘、林間小徑與映水燈籠; palette: 燭焰橘、湖水墨綠、夜霧青; weather: 無風、水氣薄霧、火星上升; landmark: 映水燈籠; 建立這座地方的日常與規則，環境主導; no people, no humans, no characters, no dialogue, no text
+===== [sh003] 鏡3・29.2s・wide・錨點：林間水榭 =====
+Cinemagraph style, hushed forest pavilion beside a midnight lake. Fixed camera angle, eye-level wide shot. Zero camera movement. A wooden waterside pavilion half-veiled in drifting mist stands among tall dark trees; stone steps descend to the still water. Carefully isolated micro-motions: 1) mist threading slowly between the tree trunks; 2) a few leaves swaying very slightly in a breathless breeze; 3) faint ripples shivering at the foot of the steps. Everything else remains perfectly frozen and solid: the pavilion, the tree trunks, the steps, the shore and the sky. Do NOT animate the building, the trees or the camera. No people, no humans, no characters, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh003] 鏡3・29.2s・wide／slow pan left／backlit rim・錨點：林間水榭 ─────
-archival visual diary, restrained locked shots and slow pans; 沒有年份的湖邊長夜; 木造水榭、石砌火塘、林間小徑與映水燈籠; palette: 燭焰橘、湖水墨綠、夜霧青; weather: 無風、水氣薄霧、火星上升; landmark: 林間水榭; 日常中出現不協調的細節，暗示異變; no people, no humans, no characters, no dialogue, no text
+===== [sh004] 鏡4・29.2s・close detail・錨點：湖畔火塘 =====
+Cinemagraph style, intimate close detail of a night stone hearth by the lake. Fixed camera angle, eye-level close-up. Zero camera movement. A black tea kettle rests on glowing coals; stacked firewood, a woven mat and a dark ceramic teapot sit at the hearth's edge; warm orange light spills across smooth dark pebbles. Carefully isolated micro-motions: 1) flames flickering and embers pulsing gently; 2) steam curling slowly from the kettle spout; 3) the smallest drift of sparks rising. Everything else remains perfectly frozen and solid: the stones, the firewood, the mat, the teapot, the pebbles and the darkness beyond. Do NOT animate the objects or the camera. No people, no humans, no characters, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh004] 鏡4・29.2s・close detail／crane up／low-key contrast・錨點：湖畔火塘 ─────
-archival visual diary, restrained locked shots and slow pans; 沒有年份的湖邊長夜; 木造水榭、石砌火塘、林間小徑與映水燈籠; palette: 燭焰橘、湖水墨綠、夜霧青; weather: 無風、水氣薄霧、火星上升; landmark: 湖畔火塘; 異常正式進入這座地方的日常; no people, no humans, no characters, no dialogue, no text
+===== [sh005] 鏡5・29.2s・medium・錨點：映水燈籠 =====
+Cinemagraph style, quiet lantern path fading along the night shore. Fixed camera angle, eye-level medium shot. Zero camera movement. A narrow stone path edged with glowing lanterns curves away along the lakeshore into distant mist; the wide dark lake lies beside it, empty and calm. Carefully isolated micro-motions: 1) lantern flames breathing softly; 2) long slow ripples traveling across the open water; 3) thin mist sliding along the path stones. Everything else remains perfectly frozen and solid: the path, the lanterns, the trees, the far shoreline and the sky. Do NOT animate the landscape or the camera. No people, no humans, no characters, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
 
-───── [sh005] 鏡5・29.2s・medium／slow pull-out／soft diffuse・錨點：映水燈籠 ─────
-archival visual diary, restrained locked shots and slow pans; 沒有年份的湖邊長夜; 木造水榭、石砌火塘、林間小徑與映水燈籠; palette: 燭焰橘、湖水墨綠、夜霧青; weather: 無風、水氣薄霧、火星上升; landmark: 映水燈籠; 場景離開原本狀態，往更深處推進; no people, no humans, no characters, no dialogue, no text
-
-───── [sh006] 鏡6・29.0s・wide climax／tracking flow／hero light・錨點：林間水榭 ─────
-archival visual diary, restrained locked shots and slow pans; 沒有年份的湖邊長夜; 木造水榭、石砌火塘、林間小徑與映水燈籠; palette: 燭焰橘、湖水墨綠、夜霧青; weather: 無風、水氣薄霧、火星上升; landmark: 林間水榭; 環境出現第一個不和諧，代價開始累積; no people, no humans, no characters, no dialogue, no text
+===== [sh006] 鏡6・29.0s・wide climax・錨點：林間水榭 =====
+Cinemagraph style, vast midnight lake beneath a deepening sky. Fixed camera angle, wide cinematic shot. Zero camera movement. The lake mirrors the dark sky like black glass; the forest pavilion with warm lit windows stands tiny on the far shore; on the distant waterline one small lantern flame burns a faint cold pale color, slightly out of place. Carefully isolated micro-motions: 1) long slow ripples expanding across the glassy water; 2) mist rising and dissolving over the far trees; 3) a single luminous trail of sparks drifting above the distant shoreline. Everything else remains perfectly frozen and solid: the pavilion, the forest silhouette, the mountains and the sky. Do NOT animate the sky, the pavilion or the camera. No people, no humans, no characters, no dialogue, no text, no logo. Vertical 9:16, seamless 8-second loop.
