@@ -1,0 +1,27 @@
+# 生圖提示詞 — 華服荒原｜第1章 · 章回編年（lofi）
+
+- 版本：v5｜華服荒原｜章回編年
+- 世界：記憶剝落之後｜沙丘、半埋拱門、懸浮殘骸與鏡面鹽地
+- 色調：骨白、沙金、灰紫｜天候：無風的靜止、緩慢落塵
+- 規格：6 鏡・175.0s・9:16・零對白
+- 用法：貼進 Flow 生圖，每鏡生成 1–3 張揀選（圖片免費）；匯出後放
+  `VEO_download/生圖_華服荒原v5/`，檔名建議 sh001…sh006
+- 提示詞已含負面約束（no text／no logo／零對白），整段貼上即可。
+
+───── [sh001] 鏡1・29.2s・wide establishing／slow push-in／cold ambient・錨點：半埋拱門 ─────
+recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 半埋拱門; 以題材鉤子畫面開場，零對白，直接建立懸念; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+
+───── [sh002] 鏡2・29.2s・medium／static wide／practical warm・錨點：鏡面鹽地 ─────
+recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 鏡面鹽地; 建立這座地方的日常與規則，環境主導; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+
+───── [sh003] 鏡3・29.2s・wide／slow pan left／backlit rim・錨點：懸浮殘骸 ─────
+recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 懸浮殘骸; 日常中出現不協調的細節，暗示異變; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+
+───── [sh004] 鏡4・29.2s・close detail／crane up／low-key contrast・錨點：半埋拱門 ─────
+recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 半埋拱門; 異常正式進入這座地方的日常; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+
+───── [sh005] 鏡5・29.2s・medium／slow pull-out／soft diffuse・錨點：鏡面鹽地 ─────
+recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 鏡面鹽地; 場景離開原本狀態，往更深處推進; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
+
+───── [sh006] 鏡6・29.0s・wide climax／tracking flow／hero light・錨點：懸浮殘骸 ─────
+recurring landmark chronicle, wide establishing compositions; 記憶剝落之後; 沙丘、半埋拱門、懸浮殘骸與鏡面鹽地; palette: 骨白、沙金、灰紫; weather: 無風的靜止、緩慢落塵; landmark: 懸浮殘骸; 環境出現第一個不和諧，代價開始累積; one beautiful elegant unnamed woman, face may be visible, cinematic portrait light, no named character, no dialogue, no text, no logo
