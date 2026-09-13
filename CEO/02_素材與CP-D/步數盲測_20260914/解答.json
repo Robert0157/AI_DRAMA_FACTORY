@@ -1,0 +1,27 @@
+{
+ "schema": "render.steps_blind_v1",
+ "date": "2026-09-14",
+ "topic": "華服荒原 v5",
+ "shot": "sh001",
+ "unit": 1,
+ "seed": 261912,
+ "master_track": "RnBPower_CrownOfEchoes.mp3",
+ "mapping_track_to_steps": {
+  "track_1": 12,
+  "track_2": 20,
+  "track_3": 10,
+  "track_4": 16
+ },
+ "elapsed_sec": {
+  "20": 11854.0,
+  "16": 9470.2,
+  "12": 7251.2,
+  "10": 6042.1
+ },
+ "sec_per_step": {
+  "20": 592.7,
+  "16": 591.9,
+  "12": 604.3,
+  "10": 604.2
+ }
+}
