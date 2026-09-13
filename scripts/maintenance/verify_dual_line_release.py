@@ -26,13 +26,15 @@ TESTS = (
     "tests/test_mac_wan_worker.py",
     "tests/test_dispatch_steps_policy.py",
     "tests/test_dispatch_to_mac_path.py",
+    "tests/test_music_timeline.py",
     "Auto_Drama/tests/test_lmd_video_guards.py",
 )
-MIN_EXPECTED_TESTS = 77
+MIN_EXPECTED_TESTS = 86
 SOURCES = (
     "scripts/story_room/script_forge.py",
     "scripts/pipeline/mac_wan_worker.py",
     "scripts/pipeline/dispatch_to_mac.py",
+    "scripts/pipeline/music_timeline.py",
     "Auto_Drama/auto_drama/lmd_video_chain.py",
     "scripts/maintenance/verify_dual_line_release.py",
     *TESTS,
