@@ -400,7 +400,8 @@ def _collect_sources(args: argparse.Namespace) -> list[SourceSpec]:
     paths: list[Path] = [Path(p) for p in (args.sources or [])]
     if args.done_dir:
         done_dir = Path(args.done_dir)
-        found = sorted(done_dir.glob("*.mp4"))
+        # Accept both a flat folder of mp4s and the handoff/done/<job>/v01.mp4 layout.
+        found = sorted(set(done_dir.glob("*.mp4")) | set(done_dir.glob("*/*.mp4")))
         if not found:
             raise SystemExit(f"[FATAL] no mp4 found under {done_dir}")
         paths.extend(found)
