@@ -26,7 +26,7 @@
 |---|---|---|
 | ① 總覽卡 | A 線（本週集數／素材池可用數／時間軸版本）＋B 線（forge μ／王者／**距閘門差額**／迭代數／B＋ 先行弧狀態）＋系統（CI 綠燈、Mac worker、佇列、凍結令） | `CEO/`＋Y: 產線 JSON（`evidence.json`／`run_meta`／`status`） |
 | ② 待決中心 | CP-D／CP1／CP2／GATE 0 卡片：縮圖＋文件預覽＋「核准／退回／備註」 | `CEO/02、03`＋審批信箱 |
-| ③ 素材池 | manifest 驅動縮圖牆（水印／命名／畫幅狀態）、`_水印隔離/` 檢視、一鍵複製派送 | `CEO/02_素材與CP-D/manifest.json` |
+| ③ 素材池 | manifest 驅動縮圖牆（水印／命名／畫幅狀態）、水印隔離檢視（備用）、一鍵複製派送 | `CEO/02_素材與CP-D/manifest.json` |
 | ④ 鑄造面板 | forge `--status` 視覺化、`iteration_log` 尾、王者包摘要、閘門進度 | forge run dir |
 | ⑤ 交付面板 | 樣片清單（pass／時長／路徑）、上傳窗口、發佈記錄、Telegram 摘要重播 | `CEO/03_樣片與交付/` |
 | ⑥ 成本面板 | 每秒合格素材成本表（G1 缺口）、每集預估 vs 實際 | 派送 journal／記帳 |
