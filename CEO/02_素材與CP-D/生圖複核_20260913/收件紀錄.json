@@ -1,0 +1,74 @@
+{
+ "schema": "a_line.intake_batch.v1",
+ "date": "2026-09-13",
+ "source": "Google Flow (VEO image, free)",
+ "qc": {"watermark": "none-visible", "check": "bottom-18pct-band visual", "aspect": "9:16", "resolution": "1536x2752"},
+ "files": [
+  {
+   "folder": "生圖_湖光微火v2",
+   "name": "Candles_glowing_by_dark_water_2K_sh002.jpeg",
+   "bytes": 1958485,
+   "dims": [
+    1536,
+    2752
+   ],
+   "format": "JPEG",
+   "sha256": "bf83cfcd81459ece6961ef0a0c2a56f77d70b354bd1877d08425a831993131aa"
+  },
+  {
+   "folder": "生圖_湖光微火v2",
+   "name": "Fire_burning_by_lakeside_night_2K_sh001.jpeg",
+   "bytes": 2295175,
+   "dims": [
+    1536,
+    2752
+   ],
+   "format": "JPEG",
+   "sha256": "01d98dd7e199f2b0b0f5b10034824ed6bb02f045f41bf4d8d88093e61810a0dd"
+  },
+  {
+   "folder": "生圖_湖光微火v2",
+   "name": "Mist_drifting_by_lakeside_pavilion_2K_sh003.jpeg",
+   "bytes": 2745289,
+   "dims": [
+    1536,
+    2752
+   ],
+   "format": "JPEG",
+   "sha256": "170cb19aa152aaf000bceccb67b93e3e07f2357d7ae27c987e8c05fd5d7f5192"
+  },
+  {
+   "folder": "生圖_湖光微火v2",
+   "name": "Mist_drifting_by_lakeside_pavilion_2K_sh004.jpeg",
+   "bytes": 1953409,
+   "dims": [
+    1536,
+    2752
+   ],
+   "format": "JPEG",
+   "sha256": "8f4e0516c85f525f51b712b6609e1cdd1115c069db23d551d1ceedcf1416011b"
+  },
+  {
+   "folder": "生圖_湖光微火v2",
+   "name": "Mist_drifting_by_lakeside_pavilion_2K_sh005.jpeg",
+   "bytes": 2119529,
+   "dims": [
+    1536,
+    2752
+   ],
+   "format": "JPEG",
+   "sha256": "7368fa504e5884579ded5f4f1931ecd1af8d2db119774a6b2ecb02ad5380dbec"
+  },
+  {
+   "folder": "生圖_華服荒原v5",
+   "name": "Woman_standing_in_desert_dunes_2K_sh001.jpeg",
+   "bytes": 2316491,
+   "dims": [
+    1536,
+    2752
+   ],
+   "format": "JPEG",
+   "sha256": "0bf2982bf1d703339247e3146a88fc140339cc34674d7cf261e950c47f05f1e5"
+  }
+ ]
+}
