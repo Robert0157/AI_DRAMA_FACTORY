@@ -1,0 +1,21 @@
+#!/bin/sh
+# Dual-line verification gate (world-class trust chain, step 1).
+# Blocks any push when the offline QA entry fails.
+# Installed to .git/hooks/pre-push by scripts/maintenance/install_git_hooks.ps1
+# NOTE: keep LF line endings (Git for Windows executes hooks via sh).
+
+ROOT="$(git rev-parse --show-toplevel)"
+PY="$ROOT/venv/Scripts/python.exe"
+
+if [ ! -f "$PY" ]; then
+  echo "[pre-push] venv python not found: $PY" >&2
+  echo "[pre-push] push blocked - run on the control-plane PC or install an interpreter." >&2
+  exit 1
+fi
+
+echo "[pre-push] dual-line verification (offline, ~40s)..."
+if ! "$PY" "$ROOT/scripts/maintenance/verify_dual_line_release.py"; then
+  echo "[pre-push] ENGINEERING_QA=FAIL - push blocked." >&2
+  exit 1
+fi
+echo "[pre-push] ENGINEERING_QA=PASS - push allowed."
