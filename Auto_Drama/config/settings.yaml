@@ -1,0 +1,34 @@
+# ============================================================
+# Auto_Drama central settings (v0.1)
+# NOTE: Never put API keys here. Keys come from env vars only.
+# ============================================================
+
+series:
+  default_name: yuewei          # series folder label
+  default_emotion: suspense     # fallback emotion tag (see emotion_map.yaml)
+
+# LocalMiniDrama backend (referenced IN PLACE via HTTP, never modified)
+lmd:
+  base_url: http://127.0.0.1:5679     # override via env LMD_BASE_URL
+  api_prefix: /api/v1
+  timeout_sec: 60
+
+# Output routing (CEO Episodic Routing rule)
+output:
+  root: ./output                # relative to Auto_Drama root; env AUTO_DRAMA_OUTPUT_ROOT wins
+  layout: episodes/{series}/{episode_id}
+
+# Stage switches (each can be toggled for dry runs)
+stages:
+  script: true                  # Stage 1: novel -> vernacular 3-act -> storyboard JSON
+  visual: true                  # Stage 2: character/scene libraries -> @Image refs -> visuals
+  audio_lipsync: true           # Stage 3: dialogue TTS / lip-sync shots
+  post: true                    # Stage 4: concat + emotion BGM + subtitles
+
+# Post-production constants (broadcast-grade)
+ffmpeg:
+  fps: 24
+  video_enc: ["-c:v", "libx264", "-preset", "slow", "-crf", "23", "-pix_fmt", "yuv420p"]
+  audio_enc: ["-c:a", "aac", "-b:a", "192k", "-ar", "48000"]
+  subtitle_font: "Noto Serif CJK TC"   # 思源宋體, no fallback to ugly sans-serif
+  crossfade_sec: 8                     # smooth emotion-transition crossfade

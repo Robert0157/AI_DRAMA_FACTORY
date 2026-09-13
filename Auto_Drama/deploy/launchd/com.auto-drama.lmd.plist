@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LocalMiniDrama 後端 LaunchAgent (Mac mini 開機/登入自啟 + 崩潰自動重啟)
+  安裝: sudo 不需要；複製到 ~/Library/LaunchAgents 後:
+        launchctl load -w ~/Library/LaunchAgents/com.auto-drama.lmd.plist
+  或執行同目錄 install_launchd.sh 一次搞定。
+  注意: 請確認 run_lmd_mac.sh 已設定正確 MAC_ROOT 與 node 路徑。
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.auto-drama.lmd</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Volumes/AI_Workspace/AI_DRAMA_FACTORY/Auto_Drama/deploy/launchd/run_lmd_mac.sh</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- 崩潰後自動重啟 -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <!-- 登出/關機前先停 -->
+    <key>AbandonProcessGroup</key>
+    <false/>
+
+    <!-- 執行時期環境 -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Volumes/AI_Workspace/AI_DRAMA_FACTORY/Auto_Drama/logs/lmd.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Volumes/AI_Workspace/AI_DRAMA_FACTORY/Auto_Drama/logs/lmd.stderr.log</string>
+</dict>
+</plist>

@@ -1,0 +1,113 @@
+# ============================================================
+# Emotion -> Suno music prompt mapping (Chinese ancient supernatural
+# costume drama - 古風志怪). Keys are the canonical emotion tags that
+# storyboard extraction should emit (see aliases for synonyms).
+# ============================================================
+
+suspense:                     # 懸疑
+  tags: "mysterious, suspenseful, dark ambient, tension building, cinematic"
+  instruments: "low cello pizzicato, guqin (古琴), atmospheric pads, sparse piano"
+  bpm: "65-80"
+  energy: medium-low
+  negative: "upbeat, happy, bright, vocals, lyrics"
+
+sad:                          # 悲傷
+  tags: "sorrowful, melancholic, mournful, slow, emotional, Chinese drama OST"
+  instruments: "erhu (二胡), guqin (古琴), soft strings, sparse piano"
+  bpm: "50-68"
+  energy: low
+  negative: "fast, upbeat, energetic, heavy percussion"
+
+tense:                        # 緊張
+  tags: "intense, urgent, thrilling, action, driving rhythm, high stakes"
+  instruments: "taiko drum, tremolo strings, low brass, bianzhong bells (編鐘)"
+  bpm: "115-145"
+  energy: high
+  negative: "calm, peaceful, slow, ambient"
+
+horror:                       # 恐怖
+  tags: "eerie, horror, dark, dissonant, unsettling, supernatural"
+  instruments: "dissonant strings, sub-bass drones, whispering textures"
+  bpm: "40-60"
+  energy: very-low
+  negative: "happy, bright, melodic, clean"
+
+joyful:                       # 歡快
+  tags: "joyful, bright, celebratory, lively, festive, Chinese folk"
+  instruments: "dizi flute (笛), pipa (琵琶), light percussion, pentatonic melody"
+  bpm: "120-145"
+  energy: high
+  negative: "dark, sad, minor, heavy"
+
+epic:                         # 史詩
+  tags: "epic, grand, majestic, powerful, orchestral, dramatic climax"
+  instruments: "full orchestra, taiko, brass fanfare, bianzhong bells (編鐘), chorus"
+  bpm: "88-110"
+  energy: very-high
+  negative: "small, intimate, solo, ambient"
+
+warm:                         # 溫馨
+  tags: "warm, gentle, tender, cozy, heartfelt, peaceful"
+  instruments: "acoustic guitar, soft piano, light strings, xiao flute (簫)"
+  bpm: "75-90"
+  energy: low-medium
+  negative: "intense, dark, heavy, dramatic"
+
+conflict:                     # 衝突
+  tags: "dramatic conflict, intense, clashing, confrontational, tense"
+  instruments: "rhythmic strings, sharp percussion hits, brass stabs"
+  bpm: "95-120"
+  energy: high
+  negative: "calm, peaceful, happy, ambient"
+
+relief:                       # 解脫
+  tags: "resolution, release, hopeful, cathartic, gentle build, peaceful ending"
+  instruments: "soft piano, strings swell, xiao flute (簫), gentle choir"
+  bpm: "70-85"
+  energy: medium
+  negative: "dark, heavy, tense, dramatic"
+
+romance:                      # 浪漫
+  tags: "romantic, tender, dreamy, longing, bittersweet, love theme"
+  instruments: "guzheng (古箏), soft piano, strings, bass dongxiao (洞簫)"
+  bpm: "60-80"
+  energy: low-medium
+  negative: "intense, action, fast, heavy"
+
+# Alias normalization: synonyms from LLM output -> canonical keys above
+aliases:
+  懸疑: suspense
+  懸念: suspense
+  神秘: suspense
+  悲傷: sad
+  傷感: sad
+  哀傷: sad
+  憂傷: sad
+  緊張: tense
+  驚險: tense
+  恐怖: horror
+  驚悚: horror
+  陰森: horror
+  歡快: joyful
+  愉快: joyful
+  快樂: joyful
+  喜悅: joyful
+  開心: joyful
+  輕鬆: joyful
+  史詩: epic
+  壯闊: epic
+  宏偉: epic
+  磅礡: epic
+  溫馨: warm
+  溫暖: warm
+  恬靜: warm
+  平靜: warm
+  衝突: conflict
+  對峙: conflict
+  爭鬥: conflict
+  解脫: relief
+  釋然: relief
+  希望: relief
+  圓滿: relief
+  浪漫: romance
+  纏綿: romance

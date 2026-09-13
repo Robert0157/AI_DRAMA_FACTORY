@@ -1,0 +1,9 @@
+# Core runtime (mock mode needs none of these except stdlib)
+requests>=2.31
+PyYAML>=6.0
+
+# Optional: Telegram remote control (HITL)
+python-telegram-bot>=20.0
+
+# Testing
+pytest>=7.0

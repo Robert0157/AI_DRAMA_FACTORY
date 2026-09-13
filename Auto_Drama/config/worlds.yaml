@@ -1,0 +1,91 @@
+# worlds.yaml — Tonal-World runtime config for the new Auto_Drama channel line.
+# Schema v1 (2026-09-09, CEO approved "定稿").
+# Two brand channels are kept (R&S Echoes Light Music / Lo-Fi) with existing Mac OAuth,
+# but content identity is defined by TONAL WORLDS below (not by the old music-genre names).
+#
+# Conventions:
+# - All runtime routing (Stage0 world router -> Stage1 script, Seedance ratio/prompt,
+#   music gene pool, emotion arc tuning, publish schedule) reads this file.
+# - episode_sec = 175s vertical 9:16 YouTube Shorts (2024+ Shorts limit is 3 min).
+# - Publishing windows: Wed(3) + Sat(6), one 175s episode per channel per window.
+# - Music: CEO manual SUNO primary; TTAPI auto fallback after fallback_hours.
+# - LUFS target = -14 (YouTube), mastered + amix BGM over Seedance dialogue track.
+worlds:
+  light_music:
+    id: light_music
+    display: "R&S Echoes Light Music"
+    world: "nature_healing"
+    tonal_umbrella: "自然 · 療癒 · 溫馨 · 家庭 · 放鬆"   # zh umbrella for prompts
+    aspect_ratio: "9:16"
+    resolution: "1080p"
+    episode_sec: 175
+    default_language: "zh"        # zh | en (en reserved for curated west episodes)
+    schedule:
+      weekdays: [3, 6]            # Wed + Sat
+      per_week: 2
+      hour: 14                    # historical launchd window 14:00
+      minute: 0
+    lufs: -14.0
+    upload_channel_key: "light_music"   # matches Mac client_secrets.json / OAuth
+    music:
+      primary: "manual_suno"
+      fallback: "ttapi"
+      fallback_hours: 24
+    music_gene_pool: ".openclaw/music_genes_light_music.md"
+    emotion_arc:
+      spread: "gentle"            # low intensity contrast; warm resolutions
+      resolution_bias: "soothe"
+    regional_packs:
+      east:
+        # 3-4 Seedance reference archetype sheets (vertical 9:16). Full design sheets in
+        # config/world_bibles/light_music.md §Archetypes. (2026-09-09 CEO edit: dropped
+        # hermit_herbalist & white_deer_elder; added cute shepherd child + young girl.)
+        archetype_keys: ["mountain_guide_monk", "herb_sprite_maiden", "shepherd_child", "nature_young_girl"]
+      west:
+        # (2026-09-09 CEO edit: dropped forest_guardian & garden_grandpa; added fairy/
+        # flower fairy / gentle goddess.)
+        archetype_keys: ["village_child_friend", "flower_fairy", "lake_spirit", "gentle_goddess"]
+    source_pool:
+      rolling_window_eps: 5        # East/West balanced within a rolling 4-6 episode window
+      east: ["閱微草堂筆記-溫馨田園山海篇", "搜神記-柔和誌怪", "田園/山水意象短篇", "草木精靈自創單元", "療癒系現代短篇(公有領域母題)"]
+      west: ["歐洲田園與森林民間傳說(公有領域)", "療癒童話改編(格林/安徒生公共領域)", "家庭溫馨短篇(自創)", "自然靈性寓言(北歐神話公共領域)"]
+    language_rule: "預設中文語音+中英雙字幕；west 療癒童話改編可標 en 英文語音+中英雙字幕"
+    forbidden: ["血腥恐怖結局", "時事政治", "宗教儀式寫實細節", "現代受版權保護之 IP/角色", "說教"]
+    bible_doc: "config/world_bibles/light_music.md"
+
+  lofi:
+    id: lofi
+    display: "R&S Echoes Lo-Fi"
+    world: "surreal_modern"
+    tonal_umbrella: "超現實 · 夜間氛圍 · 時尚現代 · 科幻 · 太空星際"
+    aspect_ratio: "9:16"
+    resolution: "1080p"
+    episode_sec: 175
+    default_language: "zh"
+    schedule:
+      weekdays: [3, 6]
+      per_week: 2
+      hour: 19                    # historical launchd window 19:30 -> 19:30
+      minute: 30
+    lufs: -14.0
+    upload_channel_key: "lofi"    # matches Mac client_secrets_lofi.json / OAuth
+    music:
+      primary: "manual_suno"
+      fallback: "ttapi"
+      fallback_hours: 24
+    music_gene_pool: ".openclaw/music_genes_Gucci_music.md"  # lofi/urban gene base (replace w/ dedicated pool in P0b if needed)
+    emotion_arc:
+      spread: "contrasted"        # high-low swings; mysterious beats
+      resolution_bias: "reverie"
+    regional_packs:
+      east:
+        archetype_keys: ["night_cab_driver", "oracle_of_neon_city", "memory_repairer", "midnight_messenger"]
+      west:
+        archetype_keys: ["space_station_tech", "android_night_clerk", "fashion_visionary", "stellar_wanderer"]
+    source_pool:
+      rolling_window_eps: 5
+      east: ["都市怪談", "聊齋現代轉譯", "夜城/雨夜寓言", "東方賽博短篇(自創)", "未來東方都市單元"]
+      west: ["科幻星際短篇(公有領域/自創)", "都市傳說(非受保護)", "時尚/現代寓言(自創)", "黑色電影式短篇(自創)"]
+    language_rule: "預設中文語音+中英雙字幕；west+scifi/space 話數 → en 英文語音+中英雙字幕 (language=zh|en per episode)"
+    forbidden: ["純無厘頭", "說教", "現代受版權保護之 IP/角色/影視形象", "時事政治", "宗教儀式寫實細節"]
+    bible_doc: "config/world_bibles/lofi.md"

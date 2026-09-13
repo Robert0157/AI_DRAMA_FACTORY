@@ -1,0 +1,27 @@
+# Auto_Drama gitignore
+
+# Runtime artifacts
+output/
+logs/
+data/
+__pycache__/
+*.pyc
+*.pyo
+
+# Secrets — NEVER commit real keys
+deploy/env/auto_drama.env
+*.env
+
+# Python
+venv/
+.venv/
+
+# Node (if ever run inside this tree)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test caches
+.pytest_cache/

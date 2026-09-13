@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Auto_Drama Telegram 遠端控制 LaunchAgent (Mac mini 開機/登入自啟 + 崩潰自動重啟)
+  安裝: 複製到 ~/Library/LaunchAgents 後:
+        launchctl load -w ~/Library/LaunchAgents/com.auto-drama.telegram.plist
+  或執行同目錄 install_launchd.sh。
+  金鑰一律從 deploy/env/auto_drama.env 讀取（勿寫入 plist）。
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.auto-drama.telegram</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Volumes/AI_Workspace/AI_DRAMA_FACTORY/Auto_Drama/deploy/launchd/run_telegram_mac.sh</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- 崩潰後自動重啟 -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Volumes/AI_Workspace/AI_DRAMA_FACTORY/Auto_Drama/logs/telegram.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Volumes/AI_Workspace/AI_DRAMA_FACTORY/Auto_Drama/logs/telegram.stderr.log</string>
+</dict>
+</plist>
