@@ -1,0 +1,120 @@
+{
+ "iteration": 41,
+ "ts": "2026-09-12T16:55:28",
+ "mode": "llm",
+ "action": "revise",
+ "best": true,
+ "best_score": 4.48,
+ "final": {
+  "domains": {
+   "concept": 8.0,
+   "structure": 7.0,
+   "character": 7.0,
+   "dialogue": 6.0,
+   "mythology": 8.0,
+   "feasibility": 6.0,
+   "hook_density": 7.0,
+   "dual_track": 7.0
+  },
+  "llm_total": 6.98,
+  "penalty": 2.5,
+  "final_total": 4.48,
+  "min_domain": 6.0
+ },
+ "errors": 6,
+ "warns": 6,
+ "findings": [
+  {
+   "domain": "structure",
+   "level": "error",
+   "msg": "canon.rules 存在兩套並存版本（口型 KPI、基準版集數、直播間主場清單、夸父正面長鏡單人/雙人），違反 schema『canon.rules 僅允許單一版本，重複同名陣列即 build fail』。"
+  },
+  {
+   "domain": "structure",
+   "level": "error",
+   "msg": "pilot Ep1 分鏡台詞秒數逐鏡加總與 dialogue_sample 宣告值不一致；Ep2 scenes 陣列在 S4 被截斷，pilot 無法通過 gate_2 逐鏡核算。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "error",
+   "msg": "Ep28 同時承載夸父雙人正面運鏡段、洛基對等正面主場、弧高潮三件套基準版、嫦娥與雅典娜同步作戰，單集 6 鏡×175s 容量超載，須移鏡或降級。"
+  },
+  {
+   "domain": "mythology",
+   "level": "error",
+   "msg": "第二弧場景群規則與 episode_outline 衝突：Ep21 西湖、Ep22 奧丁、Ep24 梅林、Ep32 奧丁之眼仍出現實體場景描述，違反 canon『純聲音＋符號光點、不得出現實體場景』。"
+  },
+  {
+   "domain": "hook_density",
+   "level": "error",
+   "msg": "episode_outline 中狀態型 cliffhanger 佔比過高（Ep8/10/15/19/22/26/29/32/35/38/42/43/45/46/48/49/53/54），與 canon『非狀態型 ≥14 集』硬約束衝突。"
+  },
+  {
+   "domain": "character",
+   "level": "error",
+   "msg": "黑粉團首領動機錨點編號重複：Ep18 與 Ep25 均標『動機錨點二』，與 canon『Ep18 首次揭露→Ep25 確認』不一致，且缺 Ep14/15 純聲音回聲與 Ep31/34 視覺回聲。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "warn",
+   "msg": "480p 三檔特效在 pilot Ep1 S2/S6 仍標『候選值，待 gate 通過後鎖定』，但 canon 要求 gate_1 通過前全劇不得標註級別，pilot 分鏡表須改為『待 gate_1 鎖定』。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "warn",
+   "msg": "56 集×6 鏡×175s 的 Seedance 2.5 口型同步失敗率 ≤5% 缺乏 pilot 實測依據；建議 pilot 先量測單鏡單人與單鏡雙人兩種情境，再回寫全劇 KPI。"
+  },
+  {
+   "domain": "character",
+   "level": "warn",
+   "msg": "夸父與雅典娜同集出現八集（Ep12/16/19/28/37/43/55/56）的『同集不同鏡』預排尚未落實到 episode_outline，須逐集標註同集不同鏡分配欄。"
+  },
+  {
+   "domain": "dialogue",
+   "level": "warn",
+   "msg": "夸父台詞一律字幕條、不生成口型，但 pilot Ep1 S3/S4 仍標『夸父台詞 3s/2s』並計入字幕條秒數，與 canon『字幕條不計口型段、不計台詞秒數』的核算邏輯需再對齊。"
+  },
+  {
+   "domain": "mythology",
+   "level": "warn",
+   "msg": "埃及神話僅 Ep22 阿努比斯審判之秤符號光點與 Ep31/40 回聲，敘事功能偏裝飾；建議將審判之秤與虛無斷訊審判的主題連結寫進 episode_outline 的 hook 或 cliffhanger。"
+  },
+  {
+   "domain": "dual_track",
+   "level": "warn",
+   "msg": "雙軌視覺標記在 pilot Ep1 S1 以『直播訊號圖標實體道具』呈現，但 S6 雅典娜純影像未回扣同一圖標，首尾雙錨未成立；須在 S6 補掃描線圖標實體道具回扣。"
+  },
+  {
+   "domain": "structure",
+   "level": "info",
+   "msg": "伏筆回收精簡至 6 條＋前置併入的方向正確，但 Ep3 古希臘文併入 Ep2、Ep23 世界樹根併入 Ep17、Ep37 奧丁犧牲併入 Ep32 的視覺回聲須在 episode_outline 逐集標註伏筆回聲編號。"
+  },
+  {
+   "domain": "concept",
+   "level": "info",
+   "msg": "『故事是人類共同的呼吸』主題與雙界供氧隱喻在 Ep56 以夸父位置留空＋符號光點收束，情感重量足夠，但需確保 Ep35 化橋與 Ep56 合影之間的 21 集有夸父之橋視覺回聲（Ep43/48/38/40）不斷線。"
+  },
+  {
+   "domain": "mythology",
+   "level": "info",
+   "msg": "東西方正面主場運鏡段比值不超過 3:2 的 parity_note 設計良好，但雅典娜 Ep19、洛基 Ep28 的對等正面主場運鏡段須在分鏡表『東／西主場額度』欄逐集標註，避免統計失準。"
+  }
+ ],
+ "top_fixes": [
+  "canon.rules 出現兩套並存版本（『口型段數 ≤4』與『≤6』、『Ep14 建立基準版』與『移至 Ep13/Ep15』、直播間主場五集清單與十一集清單、夸父正面長鏡單人/雙人），必須合併為單一版本並以 CI grep 阻擋舊值殘留，否則 validator 無法 build。",
+  "pilot Ep1 分鏡台詞秒數加總與 dialogue_sample 宣告值不一致（S1-S6 累計 12s 但逐鏡加總與口型段數 3 段對不上），且 Ep2 scenes 陣列在 S4 被截斷，pilot 必須先通過 gate_2 逐鏡核算才可鎖定。",
+  "口型 KPI 在『動作型 ≤12s/≤3 段』與『資訊型 ≤22s/≤5 段』之間切換，但 56 集×6 鏡的 Seedance 2.5 同步失敗率 ≤5% 缺乏 pilot 實測依據；建議 pilot 先量測單鏡單人與單鏡雙人兩種情境，再回寫全劇 KPI。",
+  "夸父與雅典娜同集出現八集（Ep12/16/19/28/37/43/55/56）的『同集不同鏡』預排尚未落實到 episode_outline，且 Ep28 同時要承載夸父雙人正面、洛基對等正面、弧高潮三件套，單集 6 鏡容量已超載，須重新分配或移鏡。",
+  "第二弧場景群壓到世界樹根/月宮/敦煌三群，但 Ep21 西湖、Ep22 奧丁、Ep24 梅林、Ep32 奧丁之眼仍出現實體場景描述，與 canon『純聲音＋符號光點』規則衝突，須逐集改寫為既有場景群的光位變化。",
+  "cliffhanger 類型統計：episode_outline 中『狀態型』佔比過高（Ep8/10/15/19/22/26/29/32/35/38/42/43/45/46/48/49/53/54 等），與 canon『非狀態型 ≥14 集』硬約束衝突，須將狀態型 hook 改寫為動作型或動機反轉型。",
+  "黑粉團首領動機四錨點在 episode_outline 中 Ep18 標『動機錨點二』、Ep25 標『動機錨點二』，編號重複且與 canon『Ep18 首次揭露→Ep25 確認』不一致，須統一編號並補 Ep14/15 純聲音回聲與 Ep31/34 視覺回聲。",
+  "480p 三檔特效在 pilot Ep1 S2/S6 仍標『候選值，待 gate 通過後鎖定』，但 canon 要求 gate_1 通過前全劇不得標註級別；pilot 分鏡表須改為『特效級別：待 gate_1 鎖定』，避免 build fail。"
+ ],
+ "layers": {
+  "L1": "l1_workbench/iter_41.json",
+  "L2": "revise",
+  "L3": "llm rubric (神話學與雙軌世界觀已達可開拍電視水準，但 canon 內部版本衝突、口型 KPI 與 pilot 分鏡數字對不上、56 集×6 鏡的 480p 量產風險未收斂，先修規格一致性再談開拍。)",
+  "L4": "15 rule findings"
+ },
+ "package_hash": "fea7f3f42509a135"
+}

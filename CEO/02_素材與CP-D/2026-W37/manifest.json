@@ -1,0 +1,220 @@
+{
+ "schema": "reference_intake.v1",
+ "generated": "2026-09-12T14:04:40",
+ "orientation": "portrait",
+ "providers": [
+  "pexels",
+  "pixabay"
+ ],
+ "items": [
+  {
+   "provider": "pexels",
+   "id": 17421479,
+   "page_url": "https://www.pexels.com/photo/woman-in-white-dress-and-high-heels-17421479/",
+   "author": "Emmanuel Edel",
+   "file": "pexels_17421479.jpg",
+   "sha256": "42d1088aace9d32671b511eb524ccfc69c6899a2b2a0319d1314066712ed90b6",
+   "bytes": 62234,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.fashion_muse",
+   "query": "fashion model runway dramatic light"
+  },
+  {
+   "provider": "pexels",
+   "id": 16297745,
+   "page_url": "https://www.pexels.com/photo/young-brunette-in-a-red-silk-dress-lying-on-a-sofa-16297745/",
+   "author": "Elina Volkova",
+   "file": "pexels_16297745.jpg",
+   "sha256": "b1b5f03a481e82ad63f51078ad949fe6feb72780112ab960ef771eaaa3797752",
+   "bytes": 129265,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.fashion_muse",
+   "query": "elegant woman silk dress editorial"
+  },
+  {
+   "provider": "pexels",
+   "id": 3271762,
+   "page_url": "https://www.pexels.com/photo/a-woman-in-bathing-suit-sitting-on-the-poolside-3271762/",
+   "author": "Evin Ng",
+   "file": "pexels_3271762.jpg",
+   "sha256": "2a6825d2f41a7cadb38d098b8be0c06b12afba21622981883a5950213f20548f",
+   "bytes": 156957,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.fashion_muse",
+   "query": "woman infinity pool ocean view"
+  },
+  {
+   "provider": "pexels",
+   "id": 10936672,
+   "page_url": "https://www.pexels.com/photo/an-antique-globe-made-of-brass-10936672/",
+   "author": "Fatmanur. Sezer",
+   "file": "pexels_10936672.jpg",
+   "sha256": "d213bde69bdb3539f99c247b02733535af72138438adfbe7880f76d8a36e49d7",
+   "bytes": 99051,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.dream_objects",
+   "query": "vintage globe brass candlelight"
+  },
+  {
+   "provider": "pexels",
+   "id": 19892105,
+   "page_url": "https://www.pexels.com/photo/woman-hand-holding-ball-in-purple-light-19892105/",
+   "author": "Alina  Rossoshanska",
+   "file": "pexels_19892105.jpg",
+   "sha256": "b12cde405d373321184ab4bb63dd2a75adca5e4b9fa408986a5be37079e23c2b",
+   "bytes": 112033,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.dream_objects",
+   "query": "glowing orb hands mystery light"
+  },
+  {
+   "provider": "pexels",
+   "id": 16050466,
+   "page_url": "https://www.pexels.com/photo/woman-posing-in-sunglasses-and-shawl-16050466/",
+   "author": "James L",
+   "file": "pexels_16050466.jpg",
+   "sha256": "e117b4ddc79c53bf5bd3a99bdc0ada2e206ef65e71a7192471dcd077c2d4c2ad",
+   "bytes": 130100,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.mythic_traveler",
+   "query": "woman headscarf desert portrait"
+  },
+  {
+   "provider": "pexels",
+   "id": 32600051,
+   "page_url": "https://www.pexels.com/photo/camel-caravan-in-sahara-desert-at-dusk-32600051/",
+   "author": "Taken by Great",
+   "file": "pexels_32600051.jpg",
+   "sha256": "709159fa46c94381510eb5fa9abdf9503a36a3e0fa80d09137a6180016d871d3",
+   "bytes": 82766,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.mythic_traveler",
+   "query": "desert caravan dunes sunset"
+  },
+  {
+   "provider": "pexels",
+   "id": 38251039,
+   "page_url": "https://www.pexels.com/photo/traditional-vietnamese-architecture-in-hue-38251039/",
+   "author": "Trung Tuan Le",
+   "file": "pexels_38251039.jpg",
+   "sha256": "4068ee942c53abc23e46ef038d986da7c8f4a88b5bf5c2d4913552e793ef2c73",
+   "bytes": 202226,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "lofi.mythic_traveler",
+   "query": "ancient palace courtyard torches"
+  },
+  {
+   "provider": "pexels",
+   "id": 15504393,
+   "page_url": "https://www.pexels.com/photo/waves-splashing-on-rocks-15504393/",
+   "author": "Adi K",
+   "file": "pexels_15504393.jpg",
+   "sha256": "4613131ad6054ebda3aad2a1a9afbbd2a90b99fa77ae3ff1eeed3e9c0a18afbf",
+   "bytes": 167961,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.water_light",
+   "query": "ocean waves rocks sunset"
+  },
+  {
+   "provider": "pexels",
+   "id": 13995379,
+   "page_url": "https://www.pexels.com/photo/water-flowing-on-rocks-13995379/",
+   "author": "Regina Trissteria",
+   "file": "pexels_13995379.jpg",
+   "sha256": "f8c5d8b1670836a2ffad3906ebf360b9e43fab1d51c8b009d053c998ecdc527a",
+   "bytes": 229963,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.water_light",
+   "query": "river stones flowing water sunlight"
+  },
+  {
+   "provider": "pexels",
+   "id": 29908652,
+   "page_url": "https://www.pexels.com/photo/charming-lakeside-house-in-lush-sapanca-29908652/",
+   "author": "Şevket  Kazan",
+   "file": "pexels_29908652.jpg",
+   "sha256": "09554674693e66c5da6bf22e1135e635042814dd0bee29e9fea0ff6a6c2ca85a",
+   "bytes": 240866,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.warm_hearth",
+   "query": "lakeside villa terrace evening lights"
+  },
+  {
+   "provider": "pexels",
+   "id": 29420487,
+   "page_url": "https://www.pexels.com/photo/loy-krathong-festival-celebrations-in-bangkok-thailand-29420487/",
+   "author": "Oleg Prachuk",
+   "file": "pexels_29420487.jpg",
+   "sha256": "cf1ca21c1e6d3615aa9ccb65f7dd5e82fd1e75f58494118bc6674a020a038557",
+   "bytes": 157005,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.warm_hearth",
+   "query": "candles floating lake night"
+  },
+  {
+   "provider": "pexels",
+   "id": 21832206,
+   "page_url": "https://www.pexels.com/photo/candles-wine-and-food-on-table-21832206/",
+   "author": "Iryna Varanovich",
+   "file": "pexels_21832206.jpg",
+   "sha256": "6ebd61ddd2865327379716554f76d62684030f2b1d5229c4ce05f98cf8ee0093",
+   "bytes": 206302,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.warm_hearth",
+   "query": "wine cheese table candlelight evening"
+  },
+  {
+   "provider": "pexels",
+   "id": 16186568,
+   "page_url": "https://www.pexels.com/photo/sunlit-stones-and-leaves-on-water-16186568/",
+   "author": "Jasmine Pang",
+   "file": "pexels_16186568.jpg",
+   "sha256": "608142f0f9704e7bbd8b59962638fec3ddb5fdfc386921e57b98c5394ff53941",
+   "bytes": 199731,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.zen_dawn",
+   "query": "zen garden stones moss morning"
+  },
+  {
+   "provider": "pexels",
+   "id": 9153309,
+   "page_url": "https://www.pexels.com/photo/bamboo-wind-chimes-9153309/",
+   "author": "Nguyen Huy",
+   "file": "pexels_9153309.jpg",
+   "sha256": "0a6f2b4e8ee0c8aba4c4817b802fc3fbb126fb87f7ffd8e2be3cbf9dba416a36",
+   "bytes": 104781,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.zen_dawn",
+   "query": "wind chimes bamboo garden light"
+  },
+  {
+   "provider": "pexels",
+   "id": 16096326,
+   "page_url": "https://www.pexels.com/photo/view-of-traditional-lanterns-hanging-from-the-ceiling-of-a-temple-16096326/",
+   "author": "Satoshi Hirayama",
+   "file": "pexels_16096326.jpg",
+   "sha256": "109ec13a1f9537db06847653c2ec0dfb1a64af7b61c3d65a38cc14bfc8f4b699",
+   "bytes": 166941,
+   "license": "provider license: free for commercial use, attribution not required (kept for audit)",
+   "label": "light_music.zen_dawn",
+   "query": "japanese house lantern twilight"
+  }
+ ],
+ "failures": [],
+ "curation": {
+  "filtered_by": "CEO",
+  "date": "2026-09-12",
+  "kept": 16,
+  "removed": 8,
+  "removed_files": [
+   "pexels_27971542.jpg",
+   "pexels_18441118.jpg",
+   "pexels_14724663.jpg",
+   "pexels_10068858.jpg",
+   "pexels_17272605.jpg",
+   "pexels_12699367.jpg",
+   "pexels_37540274.jpg",
+   "pexels_28656692.jpg"
+  ]
+ }
+}

@@ -1,0 +1,146 @@
+{
+ "schema": "cp_d.proposal.v1",
+ "generated": "2026-09-12T14:23:41",
+ "week": "2026-W37",
+ "sources": {
+  "week_path": "/Volumes/AI_Workspace/AI_Drama_Factory/assets/reference_intake/inbox/2026-W37",
+  "manifest_items": 16
+ },
+ "vision": {
+  "enabled": true,
+  "chain": [
+   "gemini-2.5-flash",
+   "glm-4v-flash"
+  ],
+  "provider": "glm-4v-flash",
+  "images_analyzed": 8,
+  "warnings": [
+   "gemini-2.5-flash failed for pexels_17421479.jpg: gemini http 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/googl",
+   "gemini-2.5-flash disabled for the rest of this run"
+  ]
+ },
+ "warnings": [
+  "gemini-2.5-flash failed for pexels_17421479.jpg: gemini http 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/googl",
+  "gemini-2.5-flash disabled for the rest of this run"
+ ],
+ "drafts": {
+  "Coastal-Rocky": {
+   "name": "Coastal-Rocky",
+   "channel": "light_music",
+   "era": "傍晚的海岸",
+   "architecture": "海岸",
+   "palette": [
+    "#0d1b2a",
+    "#e9c46a",
+    "#f4a261"
+   ],
+   "weather": "晴朗、陽光",
+   "landmarks": [
+    "海岸的主景",
+    "傍晚光線下的地標",
+    "安靜角落"
+   ],
+   "figures": "none",
+   "chronicle": "（CP-D 草案，待 CEO 核准）在傍晚的海岸裡，安靜是這個世界的基本音。參考素材顯示晴朗與陽光；本世界將以此為視覺母題擴寫世界史。",
+   "source": "reference_intake.world_proposal",
+   "anchors": [
+    "pexels_15504393.jpg"
+   ],
+   "veo_prompt": "Cinematic 9:16 music-video frame of coastal, rocky, waves, sunset, peaceful, no people in frame - landscape and architecture only, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still",
+   "veo_character": null,
+   "veo_target": "veo_coastal_rocky_01.png",
+   "novelty": 0.9545,
+   "low_novelty": false
+  },
+  "Art-Photography": {
+   "name": "Art-Photography",
+   "channel": "lofi",
+   "era": "傍晚的室內",
+   "architecture": "室內",
+   "palette": [
+    "#f8d7da",
+    "#c3b299",
+    "#e9ecef"
+   ],
+   "weather": "晴朗、自然光",
+   "landmarks": [
+    "室內的主景",
+    "傍晚光線下的地標",
+    "安靜角落"
+   ],
+   "figures": "beauty",
+   "chronicle": "（CP-D 草案，待 CEO 核准）在傍晚的室內裡，安靜是這個世界的基本音。參考素材顯示晴朗與自然光；本世界將以此為視覺母題擴寫世界史。",
+   "source": "reference_intake.world_proposal",
+   "anchors": [
+    "pexels_17421479.jpg"
+   ],
+   "veo_prompt": "Cinematic 9:16 music-video frame of art, photography, model, interior, evening, featuring one beautiful young East-Asian woman in her early 20s, natural elegant beauty, soft cinematic styling, she is the emotional face of the world, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still",
+   "veo_character": {
+    "casting": "one woman, early 20s, elegant and natural; keep the same person across every shot",
+    "flow_usage": "Flow → Ingredients：上傳同一張人物參考圖（正面清晰、自然光）作為角色 ingredient，再用同一提示詞生成每個鏡頭，即可鎖定跨鏡一致性"
+   },
+   "veo_target": "veo_art_photography_01.png",
+   "novelty": 1.0,
+   "low_novelty": false
+  },
+  "Lakeside-Villa": {
+   "name": "Lakeside-Villa",
+   "channel": "light_music",
+   "era": "傍晚的湖泊邊的度假村",
+   "architecture": "湖泊邊的度假村",
+   "palette": [
+    "#006400",
+    "#FFD700",
+    "#FFFFFF"
+   ],
+   "weather": "晴朗、柔和的自然光",
+   "landmarks": [
+    "湖泊邊的度假村的主景",
+    "傍晚光線下的地標",
+    "安靜和和平角落"
+   ],
+   "figures": "none",
+   "chronicle": "（CP-D 草案，待 CEO 核准）在傍晚的湖泊邊的度假村裡，安靜和和平是這個世界的基本音。參考素材顯示晴朗與柔和的自然光；本世界將以此為視覺母題擴寫世界史。",
+   "source": "reference_intake.world_proposal",
+   "anchors": [
+    "pexels_29908652.jpg"
+   ],
+   "veo_prompt": "Cinematic 9:16 music-video frame of lakeside, villa, terrace, evening, lights, no people in frame - landscape and architecture only, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still",
+   "veo_character": null,
+   "veo_target": "veo_lakeside_villa_01.png",
+   "novelty": 0.9545,
+   "low_novelty": false
+  },
+  "Elegant-Woman": {
+   "name": "Elegant-Woman",
+   "channel": "lofi",
+   "era": "晚上的室內",
+   "architecture": "室內",
+   "palette": [
+    "#8B4513",
+    "#FF69B4",
+    "#F0E68C"
+   ],
+   "weather": "不適用、柔和",
+   "landmarks": [
+    "室內的主景",
+    "晚上光線下的地標",
+    "安靜角落"
+   ],
+   "figures": "beauty",
+   "chronicle": "（CP-D 草案，待 CEO 核准）在晚上的室內裡，安靜是這個世界的基本音。參考素材顯示不適用與柔和；本世界將以此為視覺母題擴寫世界史。",
+   "source": "reference_intake.world_proposal",
+   "anchors": [
+    "pexels_16297745.jpg"
+   ],
+   "veo_prompt": "Cinematic 9:16 music-video frame of elegant, woman, silk, dress, editorial, featuring one beautiful young East-Asian woman in her early 20s, natural elegant beauty, soft cinematic styling, she is the emotional face of the world, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still",
+   "veo_character": {
+    "casting": "one woman, early 20s, elegant and natural; keep the same person across every shot",
+    "flow_usage": "Flow → Ingredients：上傳同一張人物參考圖（正面清晰、自然光）作為角色 ingredient，再用同一提示詞生成每個鏡頭，即可鎖定跨鏡一致性"
+   },
+   "veo_target": "veo_elegant_woman_01.png",
+   "novelty": 1.0,
+   "low_novelty": false
+  }
+ }
+}

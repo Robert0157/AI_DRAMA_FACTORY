@@ -197,6 +197,7 @@ def write_index() -> Path:
         f"> 最後更新：{_now()}｜由 `scripts/common/ceo_console.py --sync` 產生",
         "",
         "所有提供 CEO 理解／審核的資訊一律放在本資料夾；產線原件為單一真理（不在此改動）。",
+        "命名規則：`CEO/00_命名規則.md`（v1，權威）——新增／改名一律遵循。",
         "",
     ]
     for sub in sorted(p for p in root.iterdir() if p.is_dir()):

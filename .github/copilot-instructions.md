@@ -185,7 +185,7 @@ You are FORBIDDEN from writing Playwright, Selenium, or `requests` scripts to au
 3. **浮水印紅線（2026-09-12 實測）:** VEO／Flow 匯出右下角帶可見「Veo」浮水印。**嚴禁去除浮水印**；只有「匯出即無可見浮水印」的素材可上架（上架前須過浮水印 QC）；帶可見浮水印者僅得作為草稿。
 4. **主機分工與跨機契約（2026-09-12 核定）:** 長時程工作一律 Mac（渲染／後製／QC／上傳／排程）；PC 僅控制面（腳本生成、LocalMiniDrama 分鏡、派送、CEO 互動）。跨機檔案一律經 `Y:` 共享（Mac 宿主）；派送工件內嚴禁出現 `F:` 本機路徑。契約詳 `架構說明書_v16.1.md` §2。
 5. **A 線世界擴充（CP-D，2026-09-12 核定）:** 素材雙軌——① 免費圖庫官方 API 每週自動搜尋（**Pexels 主力 → Pixabay 備援**；Unsplash 美學補充；下載落地、禁 hotlinking；查詢由世界庫自動生成）② Pinterest／cosmos.so 人工策展匯入（**不申請 API、嚴禁爬蟲**）→ `assets/reference_intake/` → 系統提案（世界草稿＋草稿圖＋VEO 備援提示詞；novelty ≥ 0.25）→ **CP-D CEO 批准**才 `commit()`；每次入庫 ≤ 3 座世界。
-6. **CEO 控台落點（CEO 2026-09-12 指令）:** 所有提供 CEO 理解／審核的資訊（鑄造進度、CP-D 審核包、樣片、報告）一律存放工作區根目錄 `CEO/`；以 `scripts/common/ceo_console.py --sync` 產生副本與 `README.md` 索引；產線原件（Y: 管線資料夾）為單一真理，CEO 副本禁止回流為產線來源。**審核稿格式（CEO 2026-09-12 提醒）：劇本一律以人類小說體呈現（`script_novel.py`→《劇本小說版.md》）；LocalMiniDrama 分鏡 JSON 為產線機器格式，嚴禁作為 CEO 審核稿。**
+6. **CEO 控台落點（CEO 2026-09-12 指令）:** 所有提供 CEO 理解／審核的資訊（鑄造進度、CP-D 審核包、樣片、報告）一律存放工作區根目錄 `CEO/`；以 `scripts/common/ceo_console.py --sync` 產生副本與 `README.md` 索引；產線原件（Y: 管線資料夾）為單一真理，CEO 副本禁止回流為產線來源。**審核稿格式（CEO 2026-09-12 提醒）：劇本一律以人類小說體呈現（`script_novel.py`→《劇本小說版.md》）；LocalMiniDrama 分鏡 JSON 為產線機器格式，嚴禁作為 CEO 審核稿。** **命名規則（v1，CEO 2026-09-13）：** `CEO/` 全樹依 `CEO/00_命名規則.md` 實施——頂層 `NN_分類`、UTC RUNID、`_v<N>` 升版；新增檔案／目錄一律遵循，違規者在當次提交內修正。
 7. **驗證即凍結（Pin-once-Validated；CEO 2026-09-12 理念）:** 自建碼需長期試誤成長；開源碼多已過此階段——**引用開源驗證成功（契約測試＋實戰實證）後即凍結**，上游更新**是否跟進由我方系統需求決定**（僅三觸發：①需要新功能 ②安全修補 ③契約測試失敗）。新功能決策樹：上游已有→適配器；開源已驗證→鎖定引用；僅業務特有→自建（登記「上游為何不堪用」）。整機引用需 `VERSION.lock`＋補丁台帳＋升級 playbook（標竿＝Toonflow v1.1.8；待補＝LocalMiniDrama、ComfyUI）。
 
 ---

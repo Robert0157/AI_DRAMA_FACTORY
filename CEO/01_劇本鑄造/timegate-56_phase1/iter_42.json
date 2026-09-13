@@ -1,0 +1,154 @@
+{
+ "iteration": 42,
+ "ts": "2026-09-12T16:56:05",
+ "mode": "llm",
+ "action": "revise",
+ "best": true,
+ "best_score": 4.98,
+ "final": {
+  "domains": {
+   "concept": 8.0,
+   "structure": 7.0,
+   "character": 8.0,
+   "dialogue": 7.0,
+   "mythology": 9.0,
+   "feasibility": 6.0,
+   "hook_density": 8.0,
+   "dual_track": 7.0
+  },
+  "llm_total": 7.48,
+  "penalty": 2.5,
+  "final_total": 4.98,
+  "min_domain": 6.0
+ },
+ "errors": 1,
+ "warns": 12,
+ "findings": [
+  {
+   "domain": "concept",
+   "level": "info",
+   "msg": "『神話不得直接干涉、需凡人媒介轉譯』作為 56 集主引擎，張力來源清楚且每集可視化代價（媒介延遲／訊號失真／座標消耗），概念層已達串流旗艦雛形。"
+  },
+  {
+   "domain": "concept",
+   "level": "warn",
+   "msg": "『虛無＝被斷訊者從所有文本消失』與『假神話由被遺忘創作者製造』兩條動機線在 Ep5/Ep9 才揭露，但 Ep1-4 缺乏可感知的虛無威脅畫面，前四集鉤子偏『遇見神話』而非『對抗虛無』，建議 Ep2 或 Ep3 補一個 3 秒斷訊視覺回聲。"
+  },
+  {
+   "domain": "structure",
+   "level": "warn",
+   "msg": "canon.rules 存在兩套並存版本（口型 ≤4 與 ≤6、Ep14 與 Ep13/15 基準版、五集與十一集直播間主場清單、夸父單人與雙人正面長鏡），validator 無法收斂，屬 build fail 級衝突。"
+  },
+  {
+   "domain": "structure",
+   "level": "warn",
+   "msg": "Ep29-56 直播間主場間隔規則三條並存（每 4 集／每 2 集／每 3 集），且 Ep49-56 不得連續 8 集無主場與十一集清單互相矛盾，須收斂為單一公式。"
+  },
+  {
+   "domain": "structure",
+   "level": "info",
+   "msg": "四弧各 14 集、弧高潮 Ep14/28/42/56 對稱，鋸齒曲線（Ep31/34/37/40 小勝代價）設計正確，避免第三弧單向下滑。"
+  },
+  {
+   "domain": "character",
+   "level": "info",
+   "msg": "六條角色弧線終點皆以視覺動作鏈呈現（記憶缺一角、座標清單少一行、橋面桃枝與臉部輪廓、世界樹葉片收起），符合好萊塢『show don't tell』標準。"
+  },
+  {
+   "domain": "character",
+   "level": "warn",
+   "msg": "雅典娜 Ep10-16 情感線僅靠 Ep10 嫉妒、Ep16 脆弱、Ep19 回收三點支撐，中間 Ep11-15 五集無非功能性動機瞬間，弧線會斷檔，建議 Ep13 的 3 秒視覺回聲明確寫進分鏡。"
+  },
+  {
+   "domain": "character",
+   "level": "warn",
+   "msg": "黑粉團首領 Ep26-35 十集僅靠 Ep31 一次 3 秒視覺回聲維持反派動能，對 56 集連載而言密度不足，建議 Ep29 或 Ep33 補一次假直播畫面回聲。"
+  },
+  {
+   "domain": "dialogue",
+   "level": "warn",
+   "msg": "pilot Ep1 dialogue_sample 宣告台詞 12s／口型 3 段，但 S3 標『本鏡台詞 4s』卻同時列夸父字幕條 3s，字幕條與台詞秒數混算，validator 逐鏡加總將與宣告值不一致。"
+  },
+  {
+   "domain": "dialogue",
+   "level": "info",
+   "msg": "六條語域（直播腔／學術術語／文言／條列戰略／混亂預言／被遺忘創作者）分軌清楚，蘇晴口頭禪配額收斂至每弧兩次且僅用於規則揭露鏡，紀律良好。"
+  },
+  {
+   "domain": "dialogue",
+   "level": "warn",
+   "msg": "輕喜劇 tone 要求『夸父文言與林宇翔直播腔不得台詞對打』，但 pilot Ep1 S3/S4 仍以夸父字幕條『今夕何年』『此地何界』與林宇翔台詞形成問答節奏，實質仍是台詞對打，須改為純肢體錯位＋字幕條吐槽。"
+  },
+  {
+   "domain": "mythology",
+   "level": "info",
+   "msg": "夸父化橋往『鄧林桃枝』原型靠攏、審判之秤與斷訊審判做主題連結、湖中劍成為第二艘船與白蛇鱗片船並置，神話學依據紮實且非裝飾性。"
+  },
+  {
+   "domain": "mythology",
+   "level": "info",
+   "msg": "東西方正面主場運鏡段比值 ≤3:2、埃及節點以純聲音＋符號光點處理、梅林降為洛基別名，對等性補償機制完整。"
+  },
+  {
+   "domain": "mythology",
+   "level": "warn",
+   "msg": "第二弧場景群已壓到三個，但 episode_outline 仍出現西湖、奧林帕斯、亞瑟王等實體場景描述（Ep21、Ep24），與 canon『純聲音＋符號光點』規則衝突，須逐集清除。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "error",
+   "msg": "gate_1 特效盲測未通過前，pilot Ep1 S2/S6 已標『斷訊三件套』『神域掃描線單件』，違反自身 gate 前置規則，須全數改為『待 gate_1 鎖定』。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "warn",
+   "msg": "夸父與雅典娜同集出現八集的『同集不同鏡分配』僅寫在 canon 註記，未進 episode_outline 逐集欄位，6 鏡×2 人×口型 ≤1 段的硬約束在實作時必爆。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "warn",
+   "msg": "全劇場景數 ≤6、複用率 ≥60% 在 56 集×6 鏡（336 鏡）下，敘事之河／虛無核心／夸父之橋皆以既有場景光位變化呈現，需在分鏡表逐鏡標『場景 ID』並由 validator 統計複用率，否則無法驗證。"
+  },
+  {
+   "domain": "feasibility",
+   "level": "info",
+   "msg": "常設實體角色壓到 6 名、每鏡在場實體 ≤2 人、口型段 ≤1 段，對 Seedance 2.5 量產與口型同步失敗率 ≤5% 的 KPI 而言是正確的製作紀律。"
+  },
+  {
+   "domain": "hook_density",
+   "level": "info",
+   "msg": "56 集 cliffhanger 至少 14 集為規則揭露型或動機反轉型、禁連三同型、狀態型 hook 須改寫為動作型，密度與多樣性達連載標準。"
+  },
+  {
+   "domain": "hook_density",
+   "level": "warn",
+   "msg": "第三弧 Ep29-42 共 14 集，規則揭露型上限 6 集已用於 Ep3/4/5/6/9/47，第三弧僅 Ep30/34/39 三集動機反轉型，其餘多為狀態型，須確認禁連三同型在 Ep35-42 不被觸發。"
+  },
+  {
+   "domain": "dual_track",
+   "level": "warn",
+   "msg": "雙軌辨識唯一依據為 S1 直播訊號圖標實體道具，但 pilot Ep1 S1 僅寫『桌角立著直播訊號圖標實體道具』，S6 回扣雅典娜掃描線圖標的指令在 canon 有、在 pilot 分鏡未落實，須補進 S6。"
+  },
+  {
+   "domain": "dual_track",
+   "level": "info",
+   "msg": "Ep50/52/54/56 歸入神話主場、連線畫面僅以聲音＋字幕條疊加於既有 6 鏡之一，不另佔鏡不減鏡，雙軌紀律在後段維持正確。"
+  }
+ ],
+ "top_fixes": [
+  "canon.rules 出現兩套並存版本（『口型段數 ≤4』與『≤6 段』、『Ep14 建立基準版』與『移至 Ep13/Ep15』、直播間主場五集清單與十一集清單、夸父正面長鏡單人版與雙人版）——必須合併為單一版本並以 CI grep 阻擋舊字串，否則分鏡表 validator 無法收斂。",
+  "gate_1 特效盲測未通過前，pilot Ep1 S2/S6 已標『斷訊三件套』『神域掃描線單件』——違反自身 gate 前置規則，須全數改為『待 gate_1 鎖定』，並把 480p 三檔編碼的 A/B 盲測排進 pilot 前第一順位。",
+  "pilot Ep1 台詞秒數逐鏡加總為 12s、口型段數 3，但 dialogue_sample 宣告與分鏡欄位不一致（S3 標 4s 卻含夸父字幕條 3s 混算）——須建立『台詞秒數／字幕條秒數／口型段數』三欄獨立核算，並讓 validator 逐鏡加總與 dialogue_sample 強制對齊。",
+  "夸父與雅典娜同集出現八集（Ep12/16/19/28/37/43/55/56）的『同集不同鏡分配』目前只寫在 canon 註記，未進 episode_outline 逐集欄位——須把分配表寫進每集分鏡表，否則 6 鏡×2 人×口型 ≤1 段的硬約束在實作時必爆。",
+  "Ep29-56 直播間主場間隔規則自相矛盾（『每 4 集至少一集』『每 2 集一主場』『每 3 集一主場』三條並存）——須收斂為單一間隔公式，並用 S1 直播訊號圖標實體道具作為唯一辨識依據。",
+  "第二弧場景群壓到三個（世界樹根／月宮／敦煌）但 episode_outline 仍出現西湖、奧林帕斯、亞瑟王等實體場景描述——須逐集清除，並確認全劇場景數 ≤6、複用率 ≥60% 在 56 集×6 鏡下可達成。",
+  "黑粉團首領動機四錨點（Ep9/18/25/36）與 Ep15 純聲音回聲、Ep31 視覺回聲的編號在 canon 與 episode_outline 不一致——須統一錨點編號並在分鏡表『伏筆回聲編號』欄逐集標註，避免 Ep26 動機獨白爭議重演。"
+ ],
+ "layers": {
+  "L1": "l1_workbench/iter_42.json",
+  "L2": "revise",
+  "L3": "llm rubric (神話學與角色弧線已達可開拍電視水準，但 canon 內部版本衝突與 480p 特效未過 gate 即寫死，是鎖定前必須清乾淨的製作風險。)",
+  "L4": "22 rule findings"
+ },
+ "package_hash": "3d9e72543b0a06ee"
+}

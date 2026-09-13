@@ -1,0 +1,17 @@
+# VEO fallback prompts (Flow free tier) - save each image under the target name
+
+## Coastal-Rocky
+target: veo_coastal_rocky_01.png
+Cinematic 9:16 music-video frame of coastal, rocky, waves, sunset, peaceful, no people in frame - landscape and architecture only, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still
+
+## Art-Photography
+target: veo_art_photography_01.png
+Cinematic 9:16 music-video frame of art, photography, model, interior, evening, featuring one beautiful young East-Asian woman in her early 20s, natural elegant beauty, soft cinematic styling, she is the emotional face of the world, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still
+
+## Lakeside-Villa
+target: veo_lakeside_villa_01.png
+Cinematic 9:16 music-video frame of lakeside, villa, terrace, evening, lights, no people in frame - landscape and architecture only, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still
+
+## Elegant-Woman
+target: veo_elegant_woman_01.png
+Cinematic 9:16 music-video frame of elegant, woman, silk, dress, editorial, featuring one beautiful young East-Asian woman in her early 20s, natural elegant beauty, soft cinematic styling, she is the emotional face of the world, slow cinematic push-in, moody cinematic lighting, film grain, shallow depth of field, 8-second shot, no dialogue, no text, no watermark, ultra detailed film still
