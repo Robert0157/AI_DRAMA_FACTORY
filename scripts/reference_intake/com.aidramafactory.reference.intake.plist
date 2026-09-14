@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.aidramafactory.reference.intake</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Volumes/AI_Workspace/AI_Drama_Factory/.venv/bin/python3</string>
+        <string>/Volumes/AI_Workspace/AI_Drama_Factory/scripts/reference_intake/daily_intake.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Volumes/AI_Workspace/AI_Drama_Factory</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>AI_DRAMA_REPO_ROOT</key>
+        <string>/Volumes/AI_Workspace/AI_Drama_Factory</string>
+        <key>HOME</key>
+        <string>/Users/robert</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>TZ</key>
+        <string>Asia/Taipei</string>
+        <key>TELEGRAM_ENV_FILE</key>
+        <string>/Users/robert/Library/Application Support/AI_Drama_Factory/telegram_queue_notify.env</string>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>2</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/Users/robert/Library/Logs/AI_Drama_Factory/reference_intake.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/robert/Library/Logs/AI_Drama_Factory/reference_intake.err.log</string>
+</dict>
+</plist>
