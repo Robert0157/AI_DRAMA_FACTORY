@@ -4,6 +4,8 @@
 2026-09-14: runs DAILY into ONE FIXED folder (assets/reference_intake/inbox);
 cross-day duplicates are suppressed via the seen-assets registry under
 reference_intake/_state/. See daily_intake.py for the scheduled runner.
+The inbox is CEO-mutable (files may appear/vanish at any time); every step
+tolerates missing paths and recreates the folder when needed.
 
 Contract (架構說明書 v16.1 §3.4 / §4.7):
   - Pexels is the primary provider, Pixabay the fallback, Unsplash an aesthetic
@@ -356,11 +358,15 @@ def main() -> int:
         if not got:
             failures.append(f"{label}:{query}")
 
+    target_dir.mkdir(parents=True, exist_ok=True)  # CEO may delete the folder mid-run; recreate it
     save_seen(state_path, seen)
     manifest_path = target_dir / "manifest.json"
     existing: list[dict[str, Any]] = []
     if manifest_path.is_file():
-        existing = json.loads(manifest_path.read_text(encoding="utf-8")).get("items") or []
+        try:
+            existing = json.loads(manifest_path.read_text(encoding="utf-8")).get("items") or []
+        except (OSError, json.JSONDecodeError):
+            existing = []  # deleted/half-written manifest must not break the run
     payload = {
         "schema": "reference_intake.v1",
         "generated": dt.datetime.now().isoformat(timespec="seconds"),

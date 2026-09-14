@@ -9,7 +9,11 @@
   - Cross-day duplicates are suppressed by the seen-assets registry
     (reference_intake/_state/seen_assets.json), which stock_search.py maintains.
   - The world-proposal engine is PAUSED (pending redesign around Approved_material).
-
+  - The inbox (and the CEO folders generally) is CEO-mutable: files/folders may be
+    uploaded or deleted at any moment. All enumeration/stat/write paths tolerate
+    items vanishing mid-run; a deleted inbox is recreated by stock_search.py; the
+    purge age uses max(mtime, birthtime, ctime) so freshly uploaded files are kept
+    even when their copied timestamps are old.
 Usage (Mac):
   /Volumes/AI_Workspace/AI_Drama_Factory/.venv/bin/python3 scripts/reference_intake/daily_intake.py
   ... daily_intake.py --dry-run          # plan print only; no network, no purge
@@ -83,35 +87,74 @@ def notify(text: str) -> None:
 
 
 def purge_old_files(dry_run: bool) -> int:
-    """Delete leftovers older than the review window (CEO rule: next-day cleanup)."""
+    """Delete leftovers older than the review window (CEO rule: next-day cleanup).
+
+    Tolerates the CEO moving/deleting items concurrently; the age reference is
+    max(mtime, birthtime, ctime) so freshly copied files with old timestamps are
+    never purged. Empty subfolders left behind are removed afterwards.
+    """
     cutoff = time.time() - PURGE_MIN_AGE_HOURS * 3600
     removed = 0
     if not INTAKE_ROOT.is_dir():
+        return 0  # CEO deleted the folder; stock_search.py recreates it
+    try:
+        items = sorted(INTAKE_ROOT.rglob("*"))
+    except OSError:
         return 0
-    for item in sorted(INTAKE_ROOT.iterdir()):
-        if not item.is_file():
+    for item in items:
+        try:
+            if not item.is_file():
+                continue
+            stat = item.stat()
+        except OSError:
+            continue  # vanished mid-run (CEO moving files)
+        age_ref = max(stat.st_mtime, getattr(stat, "st_birthtime", 0.0), stat.st_ctime)
+        if age_ref >= cutoff:
             continue
-        if item.stat().st_mtime < cutoff:
-            if dry_run:
-                print(f"[purge] would delete {item.name}", flush=True)
-            else:
-                item.unlink()
-                print(f"[purge] deleted {item.name}", flush=True)
+        if dry_run:
+            print(f"[purge] would delete {item.relative_to(INTAKE_ROOT)}", flush=True)
             removed += 1
+            continue
+        try:
+            item.unlink()
+        except OSError as exc:
+            print(f"[purge] skip {item.name}: {exc}", flush=True)
+            continue
+        print(f"[purge] deleted {item.relative_to(INTAKE_ROOT)}", flush=True)
+        removed += 1
+    if not dry_run:
+        for folder in sorted(INTAKE_ROOT.rglob("*"), reverse=True):
+            try:
+                if folder.is_dir() and not any(folder.iterdir()):
+                    folder.rmdir()
+                    print(f"[purge] removed empty dir {folder.relative_to(INTAKE_ROOT)}", flush=True)
+            except OSError:
+                continue
     return removed
 
 
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+def safe_list_images() -> tuple[int, list[str]]:
+    """Count current inbox images without crashing when the CEO deletes things."""
+    if not INTAKE_ROOT.is_dir():
+        return 0, []
+    names: list[str] = []
+    try:
+        for item in INTAKE_ROOT.iterdir():
+            if item.is_file() and item.suffix.lower() in IMAGE_EXTS:
+                names.append(item.name)
+    except OSError:
+        pass
+    return len(names), names
+
+
 def summarize(manifest: dict) -> str:
-    """Human-readable one-message summary for the CEO."""
-    items = manifest.get("items") or []
+    """Human-readable one-message summary for the CEO (counts live files now)."""
+    present, _ = safe_list_images()
     failures = manifest.get("failures") or []
-    providers: dict[str, int] = {}
-    for item in items:
-        key = item.get("provider", "unknown")
-        providers[key] = providers.get(key, 0) + 1
-    lines = [f"[素材] 每日搜尋完成：{len(items)} 張（固定夾 inbox）"]
-    if providers:
-        lines.append("來源：" + "、".join(f"{k} x{v}" for k, v in providers.items()))
+    lines = [f"[素材] 每日搜尋完成；inbox 現有 {present} 張待審"]
     if failures:
         lines.append("失敗查詢：" + "; ".join(failures))
     lines.append("路徑：assets/reference_intake/inbox（Y:）")
@@ -149,12 +192,13 @@ def main(argv: list[str] | None = None) -> int:
         return code or 1
 
     manifest = load_manifest()
-    items = manifest.get("items") or []
-    if items and not args.dry_run:
+    failures = manifest.get("failures") or []
+    present, _ = safe_list_images()
+    if not args.dry_run and (failures or present):
         notify(summarize(manifest))
-        print(f"[intake] notified: {len(items)} items", flush=True)
+        print(f"[intake] notified: inbox={present} failures={len(failures)}", flush=True)
     else:
-        print(f"[intake] dry-run/manifest items: {len(items)}", flush=True)
+        print(f"[intake] no-notify (dry_run={args.dry_run}) inbox={present} failures={len(failures)}", flush=True)
     if args.with_proposal:
         print("[intake] proposal engine paused (2026-09-14 redesign); flag reserved", flush=True)
     return 0

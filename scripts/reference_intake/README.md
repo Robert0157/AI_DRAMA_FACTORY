@@ -22,7 +22,8 @@ Mac 每天 02:00 自動搜尋免費圖庫 → 下載到**固定資料夾** `inbo
 
 ## 清除規則
 
-- `daily_intake.py` 啟動時刪除 `inbox/` 中 mtime 超過 **18 小時**的檔案（先清後抓；同日手動重跑不會誤刪當日批次）
+- `daily_intake.py` 啟動時刪除 `inbox/` 中**超過 18 小時**的檔案（先清後抓；同日手動重跑不會誤刪當日批次）；判準取 **max(mtime, 出生時間, ctime)**——複製進來但時間戳很舊的素材（CEO 上傳）不會被誤刪
+- 清除範圍＝`inbox/` 全樹（含任何子夾）；清完自動移除空子夾；`_state/` 位於 inbox 之外、永不受影響
 - CEO 已移至 `Approved_material/` 的檔案不受影響（已離開 inbox）
 
 ## CEO 審核交接（新流程）
@@ -49,6 +50,20 @@ Mac 每天 02:00 自動搜尋免費圖庫 → 下載到**固定資料夾** `inbo
 
 - Mac：`~/Library/Application Support/AI_Drama_Factory/reference_intake.env`（chmod 600）
 - 傳輸工具：`stage_keys_for_transfer.py`／`install_keys_from_env.py`（值不入對話、不進版控）
+
+## CEO 隨時增刪（韌性設計）
+
+CEO 可隨時**上傳或刪除**下列資料夾內容，程式一律容錯、不需停機、不需預告：
+
+| 資料夾 | 情境 | 行為 |
+|---|---|---|
+| `inbox/`（Y:） | 上傳（含舊時間戳拷貝） | **max(mtime, 出生時間, ctime)** 判準保護；18h 審核視窗照算 |
+| `inbox/`（Y:） | 刪檔／刪整個資料夾 | 列舉／stat／寫入逐項防護；資料夾不存在時 `stock_search.py` 自動重建 |
+| `VEO_download/`＋`Approved_material/`（F:） | 增刪 | `pool_manifest.py` 重建即反映現況；資料夾缺失→略過；半途消失→計入 `skipped` |
+| `cp_d/`（Y:） | 增刪 | 目前無自動讀者（草案引擎暫停）；改版時比照同等容錯 |
+| `manifest.json`（inbox／池） | 被刪或半寫 | 視為空並重建；seen 註冊表寫入採原子替換 |
+
+> 重建索引：`python scripts/reference_intake/pool_manifest.py`（任何時候都可跑，反映當下實況）
 
 ## 已暫停
 

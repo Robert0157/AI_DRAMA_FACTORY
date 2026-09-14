@@ -8,6 +8,9 @@ Pool sources (2026-09-14):
 
 Writes manifest.json (schema ceo.first_frame_pool.v1) with per-file sha256,
 dimensions and naming checks. Images themselves are never committed to git.
+The pool folders are CEO-mutable: files/folders may be uploaded or deleted at
+any moment, so every directory listing and per-file read is guarded; a missing
+source folder is skipped and vanished files are counted as "skipped".
 
 Usage:
   python scripts/reference_intake/pool_manifest.py
@@ -58,22 +61,37 @@ def sha256_of(path: Path) -> str:
 
 
 def build(root: Path) -> dict:
+    """Index the pool with per-item guards (CEO may add/delete files mid-scan)."""
     files: list[dict] = []
+    skipped = 0
+    sources_present: list[str] = []
     for source in SOURCE_DIRS:
         directory = root / source
-        if not directory.is_dir():
-            continue
-        for path in sorted(directory.iterdir(), key=lambda p: p.name.lower()):
-            if not path.is_file() or path.suffix.lower() not in IMAGE_EXTS:
+        try:
+            entries = sorted(directory.iterdir(), key=lambda p: p.name.lower())
+        except OSError:
+            continue  # folder deleted by the CEO (or never created) -> skip
+        sources_present.append(source)
+        for path in entries:
+            try:
+                if not path.is_file() or path.suffix.lower() not in IMAGE_EXTS:
+                    continue
+                size = path.stat().st_size
+            except OSError:
+                skipped += 1  # vanished while scanning
                 continue
             entry: dict = {
                 "dir": source,
                 "name": path.name,
                 "ext": path.suffix.lower(),
-                "size": path.stat().st_size,
+                "size": size,
                 "naming_issues": naming_issues(path.name),
             }
-            entry["sha256"] = sha256_of(path)
+            try:
+                entry["sha256"] = sha256_of(path)
+            except OSError:
+                skipped += 1  # deleted between stat and read
+                continue
             if Image is not None:
                 try:
                     with Image.open(path) as im:
@@ -85,6 +103,8 @@ def build(root: Path) -> dict:
         "schema": "ceo.first_frame_pool.v1",
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source_dirs": list(SOURCE_DIRS),
+        "sources_present": sources_present,
+        "skipped": skipped,
         "files": files,
     }
 
@@ -94,11 +114,17 @@ def main() -> int:
     parser.add_argument("--root", help="pool root override (defaults to CEO/02_素材與CP-D)")
     args = parser.parse_args()
     root = Path(args.root) if args.root else DEFAULT_ROOT
+    if not root.is_dir():
+        print(f"POOL root missing: {root} -- create it or pass --root", file=sys.stderr)
+        return 1
     payload = build(root)
     target = root / "manifest.json"
     target.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
     flagged = sum(1 for f in payload["files"] if f["naming_issues"])
-    print(f"POOL files={len(payload['files'])} naming_issues={flagged} -> {target}")
+    print(
+        f"POOL files={len(payload['files'])} naming_issues={flagged} "
+        f"skipped={payload['skipped']} sources={len(payload['sources_present'])}/{len(SOURCE_DIRS)} -> {target}"
+    )
     return 0
 
 
