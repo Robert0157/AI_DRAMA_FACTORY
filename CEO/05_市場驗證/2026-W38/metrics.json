@@ -1,0 +1,51 @@
+{
+ "schema": "market_validation.report.v1",
+ "week": "2026-W38",
+ "generated": "2026-09-14T04:11:25Z",
+ "cadence": {
+  "generated": "2026-09-14T04:11:25.282476+00:00",
+  "lookback_days": 14,
+  "channels": {
+   "auto_drama": {
+    "enabled": false,
+    "note": "B-line channel not yet live; enable at 2/week after launch (Wed+Sat, s10a)"
+   },
+   "light_music": {
+    "kind": "short",
+    "enabled": true,
+    "expected_14d": 28.0,
+    "actual_14d": 2,
+    "last_ts": "2026-09-09T14:50:24+08:00",
+    "age_hours": 117.4,
+    "alerts": [
+     "stale",
+     "under-cadence"
+    ]
+   },
+   "lofi": {
+    "kind": "short",
+    "enabled": true,
+    "expected_14d": 28.0,
+    "actual_14d": 2,
+    "last_ts": "2026-09-09T19:36:38+08:00",
+    "age_hours": 112.6,
+    "alerts": [
+     "stale",
+     "under-cadence"
+    ]
+   }
+  },
+  "alerts": [
+   "light_music: last upload 117.4h ago (> 48h)",
+   "light_music: 2/28.0 uploads in 14d (under cadence)",
+   "lofi: last upload 112.6h ago (> 48h)",
+   "lofi: 2/28.0 uploads in 14d (under cadence)"
+  ]
+ },
+ "videos": [],
+ "grade_counts": {
+  "scale": 0,
+  "iterate": 0,
+  "retire": 0
+ }
+}

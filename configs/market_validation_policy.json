@@ -1,0 +1,37 @@
+{
+  "schema": "market_validation.policy.v1",
+  "comment": "Market-validation thresholds (initial values; tune after first real data). Grade assignment scans rules top-down; the first rule whose min_views_7d and min_like_rate_pct both match wins.",
+  "short": {
+    "fresh_window_hours": 48,
+    "strong_start_views_48h": 500,
+    "grade_rules": [
+      { "grade": "scale",   "min_views_7d": 800, "min_like_rate_pct": 3.0 },
+      { "grade": "iterate", "min_views_7d": 200, "min_like_rate_pct": 0.0 },
+      { "grade": "retire",  "min_views_7d": 0,   "min_like_rate_pct": 0.0 }
+    ]
+  },
+  "long": {
+    "fresh_window_hours": 72,
+    "strong_start_views_48h": 300,
+    "grade_rules": [
+      { "grade": "scale",   "min_views_7d": 300, "min_like_rate_pct": 2.0 },
+      { "grade": "iterate", "min_views_7d": 80,  "min_like_rate_pct": 0.0 },
+      { "grade": "retire",  "min_views_7d": 0,   "min_like_rate_pct": 0.0 }
+    ]
+  },
+  "cadence": {
+    "lookback_days": 14,
+    "stale_after_hours": 48,
+    "under_cadence_ratio": 0.6,
+    "channels": {
+      "light_music": { "kind": "short", "expected_per_day": 2.0, "enabled": true },
+      "lofi": { "kind": "short", "expected_per_day": 2.0, "enabled": true },
+      "auto_drama": {
+        "kind": "short",
+        "expected_per_day": 0.0,
+        "enabled": false,
+        "note": "B-line channel not yet live; enable at 2/week after launch (Wed+Sat, s10a)"
+      }
+    }
+  }
+}
