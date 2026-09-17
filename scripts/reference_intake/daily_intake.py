@@ -185,8 +185,9 @@ def main(argv: list[str] | None = None) -> int:
     code = subprocess.call(cmd)
     if code != 0:
         notify(
-            "[素材] 每日搜尋失敗：請檢查 Mac 金鑰（PEXELS_API_KEY／PIXABAY_API_KEY）與網路；"
-            "詳見 ~/Library/Logs/AI_Drama_Factory/reference_intake.err.log"
+            "[素材] 每日搜尋失敗：請檢查網路與圖庫 API 狀態"
+            "（Pexels 若 403／1010＝Cloudflare 封非瀏覽器 UA、非金鑰失效；"
+            "可用 rca_pexels.py 診斷）；詳見 ~/Library/Logs/AI_Drama_Factory/reference_intake.err.log"
         )
         print(f"[intake] stock search failed rc={code}", file=sys.stderr, flush=True)
         return code or 1

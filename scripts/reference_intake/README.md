@@ -2,6 +2,8 @@
 
 > **2026-09-14 改版（CEO 指示）**。權威文件：`架構說明書_v16.1.md` §4.7／§4.8。
 
+> **2026-09-17 停用（CEO 指示）**：每日搜尋排程已取消（launchd `com.aidramafactory.reference.intake` 已 unload＋disable）。RCA 結論：**Pexels 金鑰有效**；403「error code: 1010」＝ Cloudflare 封鎖非瀏覽器 UA（瀏覽器 UA 實測 200）——已於 `stock_search.py` 全域修復 UA。工具保留供手動／日後重啟。重新啟用：`launchctl enable gui/$(id -u)/com.aidramafactory.reference.intake && launchctl load ~/Library/LaunchAgents/com.aidramafactory.reference.intake.plist`
+
 ## 一句話
 
 Mac 每天 02:00 自動搜尋免費圖庫 → 下載到**固定資料夾** `inbox/` → CEO 檢視並把要用的圖移至 `CEO/02_素材與CP-D/VEO_download/Approved_material/` → **未移出者隔日 02:00 自動刪除**。

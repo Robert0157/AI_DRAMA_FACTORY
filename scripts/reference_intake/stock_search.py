@@ -219,6 +219,14 @@ PROVIDERS = {
 }
 
 
+BROWSER_UA = (
+    # Pexels sits behind Cloudflare; non-browser UAs get 403 "error code: 1010"
+    # even with a valid key (RCA 2026-09-17). Present a browser UA globally.
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+)
+
+
 def load_seen(state_path: Path) -> dict[str, set[str]]:
     """Previously downloaded provider ids (cross-day duplicate suppression)."""
     if not state_path.is_file():
@@ -325,6 +333,7 @@ def main() -> int:
     seen = load_seen(state_path)
 
     session = requests.Session()
+    session.headers["User-Agent"] = BROWSER_UA
     records: list[dict[str, Any]] = []
     failures: list[str] = []
     for label, query in plan:
